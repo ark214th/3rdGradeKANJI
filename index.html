@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#142a40">
+<title>漢字クエスト｜章をえらぶ</title>
+<style>
+:root{color-scheme:dark;--paper:#fffdf2;--ink:#26302c;--gold:#ffd66b}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;overscroll-behavior:none}body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;background:radial-gradient(circle at 12% 8%,#467aa066,transparent 28%),radial-gradient(circle at 88% 15%,#d99d4e55,transparent 27%),linear-gradient(145deg,#0d1b2b,#193d52 52%,#2d5046);color:#fff;-webkit-tap-highlight-color:transparent;user-select:none}.app{width:min(980px,100%);min-height:100vh;margin:auto;padding:max(30px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(30px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}.title{text-align:center}.crest{width:84px;height:84px;display:grid;place-items:center;margin:auto;border:3px solid #ffffff99;border-radius:27px;background:linear-gradient(145deg,#ffe48b,#cf7147);font-size:50px;box-shadow:0 14px 35px #0007}.title h1{margin:13px 0 4px;font-size:clamp(34px,7vw,62px);letter-spacing:.06em}.title p{margin:0;color:#ffffffc7;font-size:clamp(15px,2.5vw,20px);font-weight:800}.status{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:20px auto;padding:10px 14px;border:1px solid #ffffff38;border-radius:999px;background:#06162766;backdrop-filter:blur(8px);font-weight:900}.status span{white-space:nowrap}.chapters{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:25px}.chapter{position:relative;min-height:340px;overflow:hidden;padding:25px;border:2px solid #ffffff88;border-radius:28px;color:#fff;text-decoration:none;box-shadow:0 15px 35px #0006,0 8px 0 #07131d;touch-action:manipulation;transition:.16s}.chapter:active{transform:translateY(6px);box-shadow:0 8px 22px #0006,0 2px 0 #07131d}.chapter.one{background:radial-gradient(circle at 85% 12%,#ffd66b55,transparent 30%),linear-gradient(145deg,#325e91,#162c56)}.chapter.two{background:radial-gradient(circle at 88% 12%,#ffce7655,transparent 31%),linear-gradient(145deg,#49885c,#174a45)}.num{display:inline-flex;padding:7px 13px;border:1px solid #ffffff88;border-radius:999px;background:#0003;font-size:14px;font-weight:900}.icon{display:block;margin:24px 0 8px;font-size:72px;filter:drop-shadow(0 9px 8px #0005)}.chapter h2{margin:0;font-size:clamp(28px,4.5vw,43px)}.chapter p{margin:8px 0 20px;color:#ffffffd1;font-weight:750;line-height:1.7}.go{position:absolute;left:25px;right:25px;bottom:23px;display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-radius:15px;background:var(--paper);color:var(--ink);font-weight:1000}.note{margin:25px 0 0;color:#ffffffa8;font-size:13px;font-weight:700;text-align:center;line-height:1.6}@media(max-width:680px){.chapters{grid-template-columns:1fr}.chapter{min-height:290px}.icon{margin:15px 0 5px;font-size:59px}.status{border-radius:18px}}
+</style>
+</head>
+<body>
+<main class="app">
+<header class="title"><div class="crest">⚔️</div><h1>漢字クエスト</h1><p>ぼうけんする章をえらぼう</p></header>
+<div class="status" aria-label="共通ステータス"><span id="level">⭐ LV 1</span><span>・</span><span id="gold">🪙 0 G</span><span>・</span><span id="weapon">⚔️ 木のつるぎ</span></div>
+<section class="chapters" aria-label="章選択">
+<a class="chapter one" href="kanji_quest_rpg.html"><span class="num">第1章</span><span class="icon">🏰</span><h2>五十の魔物</h2><p>五つの地方をめぐり、漢字モンスターを倒す最初の冒険。</p><span class="go">冒険をつづける <b>▶</b></span></a>
+<a class="chapter two" href="chapter2/index.html"><span class="num">第2章</span><span class="icon">⛩️</span><h2>あやかしの国</h2><p>新しい五十の言霊を取り戻す、和の国での新たな冒険。</p><span class="go">第2章へ旅立つ <b>▶</b></span></a>
+</section>
+<p class="note">レベル・経験値・ゴールド・武器は、どちらの章でも共通です。</p>
+</main>
+<script>
+"use strict";
+const W={wood:["木のつるぎ","🗡️"],bronze:["青銅のつるぎ","⚔️"],flame:["ほのおの剣","🔥"],ice:["こおりの刃","❄️"],thunder:["いかずちソード","⚡"],hero:["勇者の聖剣","🌟"],dragon:["竜王の大剣","🐉"],sky:["天空の神剣","☀️"],galaxy:["銀河の超剣","🌌"],infinity:["無限の漢字剣","♾️"]};
+function level(xp){let l=1,n=60;xp=Math.max(0,Number(xp)||0);while(xp>=n){xp-=n;l++;n=60+(l-1)*25}return l}
+try{const s=JSON.parse(localStorage.getItem("kanjiQuestRpg_v1"))||{},w=W[s.weapon||s.equippedWeapon]||W.wood;document.getElementById("level").textContent=`⭐ LV ${level(s.xp)}`;document.getElementById("gold").textContent=`🪙 ${Math.max(0,Number(s.gold)||0)} G`;document.getElementById("weapon").textContent=`${w[1]} ${w[0]}`}catch{}
+</script>
+</body>
+</html>
