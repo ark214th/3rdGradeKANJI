@@ -41,6 +41,7 @@
   #battle .answerlabel{font-size:11px}.answerbig{margin:0 0 5px;font-size:clamp(49px,7.2vh,66px)}
   #battle .judges{grid-template-columns:1fr;gap:6px}.judge{min-height:38px;border-radius:11px;font-size:13px;box-shadow:0 3px 0 #0002}
 }
+.guide,.answerbig{font-family:"YuKyokasho","Yu Kyokasho","UD Digi Kyokasho N-R","Hiragino Mincho ProN",serif;font-weight:400}
 </style>
 </head>
 <body>
@@ -125,9 +126,9 @@ function renderMonster(){const m=monster(current.id);$("monsterName").textConten
 function resetQuestion(){$("answerPanel").classList.remove("show");$("questPanel").classList.remove("answering");$("guide").classList.remove("show");$("hint").disabled=false;$("hint").textContent="✨ ヒント魔法";$("good").disabled=false;$("good").textContent="⚔️ できた！";msg("読みがなを見て漢字を書こう。書けたら「答えを見る」！");clearCanvas();requestAnimationFrame(resize)}
 function battleHead(){if(!session)return;const t=session.original.length,d=session.done.size;$("battleTitle").textContent=session.title;$("battleCount").textContent=`${d} / ${t}体を討伐`;$("battleFill").style.width=`${d/t*100}%`}
 function updateHp(){$("hpText").textContent=`${Math.max(0,hp)} / ${maxHp}`;$("hpFill").style.width=`${Math.max(0,hp)/maxHp*100}%`}
-function updateJudge(){if(hintUsed){$("good").disabled=true;$("good").textContent="ヒント使用時は選べません"}else{$("good").disabled=false;$("good").textContent="⚔️ できた！"}}
-function reveal(){$("answerPanel").classList.add("show");$("questPanel").classList.add("answering");updateJudge();msg(hintUsed?"ヒントを使ったので「できた！」は選べません。「おしい」か「もう一回」で記憶から書き直そう。":"自分の字と正解を見くらべよう。合っていれば「できた！」。少し違えば「おしい」。","warn");requestAnimationFrame(resize)}
-function useHint(){hintUsed=true;hintVisible=!hintVisible;$("guide").classList.toggle("show",hintVisible);$("hint").textContent=hintVisible?"✨ お手本を隠す":"✨ もう一度ヒント";updateJudge();msg(hintVisible?"お手本をよく見よう。書き始めると消えるよ。":"お手本を隠したよ。必要なら何度でも見られるよ。","warn")}
+function updateJudge(){$("good").disabled=false;$("good").textContent="⚔️ できた！"}
+function reveal(){$("answerPanel").classList.add("show");$("questPanel").classList.add("answering");updateJudge();msg("自分の字と正解を見くらべよう。合っていれば「できた！」。少し違えば「おしい」。","warn");requestAnimationFrame(resize)}
+function useHint(){hintUsed=false;hintVisible=!hintVisible;$("guide").classList.toggle("show",hintVisible);$("hint").textContent=hintVisible?"✨ お手本を隠す":"✨ もう一度ヒント";updateJudge();msg(hintVisible?"薄いお手本を、最後までしっかりなぞろう。":"お手本を隠したよ。必要なら何度でも見られるよ。","warn")}
 
 function requeue(id,far=false){const pos=Math.min(far?5:3,session.queue.length);session.queue.splice(pos,0,id)}
 function judge(kind){if(!current||locked||!session)return;if(kind==="good"&&hintUsed){msg("ヒントを使った問題は「おしい」か「もう一回」にしよう。","warn");return}locked=true;save.battles++;const id=current.id,r=save.records[id]||{good:0,close:0,retry:0};r[kind]=(r[kind]||0)+1;r.last=kind;save.records[id]=r;const old=lvInfo(save.xp).l,w=weap();if(kind==="good"){const dmg=session.mode==="elite"?100+w.atk*14:100+w.atk*12;hp=Math.max(0,hp-dmg);session.hps[id]=hp;const dead=hp<=0;attack(dmg,dead);if(dead){session.done.add(id);const mult=session.mode==="elite"?1+Math.floor((session.rank||1)/2):1,xp=(10+w.xp+2)*mult,g=6+w.g+(session.mode==="elite"?(session.rank||1)*3:2);save.xp+=xp;save.gold+=g;save.totalDefeats++;session.reward.xp+=xp;session.reward.g+=g;if(!save.defeated.includes(id))save.defeated.push(id);msg(session.mode==="elite"?`上位の強敵を撃破！ ${xp} EXP と ${g} G！`:`会心の一撃！ ${xp} EXP と ${g} G を手に入れた！`,"good")}else{const hitXp=3+(session.rank||1);save.xp+=hitXp;session.reward.xp+=hitXp;requeue(id);msg(`強敵に ${dmg} ダメージ！ HPはあと ${hp}。もう一度出会ったら倒そう！`,"warn")}}else if(kind==="close"){const dmg=Math.max(5,8+Math.floor(w.atk*1.5));hp=Math.max(1,hp-dmg);session.hps[id]=hp;const xp=1+Math.floor(w.xp/12);save.xp+=xp;session.reward.xp+=xp;attack(dmg,false);requeue(id,true);msg(`おしい！ ${dmg}ダメージと ${xp} EXP。数問あとにもう一度！`,"warn")}else{requeue(id);msg("今回はやり直し。数問あとに同じ魔物がもう一度現れるよ。","bad")}persist();updateHp();const now=lvInfo(save.xp).l;setTimeout(()=>now>old?levelUp(now,next):next(),kind==="good"?1050:800)}
@@ -154,7 +155,7 @@ function toast(t){const e=$("toast");e.textContent=t;e.classList.add("show");cle
 function resize(){if(!screens.battle.classList.contains("active"))return;const r=$("canvasWrap").getBoundingClientRect(),before=canvas.getBoundingClientRect(),sx=before.width?r.width/before.width:1,sy=before.height?r.height/before.height:1,dpr=Math.max(devicePixelRatio||1,1),old=strokes.map(s=>s.map(p=>({x:p.x*sx,y:p.y*sy})));canvas.width=Math.max(1,Math.floor(r.width*dpr));canvas.height=Math.max(1,Math.floor(r.height*dpr));canvas.style.width=`${r.width}px`;canvas.style.height=`${r.height}px`;strokes=old;redraw();fitGuide()}
 function fitGuide(){if(!current)return;const r=$("canvasWrap").getBoundingClientRect(),len=[...current.a].length,size=Math.max(45,Math.min(r.width*.82/Math.max(1,len*1.05),r.height*.58,230));$("guide").style.fontSize=`${size}px`}
 function pt(e){const r=canvas.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}}
-function begin(e){if(locked)return;e.preventDefault();if(hintVisible){hintVisible=false;$("guide").classList.remove("show");$("hint").textContent="✨ もう一度ヒント";msg("お手本は消えた！ 必要なら、またヒント魔法で確認できるよ。","warn")}drawing=true;stroke=[pt(e)];try{canvas.setPointerCapture(e.pointerId)}catch{}}
+function begin(e){if(locked)return;e.preventDefault();drawing=true;stroke=[pt(e)];try{canvas.setPointerCapture(e.pointerId)}catch{}}
 function move(e){if(!drawing||!stroke)return;e.preventDefault();const p=pt(e),last=stroke[stroke.length-1];stroke.push(p);seg(last,p)}
 function end(e){if(!drawing||!stroke)return;e.preventDefault();drawing=false;if(stroke.length)strokes.push(stroke);stroke=null;try{canvas.releasePointerCapture(e.pointerId)}catch{}}
 function seg(a,b){const d=Math.max(devicePixelRatio||1,1);ctx.save();ctx.setTransform(d,0,0,d,0,0);ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.lineWidth=7;ctx.lineCap="round";ctx.lineJoin="round";ctx.strokeStyle="#201c18";ctx.stroke();ctx.restore()}
