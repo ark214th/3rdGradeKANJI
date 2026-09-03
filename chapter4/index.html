@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#183f3b">
-<title>漢字クエスト 第4章 ～二学期・最初の試練～</title>
+<meta name="theme-color" content="#075b83">
+<title>漢字クエスト 第4章 ～海の五つの航路～</title>
 <style>
 :root{--ink:#2e2925;--muted:#74695f;--gold:#f5bd49;--blue:#59b9eb;--green:#3ca86b;--red:#d95650;--line:#e7ddcf;--panel:rgba(255,255,255,.97);--shadow:0 16px 40px rgba(8,16,33,.28)}
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;overscroll-behavior:none}body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;color:var(--ink);background:radial-gradient(circle at 10% 10%,rgba(74,169,233,.3),transparent 28%),radial-gradient(circle at 90% 15%,rgba(245,189,73,.22),transparent 27%),linear-gradient(145deg,#0e1729,#263e67 68%,#31556d);-webkit-tap-highlight-color:transparent;user-select:none}button{font:inherit;touch-action:manipulation}.app{width:min(1080px,100%);min-height:100vh;margin:auto;padding:max(12px,env(safe-area-inset-top)) max(10px,env(safe-area-inset-right)) max(18px,env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left))}
@@ -52,118 +52,170 @@ body{background:radial-gradient(circle at 13% 8%,rgba(255,209,122,.24),transpare
 .elitebanner{border-color:#f2c86f;background:linear-gradient(135deg,#2d303a,#77473a 58%,#a7633f);box-shadow:0 10px 0 #20252b}.chip{border-color:#79af9d;color:#286b58;background:#e8f7ef}
 .primary{background:linear-gradient(#ffe092,#eeb34b)}.secondary{color:#174d42;background:linear-gradient(#bdebdc,#76c7ae);box-shadow:0 6px 0 #45927c}.battlehead{background:#eff8ed}.canvaswrap{border-color:#9eaa92;background:linear-gradient(90deg,#6f8f7230 1px,transparent 1px),linear-gradient(#6f8f7230 1px,transparent 1px),#fffef8;background-size:52px 52px}
 .home-link{display:inline-flex;align-items:center;min-height:43px;padding:8px 13px;border:1px solid #ffffff66;border-radius:999px;color:#fff;background:#ffffff1f;font-weight:900;text-decoration:none;backdrop-filter:blur(7px)}
+.map{grid-template-columns:repeat(3,minmax(0,1fr))}
+.a1{background:linear-gradient(145deg,#25a8bd,#08718f)}.a2{background:linear-gradient(145deg,#3b93d1,#15578d)}.a3{background:linear-gradient(145deg,#20a783,#09645e)}.a4{background:linear-gradient(145deg,#436fc0,#233e83)}.a5{background:linear-gradient(145deg,#7358b6,#302a70)}
+body{background:radial-gradient(circle at 13% 8%,rgba(104,232,255,.28),transparent 27%),radial-gradient(circle at 88% 14%,rgba(83,191,255,.22),transparent 28%),linear-gradient(145deg,#043951,#08759a 60%,#0b415f)}
+.crest{background:linear-gradient(145deg,#bff7ff,#168ab4)}.hero{border-color:#73cfe0;background:linear-gradient(135deg,#e7fbff,#fff8d6)}.avatar{border-color:#2aafd0}.battlehead{background:#eaf8ff}.bfill{background:linear-gradient(90deg,#3ac7d8,#167eb8)}.monsterzone{background:radial-gradient(circle at 50% 80%,#23aacb30,transparent 38%),linear-gradient(#dff7ff,#edf9ef)}
+.reading{display:inline-flex;align-items:center;justify-content:center;min-width:2.5em;min-height:1.42em;padding:.05em .28em .08em;margin:0 .05em;border:.09em solid #30a7c6;border-radius:.34em;color:#08739a;background:#e9fbff;font-size:.78em;line-height:1;vertical-align:.08em;white-space:nowrap}
+.battleinfo{text-align:right}.combo{color:#087da9;font-size:20px;font-weight:1000}.fever .combo{color:#ef7d15;text-shadow:0 0 10px #ffd25e}.fever .monsterzone{box-shadow:0 0 24px #66ddff,0 0 48px #ffce5d55}
+.effect-layer{position:fixed;inset:0;z-index:80;overflow:hidden;pointer-events:none}.particle{position:fixed;width:10px;height:10px;border-radius:50%;background:var(--color,#66e5ff);box-shadow:0 0 10px var(--color,#66e5ff);animation:particleFly .72s ease-out forwards}.combo-burst{position:fixed;left:50%;top:30%;z-index:83;color:#fff;font-size:clamp(38px,8vw,78px);font-weight:1000;text-align:center;text-shadow:0 5px 0 #075b83,0 0 22px #65e7ff;opacity:0;transform:translate(-50%,-50%) scale(.45);pointer-events:none}.combo-burst.show{animation:comboPop .78s ease-out}.battle-flash{position:fixed;inset:0;z-index:75;background:#d8fbff;opacity:0;pointer-events:none}.battle-flash.show{animation:flash .28s ease-out}.screen-shake{animation:shake .3s}
+@keyframes particleFly{to{opacity:0;transform:translate(var(--tx),var(--ty)) scale(.1)}}@keyframes comboPop{25%{opacity:1;transform:translate(-50%,-50%) scale(1.15)}70%{opacity:1;transform:translate(-50%,-58%) scale(1)}100%{opacity:0;transform:translate(-50%,-72%) scale(.9)}}@keyframes flash{30%{opacity:.45}100%{opacity:0}}@keyframes shake{25%{transform:translateX(-7px)}50%{transform:translateX(6px)}75%{transform:translateX(-3px)}}
+@media(max-width:860px){.map{grid-template-columns:repeat(2,minmax(0,1fr))}.area:last-child{grid-column:span 2}}
+@media(max-width:650px){.map{grid-template-columns:1fr}.area:last-child{grid-column:auto}}
+@media(prefers-reduced-motion:reduce){.particle,.combo-burst.show,.battle-flash.show,.screen-shake{animation-duration:.01ms}}
 </style>
 </head>
 <body>
 <div class="app">
-<header class="topbar"><div class="brand"><div class="crest">📜</div><div><h1>漢字クエスト 第4章</h1><small>～二学期・最初の試練～</small></div></div><div class="top-actions"><a class="home-link" href="../index.html">章選択</a><button class="topbtn" id="topShop">🛒 武器屋</button><button class="topbtn" id="topMap">🗺️ 地図</button></div></header>
-<div class="hud"><div class="huditem">⭐ <strong id="hudLv">LV 1</strong></div><div class="huditem">🪙 <strong id="hudGold">0 G</strong></div><div class="huditem">⚔️ <strong id="hudWeapon">木のつるぎ</strong></div><div class="huditem">👾 <strong id="hudBook">0 / 20</strong></div><div class="xptrack"><div class="xpfill" id="xpFill"></div></div><div class="huditem"><strong id="xpText">EXP 0 / 60</strong></div></div>
+<header class="topbar"><div class="brand"><div class="crest">🌊</div><div><h1>漢字クエスト 第4章</h1><small>～海の五つの航路～</small></div></div><div class="top-actions"><a class="home-link" href="../index.html">章選択</a><button class="topbtn" id="topShop">🛒 武器屋</button><button class="topbtn" id="topMap">🗺️ 海図</button></div></header>
+<div class="hud"><div class="huditem">⭐ <strong id="hudLv">LV 1</strong></div><div class="huditem">🪙 <strong id="hudGold">0 G</strong></div><div class="huditem">⚔️ <strong id="hudWeapon">木のつるぎ</strong></div><div class="huditem">🐠 <strong id="hudBook">0 / 52</strong></div><div class="xptrack"><div class="xpfill" id="xpFill"></div></div><div class="huditem"><strong id="xpText">EXP 0 / 60</strong></div></div>
 
 <section class="screen active" id="world"><div class="panel"><div class="body">
-<h2>二学期・最初の試練</h2><p class="lead">文章の中にかくれた、20の漢字ことばモンスターに挑みます。前半と後半は10問ずつ、総仕上げは20問です。</p>
-<div class="hero"><div class="avatar">🦊</div><div><div class="heroname" id="heroTitle">書き取りの勇者</div><div class="herosub" id="heroText">新しい言葉の冒険が始まる。</div></div><div class="weaponbadge"><span id="heroWeaponIcon">🗡️</span><span id="heroWeaponName">木のつるぎ</span></div></div>
+<h2>海の五つの航路</h2><p class="lead">第1回テストの52問を、一文字ずつ書いて海の魔物から取り戻そう。五つの航路は10問または11問です。</p>
+<div class="hero"><div class="avatar">🧭</div><div><div class="heroname" id="heroTitle">書き取りの勇者</div><div class="herosub" id="heroText">青い海へ、新しい冒険が始まる。</div></div><div class="weaponbadge"><span id="heroWeaponIcon">🗡️</span><span id="heroWeaponName">木のつるぎ</span></div></div>
 <div class="map" id="areaGrid"></div>
-<div class="elitebanner"><div class="eliteicon">👺</div><div><h3>上位魔境・天狗の試練</h3><p id="eliteText">20体を倒した勇者だけが入れる、さらに強い言葉モンスターの世界。</p></div><button class="elitebutton" id="eliteStart" type="button">天狗の試練へ</button></div>
+<div class="elitebanner"><div class="eliteicon">🐉</div><div><h3>深海魔境・海竜の試練</h3><p id="eliteText">52体を倒した勇者だけが進める、さらに深い海の世界。</p></div><button class="elitebutton" id="eliteStart" type="button">海竜の試練へ</button></div>
 <div class="specials">
-<div class="special"><h3>🎋 言霊の修行場</h3><p>第4章の20問から、ランダムに10体が出現。</p><button class="secondary" id="random10">ランダム10体と戦う</button></div>
-<div class="special dark"><h3>🌙 二十問の試練</h3><p>20体すべてがランダム順で出現する、テスト前の総仕上げ。</p><button class="primary" id="randomAll">ランダム20体に挑む</button></div>
+<div class="special"><h3>🐚 波打ちぎわの修行場</h3><p>第4章の52問から、ランダムに10体が出現。</p><button class="secondary" id="random10">ランダム10体と戦う</button></div>
+<div class="special dark"><h3>🌌 五十二問の大航海</h3><p>52体すべてがランダム順で出現する、テスト前の総仕上げ。</p><button class="primary" id="randomAll">ランダム52体に挑む</button></div>
 </div>
 <div class="specials">
-<div class="special parent"><h3>🎯 親子の特訓所</h3><p id="customStageText">親が選んだ苦手な言葉だけを集めて、ランダム順で練習できます。</p><button class="primary" id="openPicker">苦手な言葉を選ぶ</button> <button class="secondary" id="startCustom">特訓を始める</button></div>
+<div class="special parent"><h3>🎯 親子の特訓所</h3><p id="customStageText">親が選んだ苦手な漢字だけを集めて、ランダム順で練習できます。</p><button class="primary" id="openPicker">苦手な漢字を選ぶ</button> <button class="secondary" id="startCustom">特訓を始める</button></div>
 <div class="special"><h3>📖 モンスター図鑑</h3><p>倒した漢字モンスターと、これまでの冒険記録を確認。</p><button class="secondary" id="openBook">図鑑をひらく</button></div>
 </div>
 <div class="specials"><div class="special"><h3>🛒 王都の武器屋</h3><p>ゴールドを貯めて武器を買うと、攻撃演出と報酬が強くなる。</p><button class="primary" id="openShop">武器を見に行く</button></div></div>
 </div></div></section>
 
-<section class="screen" id="battle"><div class="panel"><div class="battlehead"><div><strong id="battleTitle">前半の道</strong><small id="battleCount">0 / 10体</small><div class="btrack"><div class="bfill" id="battleFill"></div></div></div><button class="retreat" id="retreat">地図へもどる</button></div><div class="arena"><div class="monsterzone"><div class="monstername" id="monsterName">ことばの魔物</div><div class="monsterlevel" id="monsterLevel">第1の言葉モンスター</div><div class="sprite" id="sprite">🟢</div><div class="slash" id="slash"></div><div class="damage" id="damage">100</div><div class="hplabel"><span>MONSTER HP</span><span id="hpText">100 / 100</span></div><div class="hptrack"><div class="hpfill" id="hpFill"></div></div></div><div class="quest" id="questPanel"><div class="chip" id="chip">第1の魔物</div><div class="question" id="question"></div><div class="canvaswrap" id="canvasWrap"><div class="guide" id="guide"></div><canvas id="canvas" aria-label="漢字の言葉を書く場所"></canvas></div><div class="tools"><button class="tool" id="undo">↩ 一画もどす</button><button class="tool" id="clear">🧹 全部消す</button><button class="tool spell" id="hint">✨ ヒント魔法</button><button class="tool answer" id="showAnswer">📜 答えを見る</button></div><div class="answerpanel" id="answerPanel"><div class="answerlabel">正解の言葉</div><div class="answerbig" id="answerBig"></div><div class="judges"><button class="judge good" id="good">⚔️ できた！</button><button class="judge close" id="close">🛡️ おしい</button><button class="judge retry" id="retry">🔁 もう一回</button></div></div><div class="message" id="message">線のついた言葉を漢字で書こう。書けたら「答えを見る」！</div></div></div></div></section>
+<section class="screen" id="battle"><div class="panel" id="battlePanel"><div class="battlehead"><div><strong id="battleTitle">さんごの浜</strong><small id="battleCount">0 / 11体</small><div class="btrack"><div class="bfill" id="battleFill"></div></div></div><div class="battleinfo"><div class="combo" id="comboText">COMBO 0</div><button class="retreat" id="retreat">海図へもどる</button></div></div><div class="arena"><div class="monsterzone"><div class="monstername" id="monsterName">海の魔物</div><div class="monsterlevel" id="monsterLevel">第1の漢字モンスター</div><div class="sprite" id="sprite">🐟</div><div class="slash" id="slash"></div><div class="damage" id="damage">100</div><div class="hplabel"><span>MONSTER HP</span><span id="hpText">100 / 100</span></div><div class="hptrack"><div class="hpfill" id="hpFill"></div></div></div><div class="quest" id="questPanel"><div class="chip" id="chip">第1の魔物</div><div class="question" id="question"></div><div class="canvaswrap" id="canvasWrap"><div class="guide" id="guide"></div><canvas id="canvas" aria-label="漢字を書く場所"></canvas></div><div class="tools"><button class="tool" id="undo">↩ 一画もどす</button><button class="tool" id="clear">🧹 全部消す</button><button class="tool spell" id="hint">✨ ヒント魔法</button><button class="tool answer" id="showAnswer">📜 答えを見る</button></div><div class="answerpanel" id="answerPanel"><div class="answerlabel">正解</div><div class="answerbig" id="answerBig"></div><div class="judges"><button class="judge good" id="good">⚔️ できた！</button><button class="judge close" id="close">🛡️ おしい</button><button class="judge retry" id="retry">🔁 もう一回</button></div></div><div class="message" id="message">水色の読みを、一文字の漢字で書こう。</div></div></div></div></section>
 
 <section class="screen" id="picker"><div class="panel"><div class="body">
-<h2>親子の特訓所</h2><p class="lead">第4章の20問から苦手な言葉を選べます。選んだ問題は、地図からいつでも練習できます。</p>
+<h2>親子の特訓所</h2><p class="lead">第4章の52問から苦手な漢字を選べます。選んだ問題は、海図からいつでも練習できます。</p>
 <div class="picktools"><button class="secondary" id="selectFromHistory">履歴から苦手を選ぶ</button><button class="secondary" id="selectAll">全部選ぶ</button><button class="danger" id="clearSelection">全部外す</button></div>
 <div class="picksummary" id="pickSummary">0問を選択中</div>
 <div class="pickgrid" id="pickGrid"></div>
-<div class="pickactions"><button class="secondary" id="pickerBack">保存せず地図へ</button><button class="primary" id="saveSelection">選択を保存して特訓</button></div>
+<div class="pickactions"><button class="secondary" id="pickerBack">保存せず海図へ</button><button class="primary" id="saveSelection">選択を保存して特訓</button></div>
 </div></div></section>
 
 <section class="screen" id="shop"><div class="panel"><div class="body"><h2>王都の武器屋</h2><p class="lead">武器は答えを代わりに出してはくれません。でも、倒したときの攻撃と経験値ボーナスが強くなります。</p><div class="shophero"><div><strong>🪙 所持金 <span id="shopGold">0</span> G</strong><div class="herosub">買った武器はいつでも持ちかえられます。</div></div><button class="secondary" id="shopBack">地図へ</button></div><div class="shopgrid" id="shopGrid"></div></div></div></section>
 
-<section class="screen" id="book"><div class="panel"><div class="body"><h2>二十の言葉図鑑</h2><p class="lead">第4章で「できた！」になった言葉を、まとめて確認できます。</p><div class="stats"><div class="stat"><strong id="bookLv">1</strong><span>勇者レベル</span></div><div class="stat"><strong id="bookCount">0</strong><span>図鑑登録</span></div><div class="stat"><strong id="bookBattles">0</strong><span>第4章の戦闘</span></div><div class="stat"><strong id="bookClears">0</strong><span>第4章クリア</span></div></div><div class="bookgrid" id="bookGrid"></div><div style="margin-top:18px;text-align:center"><button class="secondary" id="bookBack">地図へもどる</button><button class="danger" id="reset" style="margin-left:8px">第4章の記録を消す</button></div></div></div></section>
+<section class="screen" id="book"><div class="panel"><div class="body"><h2>海の漢字図鑑</h2><p class="lead">第4章で「できた！」になった52問を、まとめて確認できます。</p><div class="stats"><div class="stat"><strong id="bookLv">1</strong><span>勇者レベル</span></div><div class="stat"><strong id="bookCount">0</strong><span>図鑑登録</span></div><div class="stat"><strong id="bookBattles">0</strong><span>第4章の戦闘</span></div><div class="stat"><strong id="bookClears">0</strong><span>航路クリア</span></div></div><div class="bookgrid" id="bookGrid"></div><div style="margin-top:18px;text-align:center"><button class="secondary" id="bookBack">海図へもどる</button><button class="danger" id="reset" style="margin-left:8px">第4章の記録を消す</button></div></div></div></section>
 
-<section class="screen" id="result"><div class="panel"><div class="result"><div class="crown">🏆</div><h2 id="resultTitle">エリアクリア！</h2><p id="resultText">10体の漢字モンスターを倒しました。</p><div class="rewards"><div class="reward"><strong id="resultDefeated">10</strong><span>倒した魔物</span></div><div class="reward"><strong id="resultXp">+100</strong><span>獲得EXP</span></div><div class="reward"><strong id="resultGold">+60</strong><span>獲得G</span></div></div><div class="resultactions"><button class="primary" id="again">もう一度冒険</button><button class="secondary" id="resultMap">地図へもどる</button><button class="primary" id="resultShop">武器屋へ</button></div></div></div></section>
+<section class="screen" id="result"><div class="panel"><div class="result"><div class="crown">🏆</div><h2 id="resultTitle">航路クリア！</h2><p id="resultText">海の漢字モンスターを倒しました。</p><div class="rewards"><div class="reward"><strong id="resultDefeated">10</strong><span>倒した魔物</span></div><div class="reward"><strong id="resultXp">+100</strong><span>獲得EXP</span></div><div class="reward"><strong id="resultGold">+60</strong><span>獲得G</span></div></div><div class="resultactions"><button class="primary" id="again">もう一度冒険</button><button class="secondary" id="resultMap">海図へもどる</button><button class="primary" id="resultShop">武器屋へ</button></div></div></div></section>
 </div>
 
 <div class="toast" id="toast"></div>
 <div class="modal" id="levelModal"><div class="modalbox"><div class="lvicon">🌟</div><h2>レベルアップ！</h2><p id="levelText">勇者レベルが2になった！</p><button class="primary" id="levelClose">冒険をつづける</button></div></div>
+<div class="effect-layer" id="effectLayer"></div><div class="battle-flash" id="battleFlash"></div><div class="combo-burst" id="comboBurst">2 COMBO!</div>
 
 <script>
 "use strict";
 const Q=[
-{id:1,p:"<span class='target'>りょうて</span>を<span class='target'>ひろげる</span>。",a:"両手を広げる",r:"りょうてをひろげる"},
-{id:2,p:"<span class='target'>たいよう</span>がまぶしい。",a:"太陽がまぶしい",r:"たいようがまぶしい"},
-{id:3,p:"<span class='target'>あに</span>に<span class='target'>まける</span>。",a:"兄に負ける",r:"あににまける"},
-{id:4,p:"<span class='target'>たいわ</span>の<span class='target'>れんしゅう</span>。",a:"対話の練習",r:"たいわのれんしゅう"},
-{id:5,p:"<span class='target'>かかり</span>の<span class='target'>しごと</span>。",a:"係の仕事",r:"かかりのしごと"},
-{id:6,p:"<span class='target'>りゆう</span>を<span class='target'>つたえる</span>。",a:"理由を伝える",r:"りゆうをつたえる"},
-{id:7,p:"<span class='target'>かんがえ</span>を<span class='target'>せいり</span>する。",a:"考えを整理する",r:"かんがえをせいりする"},
-{id:8,p:"クラスで<span class='target'>はっぴょう</span>する。",a:"クラスで発表する",r:"クラスではっぴょうする"},
-{id:9,p:"<span class='target'>ぜんいん</span>で<span class='target'>はなしあう</span>。",a:"全員で話し合う",r:"ぜんいんではなしあう"},
-{id:10,p:"お<span class='target'>まつり</span>に<span class='target'>いく</span>。",a:"お祭りに行く",r:"おまつりにいく"},
-{id:11,p:"<span class='target'>ず</span>を<span class='target'>つかう</span>。",a:"図を使う",r:"ずをつかう"},
-{id:12,p:"<span class='target'>あいて</span>に<span class='target'>しらせる</span>。",a:"相手に知らせる",r:"あいてにしらせる"},
-{id:13,p:"<span class='target'>のうさぎょう</span>を<span class='target'>てつだう</span>。",a:"農作業を手伝う",r:"のうさぎょうをてつだう"},
-{id:14,p:"<span class='target'>ながい</span><span class='target'>きょり</span>を<span class='target'>およぐ</span>。",a:"長い距離を泳ぐ",r:"ながいきょりをおよぐ"},
-{id:15,p:"<span class='target'>ぶんしょう</span>に<span class='target'>かく</span>。",a:"文章に書く",r:"ぶんしょうにかく"},
-{id:16,p:"<span class='target'>しょうぶ</span>をする。",a:"勝負をする",r:"しょうぶをする"},
-{id:17,p:"<span class='target'>きず</span>を<span class='target'>おう</span>。",a:"傷を負う",r:"きずをおう"},
-{id:18,p:"<span class='target'>かんけい</span>を<span class='target'>ふかめる</span>。",a:"関係を深める",r:"かんけいをふかめる"},
-{id:19,p:"<span class='target'>うえ</span>の<span class='target'>ことば</span>に<span class='target'>かかる</span>。",a:"上の言葉に係る",r:"うえのことばにかかる"},
-{id:20,p:"<span class='target'>ぶんかさい</span>の<span class='target'>じゅんび</span>。",a:"文化祭の準備",r:"ぶんかさいのじゅんび"}
+{id:1,s:1,p:"<span class='reading'>りょう</span>てをひろげる。",a:"両",r:"りょう"},
+{id:2,s:1,p:"りょう<span class='reading'>て</span>をひろげる。",a:"手",r:"て"},
+{id:3,s:1,p:"りょうてを<span class='reading'>ひろげる</span>。",a:"広げる",r:"ひろげる"},
+{id:4,s:2,p:"<span class='reading'>たい</span>ようがまぶしい。",a:"太",r:"たい"},
+{id:5,s:2,p:"たい<span class='reading'>よう</span>がまぶしい。",a:"陽",r:"よう"},
+{id:6,s:3,p:"<span class='reading'>あに</span>にまける。",a:"兄",r:"あに"},
+{id:7,s:3,p:"あにに<span class='reading'>まける</span>。",a:"負ける",r:"まける"},
+{id:8,s:4,p:"<span class='reading'>たい</span>わのれんしゅう。",a:"対",r:"たい"},
+{id:9,s:4,p:"たい<span class='reading'>わ</span>のれんしゅう。",a:"話",r:"わ"},
+{id:10,s:4,p:"たいわの<span class='reading'>れん</span>しゅう。",a:"練",r:"れん"},
+{id:11,s:4,p:"たいわのれん<span class='reading'>しゅう</span>。",a:"習",r:"しゅう"},
+{id:12,s:5,p:"<span class='reading'>かかり</span>のしごと。",a:"係",r:"かかり"},
+{id:13,s:5,p:"かかりの<span class='reading'>し</span>ごと。",a:"仕",r:"し"},
+{id:14,s:5,p:"かかりのし<span class='reading'>ごと</span>。",a:"事",r:"ごと"},
+{id:15,s:6,p:"<span class='reading'>り</span>ゆうをつたえる。",a:"理",r:"り"},
+{id:16,s:6,p:"り<span class='reading'>ゆう</span>をつたえる。",a:"由",r:"ゆう"},
+{id:17,s:7,p:"<span class='reading'>かんがえ</span>をせいりする。",a:"考え",r:"かんがえ"},
+{id:18,s:7,p:"かんがえを<span class='reading'>せい</span>りする。",a:"整",r:"せい"},
+{id:19,s:7,p:"かんがえをせい<span class='reading'>り</span>する。",a:"理",r:"り"},
+{id:20,s:8,p:"クラスで<span class='reading'>はっ</span>ぴょうする。",a:"発",r:"はっ"},
+{id:21,s:8,p:"クラスではっ<span class='reading'>ぴょう</span>する。",a:"表",r:"ぴょう"},
+{id:22,s:9,p:"<span class='reading'>ぜん</span>いんではなしあう。",a:"全",r:"ぜん"},
+{id:23,s:9,p:"ぜん<span class='reading'>いん</span>ではなしあう。",a:"員",r:"いん"},
+{id:24,s:9,p:"ぜんいんで<span class='reading'>はなし</span>あう。",a:"話し",r:"はなし"},
+{id:25,s:9,p:"ぜんいんではなし<span class='reading'>あう</span>。",a:"合う",r:"あう"},
+{id:26,s:10,p:"お<span class='reading'>まつり</span>にいく。",a:"祭り",r:"まつり"},
+{id:27,s:10,p:"おまつりに<span class='reading'>いく</span>。",a:"行く",r:"いく"},
+{id:28,s:11,p:"<span class='reading'>ず</span>をつかう。",a:"図",r:"ず"},
+{id:29,s:11,p:"ずを<span class='reading'>つかう</span>。",a:"使う",r:"つかう"},
+{id:30,s:12,p:"<span class='reading'>あい</span>てにしらせる。",a:"相",r:"あい"},
+{id:31,s:12,p:"あい<span class='reading'>て</span>にしらせる。",a:"手",r:"て"},
+{id:32,s:12,p:"あいてに<span class='reading'>しらせる</span>。",a:"知らせる",r:"しらせる"},
+{id:33,s:13,p:"<span class='reading'>のう</span>さぎょうをてつだう。",a:"農",r:"のう"},
+{id:34,s:13,p:"のう<span class='reading'>さ</span>ぎょうをてつだう。",a:"作",r:"さ"},
+{id:35,s:13,p:"のうさ<span class='reading'>ぎょう</span>をてつだう。",a:"業",r:"ぎょう"},
+{id:36,s:14,p:"<span class='reading'>ながい</span>きょりをおよぐ。",a:"長い",r:"ながい"},
+{id:37,s:14,p:"ながいきょりを<span class='reading'>およぐ</span>。",a:"泳ぐ",r:"およぐ"},
+{id:38,s:15,p:"<span class='reading'>ぶん</span>しょうにかく。",a:"文",r:"ぶん"},
+{id:39,s:15,p:"ぶん<span class='reading'>しょう</span>にかく。",a:"章",r:"しょう"},
+{id:40,s:15,p:"ぶんしょうに<span class='reading'>かく</span>。",a:"書く",r:"かく"},
+{id:41,s:16,p:"<span class='reading'>しょう</span>ぶをする。",a:"勝",r:"しょう"},
+{id:42,s:16,p:"しょう<span class='reading'>ぶ</span>をする。",a:"負",r:"ぶ"},
+{id:43,s:17,p:"きずを<span class='reading'>おう</span>。",a:"負う",r:"おう"},
+{id:44,s:18,p:"かん<span class='reading'>けい</span>をふかめる。",a:"係",r:"けい"},
+{id:45,s:18,p:"かんけいを<span class='reading'>ふかめる</span>。",a:"深める",r:"ふかめる"},
+{id:46,s:19,p:"<span class='reading'>うえ</span>のことばにかかる。",a:"上",r:"うえ"},
+{id:47,s:19,p:"うえの<span class='reading'>こと</span>ばにかかる。",a:"言",r:"こと"},
+{id:48,s:19,p:"うえのこと<span class='reading'>ば</span>にかかる。",a:"葉",r:"ば"},
+{id:49,s:19,p:"うえのことばに<span class='reading'>かかる</span>。",a:"係る",r:"かかる"},
+{id:50,s:20,p:"<span class='reading'>ぶん</span>かさいのじゅんび。",a:"文",r:"ぶん"},
+{id:51,s:20,p:"ぶん<span class='reading'>か</span>さいのじゅんび。",a:"化",r:"か"},
+{id:52,s:20,p:"ぶんか<span class='reading'>さい</span>のじゅんび。",a:"祭",r:"さい"}
 ];
 const NEW_Q=Q;
-const AREAS=[{n:"前半の道",i:"🌱",c:"a1",m:["🦊","🐇","🦝","🐿️","🐸"],pre:["若葉","朝露","木の実","そよ風","里守り"]},{n:"後半の道",i:"⛩️",c:"a2",m:["👺","🐦‍⬛","🦅","🐒","🦊"],pre:["夕焼け","山風","鳥居","岩影","峠"]}];
+const AREAS=[
+{n:"さんごの浜",i:"🏝️",c:"a1",start:0,end:11,m:["🐟","🦀","🐚","🐡","🦐"],pre:["きらきら","赤つめ","歌う","ふくらむ","すばやい"]},
+{n:"青の入り江",i:"⛵",c:"a2",start:11,end:21,m:["🐬","🦭","🐢","🐙","🪼"],pre:["波乗り","まるまる","長生き","八本足","ゆらゆら"]},
+{n:"海草の森",i:"🌿",c:"a3",start:21,end:32,m:["🐠","🦑","🦀","🐊","🐳"],pre:["しましま","すみはき","岩かげ","大あご","潮ふき"]},
+{n:"光の深海",i:"💎",c:"a4",start:32,end:42,m:["🦈","🐋","🦞","🐲","🧿"],pre:["銀のひれ","大海原","深海","青うろこ","水晶目"]},
+{n:"竜宮の門",i:"🏯",c:"a5",start:42,end:52,m:["🐉","👹","🔱","🦈","🌊"],pre:["海竜","深海鬼","三つまた","古代","大波"]}
+];
 const W=[{id:"wood",n:"木のつるぎ",i:"🗡️",p:0,atk:1,xp:0,g:0,d:"冒険のはじめにもらった、軽くて使いやすいつるぎ。"},{id:"bronze",n:"青銅のつるぎ",i:"⚔️",p:60,atk:2,xp:1,g:1,d:"少し重いけれど、しっかりした攻撃ができる。"},{id:"flame",n:"ほのおの剣",i:"🔥",p:170,atk:3,xp:3,g:2,d:"漢字モンスターを赤い炎で切りさく剣。"},{id:"ice",n:"こおりの刃",i:"❄️",p:330,atk:4,xp:5,g:3,d:"きらきら光る、冷たい魔法の刃。"},{id:"thunder",n:"いかずちソード",i:"⚡",p:520,atk:5,xp:7,g:4,d:"雷の力で大きなダメージを与える伝説の剣。"},{id:"hero",n:"勇者の聖剣",i:"🌟",p:800,atk:7,xp:10,g:6,d:"50の漢字を学ぶ勇者にふさわしい聖剣。"},{id:"dragon",n:"竜王の大剣",i:"🐉",p:1500,atk:10,xp:14,g:8,d:"上位魔境の竜の力を宿した、巨大な大剣。"},{id:"sky",n:"天空の神剣",i:"☀️",p:3000,atk:14,xp:20,g:12,d:"雲を切り、空まで光らせる神々しい剣。"},{id:"galaxy",n:"銀河の超剣",i:"🌌",p:5500,atk:19,xp:30,g:18,d:"星の力を集めて放つ、宇宙級の超兵器。"},{id:"infinity",n:"無限の漢字剣",i:"♾️",p:9000,atk:25,xp:45,g:25,d:"覚えた漢字の数だけ強く輝く、終わりなき最上位武器。"}];
 const TITLES=[{min:50,n:"無限の漢字王"},{min:40,n:"漢字界の英雄"},{min:30,n:"伝説の書き取り勇者"},{min:25,n:"漢字討伐の達人"},{min:20,n:"熟練の漢字剣士"},{min:15,n:"漢字マスターの勇者"},{min:10,n:"漢字を斬る勇者"},{min:6,n:"一人前の書き取り勇者"},{min:3,n:"漢字見習いの勇者"},{min:1,n:"かけだしの書き取り勇者"}];
 const SHARED_KEY="kanjiQuestRpg_v1",CHAPTER_KEY="kanjiQuestRpg_chapter4_v1";
-const DEF=()=>({xp:0,gold:0,owned:["wood"],weapon:"wood",defeated:[],records:{},battles:0,clears:[],totalDefeats:0,eliteRank:1,eliteClears:0,customIds:[]});
+const DEF=()=>({xp:0,gold:0,owned:["wood"],weapon:"wood",defeated:[],records:{},battles:0,clears:[],totalDefeats:0,eliteRank:1,eliteClears:0,customIds:[],bestCombo:0});
 let save=load(),session=null,current=null,hp=100,maxHp=100,hintUsed=false,hintVisible=false,locked=false,toastTimer=null,strokes=[],stroke=null,drawing=false,tempCustomIds=[];
 const $=id=>document.getElementById(id),screens={world:$("world"),battle:$("battle"),picker:$("picker"),shop:$("shop"),book:$("book"),result:$("result")},canvas=$("canvas"),ctx=canvas.getContext("2d");
 
-function cleanIds(v,min=1,max=20){return [...new Set((Array.isArray(v)?v:[]).map(Number).filter(id=>id>=min&&id<=max))].sort((a,b)=>a-b)}
-function cleanAreas(v){return [...new Set((Array.isArray(v)?v:[]).map(Number).filter(id=>id>=0&&id<=1))].sort((a,b)=>a-b)}
+function cleanIds(v,min=1,max=52){return [...new Set((Array.isArray(v)?v:[]).map(Number).filter(id=>id>=min&&id<=max))].sort((a,b)=>a-b)}
+function cleanAreas(v){return [...new Set((Array.isArray(v)?v:[]).map(Number).filter(id=>id>=0&&id<AREAS.length))].sort((a,b)=>a-b)}
 function readJson(key){try{return JSON.parse(localStorage.getItem(key))||{}}catch{return{}}}
-function load(){const shared=readJson(SHARED_KEY),chapter=readJson(CHAPTER_KEY),d=DEF();d.owned=Array.isArray(shared.owned)?shared.owned:Array.isArray(shared.ownedWeapons)?shared.ownedWeapons:["wood"];d.weapon=shared.weapon||shared.equippedWeapon||"wood";d.xp=Math.max(0,Number(shared.xp)||0);d.gold=Math.max(0,Number(shared.gold)||0);d.totalDefeats=Math.max(0,Number(shared.totalDefeats)||0);d.defeated=cleanIds(chapter.defeated);d.records=chapter.records&&typeof chapter.records==="object"?chapter.records:{};d.clears=cleanAreas(chapter.clears);d.battles=Math.max(0,Number(chapter.battles)||0);d.eliteRank=Math.max(1,Number(chapter.eliteRank)||1);d.eliteClears=Math.max(0,Number(chapter.eliteClears)||0);d.customIds=cleanIds(chapter.customIds);return d}
-function persist(){const shared=readJson(SHARED_KEY);shared.xp=save.xp;shared.gold=save.gold;shared.owned=save.owned.slice();shared.weapon=save.weapon;shared.totalDefeats=save.totalDefeats;localStorage.setItem(SHARED_KEY,JSON.stringify(shared));localStorage.setItem(CHAPTER_KEY,JSON.stringify({defeated:cleanIds(save.defeated),records:save.records,battles:save.battles,clears:save.clears,totalDefeats:save.totalDefeats,eliteRank:save.eliteRank,eliteClears:save.eliteClears,customIds:cleanIds(save.customIds)}));hud()}
+function load(){const shared=readJson(SHARED_KEY),chapter=readJson(CHAPTER_KEY),d=DEF();d.owned=Array.isArray(shared.owned)?shared.owned:Array.isArray(shared.ownedWeapons)?shared.ownedWeapons:["wood"];d.weapon=shared.weapon||shared.equippedWeapon||"wood";d.xp=Math.max(0,Number(shared.xp)||0);d.gold=Math.max(0,Number(shared.gold)||0);d.totalDefeats=Math.max(0,Number(shared.totalDefeats)||0);d.defeated=cleanIds(chapter.defeated);d.records=chapter.records&&typeof chapter.records==="object"?chapter.records:{};d.clears=cleanAreas(chapter.clears);d.battles=Math.max(0,Number(chapter.battles)||0);d.eliteRank=Math.max(1,Number(chapter.eliteRank)||1);d.eliteClears=Math.max(0,Number(chapter.eliteClears)||0);d.customIds=cleanIds(chapter.customIds);d.bestCombo=Math.max(0,Number(chapter.bestCombo)||0);return d}
+function persist(){const shared=readJson(SHARED_KEY);shared.xp=save.xp;shared.gold=save.gold;shared.owned=save.owned.slice();shared.weapon=save.weapon;shared.totalDefeats=save.totalDefeats;localStorage.setItem(SHARED_KEY,JSON.stringify(shared));localStorage.setItem(CHAPTER_KEY,JSON.stringify({defeated:cleanIds(save.defeated),records:save.records,battles:save.battles,clears:save.clears,totalDefeats:save.totalDefeats,eliteRank:save.eliteRank,eliteClears:save.eliteClears,customIds:cleanIds(save.customIds),bestCombo:save.bestCombo}));hud()}
 function lvInfo(xp){let l=1,c=xp,n=60;while(c>=n){c-=n;l++;n=60+(l-1)*25}return{l,c,n}}
 function titleFor(l){return (TITLES.find(t=>l>=t.min)||TITLES[TITLES.length-1]).n}
 function weap(){return W.find(x=>x.id===save.weapon)||W[0]}
 function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function screen(name){Object.entries(screens).forEach(([k,e])=>e.classList.toggle("active",k===name));if(name==="world")renderWorld();if(name==="shop")renderShop();if(name==="book")renderBook();if(name==="picker")renderPicker();scrollTo({top:0,behavior:"smooth"})}
-function hud(){const l=lvInfo(save.xp),w=weap();$("hudLv").textContent=`LV ${l.l}`;$("hudGold").textContent=`${save.gold} G`;$("hudWeapon").textContent=w.n;$("hudBook").textContent=`${new Set(save.defeated).size} / 20`;$("xpFill").style.width=`${Math.round(l.c/l.n*100)}%`;$("xpText").textContent=`EXP ${l.c} / ${l.n}`}
+function hud(){const l=lvInfo(save.xp),w=weap();$("hudLv").textContent=`LV ${l.l}`;$("hudGold").textContent=`${save.gold} G`;$("hudWeapon").textContent=w.n;$("hudBook").textContent=`${new Set(save.defeated).size} / ${Q.length}`;$("xpFill").style.width=`${Math.round(l.c/l.n*100)}%`;$("xpText").textContent=`EXP ${l.c} / ${l.n}`}
 
-function renderWorld(){hud();const u=NEW_Q.filter(q=>save.defeated.includes(q.id)).length,w=weap(),l=lvInfo(save.xp).l;$("heroTitle").textContent=titleFor(l);$("heroText").textContent=u===20?"二十の言葉を取り戻した、書き取りの大勇者！":u>=10?"長い言葉との戦いにも慣れてきた勇者。":"文章にかくれた漢字を探す、新しい旅が始まった。";$("heroWeaponIcon").textContent=w.i;$("heroWeaponName").textContent=`${w.n}（LV ${l}）`;const eliteUnlocked=u>=20||save.owned.includes("hero");$("eliteText").textContent=eliteUnlocked?`現在の天狗ランク：${save.eliteRank}。強敵は何度でもさらに強くなる！`:"第4章の図鑑20体登録、または勇者の聖剣を手に入れると解放。";$("eliteStart").disabled=!eliteUnlocked;$("eliteStart").textContent=eliteUnlocked?`ランク${save.eliteRank}へ挑戦`:"まだ入れない";$("customStageText").textContent=save.customIds.length?`20問から${save.customIds.length}問を選択中。苦手な言葉だけをランダム順で特訓します。`:"第4章の20問から、苦手な言葉を選んで練習できます。";$("startCustom").disabled=!save.customIds.length;const g=$("areaGrid");g.innerHTML="";AREAS.forEach((a,i)=>{const start=1+i*10,d=NEW_Q.slice(i*10,i*10+10).filter(q=>save.defeated.includes(q.id)).length,b=document.createElement("button");b.className=`area ${a.c}`;b.innerHTML=`<span class="areaicon">${a.i}</span><span class="areaname">${a.n}</span><span class="range">問題 ${start}〜${start+9}・番号順</span><span class="areaprog">討伐 ${d} / 10<span class="minitrack"><span class="minifill" style="width:${d*10}%"></span></span></span>`;b.onclick=()=>startArea(i);g.appendChild(b)})}
-function startArea(i){startSession(AREAS[i].n,NEW_Q.slice(i*10,i*10+10).map(q=>q.id),true,"area",i,0)}
-function startRandom10(){startSession("言霊の修行場・ランダム10体",shuffle(Q.map(q=>q.id)).slice(0,10),false,"r10",-1,0)}
-function startRandomAll(){startSession("二十問の試練",shuffle(Q.map(q=>q.id)),false,"r20",-1,0)}
-function startCustom(){if(!save.customIds.length)return toast("先に苦手な言葉を選んでね。");startSession("親子の苦手言葉特訓",save.customIds.slice(),false,"custom",-1,0)}
-function startElite(){const u=NEW_Q.filter(q=>save.defeated.includes(q.id)).length;if(u<20&&!save.owned.includes("hero"))return toast("まずは第4章の20体を倒すか、勇者の聖剣を手に入れよう。");const rank=save.eliteRank||1;startSession(`天狗の試練・ランク${rank}`,shuffle(Q.map(q=>q.id)).slice(0,10),false,"elite",-1,rank)}
-function startSession(title,ids,ordered,mode,area,rank=0){session={title,original:ids.slice(),queue:ordered?ids.slice():shuffle(ids),done:new Set(),hps:{},reward:{xp:0,g:0},ordered,mode,area,rank};screen("battle");battleHead();next();setTimeout(resize,40)}
+function renderWorld(){hud();const u=NEW_Q.filter(q=>save.defeated.includes(q.id)).length,w=weap(),l=lvInfo(save.xp).l;$("heroTitle").textContent=titleFor(l);$("heroText").textContent=u===Q.length?"五つの航路を進み、すべての漢字を取り戻した勇者！":u>=32?"深い海にもひるまない、たのもしい勇者。":u>=11?"海の魔物との戦いにも慣れてきた勇者。":"海にかくれた漢字を探す、新しい旅が始まった。";$("heroWeaponIcon").textContent=w.i;$("heroWeaponName").textContent=`${w.n}（LV ${l}）`;const eliteUnlocked=u>=Q.length||save.owned.includes("hero");$("eliteText").textContent=eliteUnlocked?`現在の海竜ランク：${save.eliteRank}。深海の強敵は何度でも強くなる！`:`第4章の図鑑${Q.length}体登録、または勇者の聖剣を手に入れると解放。`;$("eliteStart").disabled=!eliteUnlocked;$("eliteStart").textContent=eliteUnlocked?`ランク${save.eliteRank}へ挑戦`:"まだ入れない";$("customStageText").textContent=save.customIds.length?`${Q.length}問から${save.customIds.length}問を選択中。苦手な漢字だけをランダム順で特訓します。`:`第4章の${Q.length}問から、苦手な漢字を選んで練習できます。`;$("startCustom").disabled=!save.customIds.length;const g=$("areaGrid");g.innerHTML="";AREAS.forEach((a,i)=>{const qs=NEW_Q.slice(a.start,a.end),d=qs.filter(q=>save.defeated.includes(q.id)).length,b=document.createElement("button"),start=qs[0].id,end=qs[qs.length-1].id;b.className=`area ${a.c}`;b.innerHTML=`<span class="areaicon">${a.i}</span><span class="areaname">${a.n}</span><span class="range">問題 ${start}〜${end}・番号順</span><span class="areaprog">討伐 ${d} / ${qs.length}<span class="minitrack"><span class="minifill" style="width:${d/qs.length*100}%"></span></span></span>`;b.onclick=()=>startArea(i);g.appendChild(b)})}
+function startArea(i){const a=AREAS[i];startSession(a.n,NEW_Q.slice(a.start,a.end).map(q=>q.id),true,"area",i,0)}
+function startRandom10(){startSession("波打ちぎわの修行場・ランダム10体",shuffle(Q.map(q=>q.id)).slice(0,10),false,"r10",-1,0)}
+function startRandomAll(){startSession("五十二問の大航海",shuffle(Q.map(q=>q.id)),false,"r52",-1,0)}
+function startCustom(){if(!save.customIds.length)return toast("先に苦手な漢字を選んでね。");startSession("親子の苦手漢字特訓",save.customIds.slice(),false,"custom",-1,0)}
+function startElite(){const u=NEW_Q.filter(q=>save.defeated.includes(q.id)).length;if(u<Q.length&&!save.owned.includes("hero"))return toast(`まずは第4章の${Q.length}体を倒すか、勇者の聖剣を手に入れよう。`);const rank=save.eliteRank||1;startSession(`海竜の試練・ランク${rank}`,shuffle(Q.map(q=>q.id)).slice(0,10),false,"elite",-1,rank)}
+function startSession(title,ids,ordered,mode,area,rank=0){session={title,original:ids.slice(),queue:ordered?ids.slice():shuffle(ids),done:new Set(),hps:{},reward:{xp:0,g:0},ordered,mode,area,rank,combo:0,maxCombo:0};$("battle").classList.remove("fever");screen("battle");battleHead();next();setTimeout(resize,40)}
 
 function next(){if(!session)return;if(session.done.size>=session.original.length)return finish();let id=session.queue.shift();while(id&&session.done.has(id))id=session.queue.shift();if(!id){const rest=session.original.filter(x=>!session.done.has(x));session.queue.push(...(session.ordered?rest:shuffle(rest)));id=session.queue.shift()}current=Q.find(q=>q.id===id);maxHp=session.mode==="elite"?180+(session.rank||1)*55:100;hp=session.hps[id]??maxHp;hintUsed=false;hintVisible=false;locked=false;renderMonster();resetQuestion();battleHead()}
-function monster(id){if(session&&session.mode==="elite"){const r=session.rank||1,em=["👺","🐉","🧿","👹","🌙","🦊","🔥","☄️"],pre=["大天狗","夜叉","月影","妖炎","百鬼","神域","天帝","無限"];return{emoji:em[(id+r)%em.length],name:`${pre[(r-1)%pre.length]}ランク${r}の強敵`,elite:true}}const n=(id-1)%20,ai=Math.floor(n/10),a=AREAS[ai],v=n%a.m.length;return{emoji:a.m[v],name:`${a.pre[v]}の言葉あやかし`,elite:false}}
-function renderMonster(){const m=monster(current.id);$("monsterName").textContent=m.name;$("monsterLevel").textContent=m.elite?`★ランク${session.rank} 上位言葉モンスター`:`第${current.id}の言葉モンスター`;$("sprite").textContent=m.emoji;$("sprite").className=`sprite${m.elite?" elite":""}`;$("chip").textContent=`第${current.id}の魔物`;$("question").innerHTML=current.p;$("guide").textContent=current.a;$("answerBig").textContent=current.a;updateHp();requestAnimationFrame(fitGuide)}
-function resetQuestion(){$("answerPanel").classList.remove("show");$("questPanel").classList.remove("answering");$("guide").classList.remove("show");$("hint").disabled=false;$("hint").textContent="✨ ヒント魔法";$("good").disabled=false;$("good").textContent="⚔️ できた！";msg("線のついた言葉を漢字で書こう。書けたら「答えを見る」！");clearCanvas();requestAnimationFrame(resize)}
-function battleHead(){if(!session)return;const t=session.original.length,d=session.done.size;$("battleTitle").textContent=session.title;$("battleCount").textContent=`${d} / ${t}体を討伐`;$("battleFill").style.width=`${d/t*100}%`}
+function monster(id){if(session&&session.mode==="elite"){const r=session.rank||1,em=["🐉","🦈","🧿","🐲","🔱","🌊","🦑","🐋"],pre=["海竜","古代ざめ","深海目","青竜","海王","大うず","魔王いか","白鯨"];return{emoji:em[(id+r)%em.length],name:`${pre[(r-1)%pre.length]}ランク${r}の強敵`,elite:true}}const ai=Math.max(0,AREAS.findIndex(a=>id>a.start&&id<=a.end)),a=AREAS[ai],v=(id-a.start-1)%a.m.length;return{emoji:a.m[v],name:`${a.pre[v]}海の漢字モンスター`,elite:false}}
+function renderMonster(){const m=monster(current.id);$("monsterName").textContent=m.name;$("monsterLevel").textContent=m.elite?`★ランク${session.rank} 深海の強敵`:`第${current.id}の漢字モンスター`;$("sprite").textContent=m.emoji;$("sprite").className=`sprite${m.elite?" elite":""}`;$("chip").textContent=`第${current.id}問`;$("question").innerHTML=current.p;$("guide").textContent=current.a;$("answerBig").textContent=current.a;updateHp();requestAnimationFrame(fitGuide)}
+function resetQuestion(){$("answerPanel").classList.remove("show");$("questPanel").classList.remove("answering");$("guide").classList.remove("show");$("hint").disabled=false;$("hint").textContent="✨ ヒント魔法";$("good").disabled=false;$("good").textContent="⚔️ できた！";msg("水色の読みを、一文字の漢字で書こう。送り仮名も忘れずに！");clearCanvas();requestAnimationFrame(resize)}
+function battleHead(){if(!session)return;const t=session.original.length,d=session.done.size;$("battleTitle").textContent=session.title;$("battleCount").textContent=`${d} / ${t}体を討伐`;$("battleFill").style.width=`${d/t*100}%`;$("comboText").textContent=session.combo>=5?`🔥 FEVER ${session.combo}`:`COMBO ${session.combo}`;$("battle").classList.toggle("fever",session.combo>=5)}
 function updateHp(){$("hpText").textContent=`${Math.max(0,hp)} / ${maxHp}`;$("hpFill").style.width=`${Math.max(0,hp)/maxHp*100}%`}
 function updateJudge(){$("good").disabled=false;$("good").textContent="⚔️ できた！"}
 function reveal(){$("answerPanel").classList.add("show");$("questPanel").classList.add("answering");updateJudge();msg("自分の字と正解を見くらべよう。合っていれば「できた！」。少し違えば「おしい」。","warn");requestAnimationFrame(resize)}
 function useHint(){hintUsed=false;hintVisible=!hintVisible;$("guide").classList.toggle("show",hintVisible);$("hint").textContent=hintVisible?"✨ お手本を隠す":"✨ もう一度ヒント";updateJudge();msg(hintVisible?"薄いお手本を、最後までしっかりなぞろう。":"お手本を隠したよ。必要なら何度でも見られるよ。","warn")}
 
 function requeue(id,far=false){const pos=Math.min(far?5:3,session.queue.length);session.queue.splice(pos,0,id)}
-function judge(kind){if(!current||locked||!session)return;if(kind==="good"&&hintUsed){msg("ヒントを使った問題は「おしい」か「もう一回」にしよう。","warn");return}locked=true;save.battles++;const id=current.id,r=save.records[id]||{good:0,close:0,retry:0};r[kind]=(r[kind]||0)+1;r.last=kind;save.records[id]=r;const old=lvInfo(save.xp).l,w=weap();if(kind==="good"){const dmg=session.mode==="elite"?100+w.atk*14:100+w.atk*12;hp=Math.max(0,hp-dmg);session.hps[id]=hp;const dead=hp<=0;attack(dmg,dead);if(dead){session.done.add(id);const mult=session.mode==="elite"?1+Math.floor((session.rank||1)/2):1,xp=(10+w.xp+2)*mult,g=6+w.g+(session.mode==="elite"?(session.rank||1)*3:2);save.xp+=xp;save.gold+=g;save.totalDefeats++;session.reward.xp+=xp;session.reward.g+=g;if(!save.defeated.includes(id))save.defeated.push(id);msg(session.mode==="elite"?`上位の強敵を撃破！ ${xp} EXP と ${g} G！`:`会心の一撃！ ${xp} EXP と ${g} G を手に入れた！`,"good")}else{const hitXp=3+(session.rank||1);save.xp+=hitXp;session.reward.xp+=hitXp;requeue(id);msg(`強敵に ${dmg} ダメージ！ HPはあと ${hp}。もう一度出会ったら倒そう！`,"warn")}}else if(kind==="close"){const dmg=Math.max(5,8+Math.floor(w.atk*1.5));hp=Math.max(1,hp-dmg);session.hps[id]=hp;const xp=1+Math.floor(w.xp/12);save.xp+=xp;session.reward.xp+=xp;attack(dmg,false);requeue(id,true);msg(`おしい！ ${dmg}ダメージと ${xp} EXP。数問あとにもう一度！`,"warn")}else{requeue(id);msg("今回はやり直し。数問あとに同じ魔物がもう一度現れるよ。","bad")}persist();updateHp();const now=lvInfo(save.xp).l;setTimeout(()=>now>old?levelUp(now,next):next(),kind==="good"?1050:800)}
-function attack(dmg,dead){const s=$("sprite"),sl=$("slash"),d=$("damage");sl.classList.remove("show");d.classList.remove("show");s.classList.remove("hit","defeat");void sl.offsetWidth;d.textContent=dmg;sl.classList.add("show");d.classList.add("show");s.classList.add(dead?"defeat":"hit");setTimeout(()=>{sl.classList.remove("show");d.classList.remove("show")},800)}
+function judge(kind){if(!current||locked||!session)return;locked=true;save.battles++;const id=current.id,r=save.records[id]||{good:0,close:0,retry:0};r[kind]=(r[kind]||0)+1;r.last=kind;save.records[id]=r;const old=lvInfo(save.xp).l,w=weap();if(kind==="good"){session.combo++;session.maxCombo=Math.max(session.maxCombo,session.combo);const comboBonus=Math.min(50,session.combo*6),dmg=(session.mode==="elite"?100+w.atk*14:100+w.atk*12)+comboBonus;hp=Math.max(0,hp-dmg);session.hps[id]=hp;const dead=hp<=0;attack(dmg,dead);showCombo(session.combo);if(dead){session.done.add(id);const mult=session.mode==="elite"?1+Math.floor((session.rank||1)/2):1,xp=(10+w.xp+2)*mult,g=6+w.g+(session.mode==="elite"?(session.rank||1)*3:2);save.xp+=xp;save.gold+=g;save.totalDefeats++;session.reward.xp+=xp;session.reward.g+=g;if(!save.defeated.includes(id))save.defeated.push(id);msg(session.combo>=5?`フィーバー${session.combo}コンボ！ ${xp} EXP と ${g} G！`:`${session.combo}コンボ！ ${xp} EXP と ${g} G を手に入れた！`,"good")}else{const hitXp=3+(session.rank||1);save.xp+=hitXp;session.reward.xp+=hitXp;requeue(id);msg(`${session.combo}コンボ！ ${dmg}ダメージ。HPはあと${hp}！`,"warn")}}else if(kind==="close"){session.combo=0;const dmg=Math.max(5,8+Math.floor(w.atk*1.5));hp=Math.max(1,hp-dmg);session.hps[id]=hp;const xp=1+Math.floor(w.xp/12);save.xp+=xp;session.reward.xp+=xp;attack(dmg,false);requeue(id,true);msg(`おしい！ ${dmg}ダメージと ${xp} EXP。数問あとにもう一度！`,"warn")}else{session.combo=0;requeue(id);msg("今回はやり直し。数問あとに同じ魔物がもう一度現れるよ。","bad")}persist();updateHp();battleHead();const now=lvInfo(save.xp).l;setTimeout(()=>now>old?levelUp(now,next):next(),kind==="good"?1050:800)}
+function burstParticles(element,count=18){const r=element.getBoundingClientRect(),colors=["#c7f8ff","#5be4ff","#2e9fff","#ffffff","#ffd966"];for(let i=0;i<count;i++){const p=document.createElement("i"),a=Math.random()*Math.PI*2,d=45+Math.random()*105;p.className="particle";p.style.left=`${r.left+r.width/2}px`;p.style.top=`${r.top+r.height/2}px`;p.style.setProperty("--tx",`${Math.cos(a)*d}px`);p.style.setProperty("--ty",`${Math.sin(a)*d}px`);p.style.setProperty("--color",colors[i%colors.length]);$("effectLayer").appendChild(p);setTimeout(()=>p.remove(),800)}}
+function showCombo(combo){if(combo<2)return;const e=$("comboBurst");e.innerHTML=combo>=10&&combo%5===0?`🌊 海王一閃！<br>${combo} COMBO`:combo>=5?`🔥 FEVER!<br>${combo} COMBO`:`${combo} COMBO!`;e.classList.remove("show");void e.offsetWidth;e.classList.add("show")}
+function attack(dmg,dead){const s=$("sprite"),sl=$("slash"),d=$("damage");sl.classList.remove("show");d.classList.remove("show");s.classList.remove("hit","defeat");void sl.offsetWidth;d.textContent=dmg;sl.classList.add("show");d.classList.add("show");s.classList.add(dead?"defeat":"hit");burstParticles(s,dead?30:16);if(dead||session.combo>=5){const f=$("battleFlash"),p=$("battlePanel");f.classList.remove("show");p.classList.remove("screen-shake");void f.offsetWidth;f.classList.add("show");p.classList.add("screen-shake");setTimeout(()=>p.classList.remove("screen-shake"),340)}setTimeout(()=>{sl.classList.remove("show");d.classList.remove("show")},800)}
 function msg(t,type=""){const e=$("message");e.textContent=t;e.className="message";if(type)e.classList.add(type)}
 
-function finish(){if(session.mode==="area"&&!save.clears.includes(session.area))save.clears.push(session.area);if(session.mode==="elite"){save.eliteClears=(save.eliteClears||0)+1;save.eliteRank=Math.max(save.eliteRank||1,(session.rank||1)+1)}persist();$("resultTitle").textContent=session.mode==="elite"?`天狗ランク${session.rank} 制覇！`:session.mode==="r20"?"二十問の試練 制覇！":session.mode==="r10"?"修行クリア！":session.mode==="custom"?"苦手言葉特訓クリア！":`${session.title} クリア！`;$("resultText").textContent=session.mode==="elite"?`次はランク${save.eliteRank}の、さらに強いあやかしが待っている！`:session.mode==="custom"?`${session.original.length}問の苦手な言葉を、すべて倒しました。`:session.original.length===20?"20体すべての言葉あやかしを倒しました。ものすごい集中力！":"10体の言葉あやかしを倒しました。今日はここまででも十分です。";$("resultDefeated").textContent=session.done.size;$("resultXp").textContent=`+${session.reward.xp}`;$("resultGold").textContent=`+${session.reward.g}`;screen("result")}
+function finish(){if(session.mode==="area"&&!save.clears.includes(session.area))save.clears.push(session.area);if(session.mode==="elite"){save.eliteClears=(save.eliteClears||0)+1;save.eliteRank=Math.max(save.eliteRank||1,(session.rank||1)+1)}save.bestCombo=Math.max(save.bestCombo||0,session.maxCombo||0);persist();$("resultTitle").textContent=session.mode==="elite"?`海竜ランク${session.rank} 制覇！`:session.mode==="r52"?"五十二問の大航海 制覇！":session.mode==="r10"?"修行クリア！":session.mode==="custom"?"苦手漢字特訓クリア！":`${session.title} クリア！`;$("resultText").textContent=session.mode==="elite"?`次はランク${save.eliteRank}の、さらに強い海の魔物が待っている！`:session.mode==="custom"?`${session.original.length}問の苦手な漢字を、すべて倒しました。`:session.original.length===Q.length?`${Q.length}体すべての海の魔物を倒しました。ものすごい集中力！`:`${session.original.length}体の漢字モンスターを倒しました。最大${session.maxCombo}コンボ！`;$("resultDefeated").textContent=session.done.size;$("resultXp").textContent=`+${session.reward.xp}`;$("resultGold").textContent=`+${session.reward.g}`;screen("result");setTimeout(()=>burstParticles($("resultDefeated"),28),120)}
 function repeat(){if(!session)return screen("world");startSession(session.title,session.original.slice(),session.ordered,session.mode,session.area,session.rank||0)}
 function levelUp(l,cb){$("levelText").textContent=`レベル${l}！ 称号は「${titleFor(l)}」になった！`;$("levelModal").classList.add("show");$("levelClose").onclick=()=>{$("levelModal").classList.remove("show");cb()}}
 
@@ -171,13 +223,13 @@ function renderPicker(){tempCustomIds=save.customIds.slice();const g=$("pickGrid
 function pickerChanged(){tempCustomIds=[...$("pickGrid").querySelectorAll("input:checked")].map(x=>Number(x.value));updatePickSummary()}
 function updatePickSummary(){$("pickSummary").textContent=`${tempCustomIds.length}問を選択中`;$("saveSelection").disabled=!tempCustomIds.length}
 function setPicker(ids){tempCustomIds=cleanIds(ids);$("pickGrid").querySelectorAll("input").forEach(x=>x.checked=tempCustomIds.includes(Number(x.value)));updatePickSummary()}
-function selectHistory(){const ids=Q.filter(q=>{const r=save.records[q.id]||{};return (r.retry||0)+(r.close||0)>(r.good||0)||r.last==="retry"||r.last==="close"}).map(q=>q.id);if(!ids.length)return toast("履歴から苦手な言葉が見つかりませんでした。手動で選んでね。");setPicker(ids);toast(`${ids.length}問を履歴から選びました。`)}
+function selectHistory(){const ids=Q.filter(q=>{const r=save.records[q.id]||{};return (r.retry||0)+(r.close||0)>(r.good||0)||r.last==="retry"||r.last==="close"}).map(q=>q.id);if(!ids.length)return toast("履歴から苦手な漢字が見つかりませんでした。手動で選んでね。");setPicker(ids);toast(`${ids.length}問を履歴から選びました。`)}
 function saveCustom(){if(!tempCustomIds.length)return;save.customIds=cleanIds(tempCustomIds);persist();startCustom()}
 
 function renderShop(){hud();$("shopGold").textContent=save.gold;const g=$("shopGrid");g.innerHTML="";W.forEach(x=>{const owned=save.owned.includes(x.id),eq=save.weapon===x.id,c=document.createElement("div");c.className=`weaponcard${eq?" equipped":""}`;let label,disabled=false;if(eq){label="そうび中";disabled=true}else if(owned)label="そうびする";else{label=`${x.p} G で買う`;disabled=save.gold<x.p}c.innerHTML=`<div class="weaponicon">${x.i}</div><h3>${x.n}</h3><p class="weapondesc">${x.d}</p><div class="weaponstats">攻撃 ★${x.atk}　EXP +${x.xp}</div><button class="weaponaction" ${disabled?"disabled":""}>${label}</button>`;c.querySelector("button").onclick=()=>buy(x);g.appendChild(c)})}
 function buy(x){if(save.owned.includes(x.id)){save.weapon=x.id;persist();toast(`${x.i} ${x.n}をそうびした！`);return renderShop()}if(save.gold<x.p)return toast("ゴールドが足りないよ。");save.gold-=x.p;save.owned.push(x.id);save.weapon=x.id;persist();toast(`${x.i} ${x.n}を手に入れた！`);renderShop()}
 function renderBook(){const l=lvInfo(save.xp),d=new Set(save.defeated);$("bookLv").textContent=l.l;$("bookCount").textContent=d.size;$("bookBattles").textContent=save.battles;$("bookClears").textContent=save.clears.length;const g=$("bookGrid");g.innerHTML="";Q.forEach(q=>{const u=d.has(q.id),t=document.createElement("div");t.className=`booktile${u?" unlocked":""}`;t.innerHTML=`<span class="bookkanji">${u?q.a:"？"}</span><span class="booknum">No.${q.id}</span>`;g.appendChild(t)})}
-function reset(){if(!confirm("第4章の図鑑・戦績・苦手な言葉の選択だけを消しますか？ レベル・ゴールド・武器と他の章の記録は消えません。"))return;localStorage.removeItem(CHAPTER_KEY);save=load();hud();renderBook();toast("第4章の冒険記録だけを消しました。")}
+function reset(){if(!confirm("第4章の図鑑・戦績・苦手な漢字の選択だけを消しますか？ レベル・ゴールド・武器と他の章の記録は消えません。"))return;localStorage.removeItem(CHAPTER_KEY);save=load();hud();renderBook();toast("第4章の冒険記録だけを消しました。")}
 function toast(t){const e=$("toast");e.textContent=t;e.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>e.classList.remove("show"),2200)}
 
 function resize(){if(!screens.battle.classList.contains("active"))return;const r=$("canvasWrap").getBoundingClientRect(),before=canvas.getBoundingClientRect(),sx=before.width?r.width/before.width:1,sy=before.height?r.height/before.height:1,dpr=Math.max(devicePixelRatio||1,1),old=strokes.map(s=>s.map(p=>({x:p.x*sx,y:p.y*sy})));canvas.width=Math.max(1,Math.floor(r.width*dpr));canvas.height=Math.max(1,Math.floor(r.height*dpr));canvas.style.width=`${r.width}px`;canvas.style.height=`${r.height}px`;strokes=old;redraw();fitGuide()}
