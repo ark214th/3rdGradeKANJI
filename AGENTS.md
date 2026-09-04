@@ -19,7 +19,7 @@
 - `kanji_quest_rpg.html`: 第1章「五十の魔物」
 - `chapter2/index.html`: 第2章「あやかしの国」
 - `chapter3/index.html`: 第3章「忘却軍の逆襲」
-- `chapter4/index.html`: 第4章「海の五つの航路」の非公開制作版
+- `chapter4/index.html`: 第4章「海の五つの航路」
 - 日付入りのルートHTMLは過去版。明示的な依頼がない限り編集しない。
 - 作業前に `PROJECT_STATUS.md` を読み、現在の仕様・既知事項を確認する。
 
