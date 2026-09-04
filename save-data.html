@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#142a40">
+<title>漢字クエスト｜セーブデータ</title>
+<style>
+:root{color-scheme:dark;--paper:#fffdf2;--ink:#26302c;--muted:#6c746f}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;overscroll-behavior:none}body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;background:radial-gradient(circle at 12% 8%,#467aa066,transparent 28%),radial-gradient(circle at 88% 15%,#d99d4e55,transparent 27%),linear-gradient(145deg,#0d1b2b,#193d52 52%,#2d5046);color:#fff;-webkit-tap-highlight-color:transparent}.app{width:min(720px,100%);min-height:100vh;margin:auto;padding:max(24px,env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left))}.back{display:inline-flex;align-items:center;min-height:38px;padding:6px 11px;border:1px solid #ffffff44;border-radius:999px;color:#ffffffc9;background:#07152355;font-size:13px;font-weight:850;text-decoration:none}.panel{margin-top:13px;padding:clamp(18px,4vw,30px);border:1px solid #ffffff88;border-radius:25px;background:var(--paper);color:var(--ink);box-shadow:0 16px 40px #0006}h1{margin:0 0 7px;font-size:clamp(27px,6vw,40px)}.lead{margin:0;color:var(--muted);font-weight:750;line-height:1.7}.steps{margin:19px 0;padding:13px 16px;border-radius:17px;background:#eaf6fb;color:#305266;font-weight:800;line-height:1.65}.steps b{color:#145e80}.label{display:block;margin:17px 0 7px;font-weight:950}.code{width:100%;min-height:155px;padding:12px;border:2px solid #b9c9c2;border-radius:14px;background:#fff;color:#24312c;font:12px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;resize:vertical;user-select:text;-webkit-user-select:text}.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:11px}.button{min-height:48px;padding:10px 13px;border:0;border-radius:15px;font:inherit;font-weight:950;cursor:pointer;touch-action:manipulation}.copy{color:#173c50;background:linear-gradient(#c7ecff,#82ceed);box-shadow:0 5px 0 #4896ba}.load{color:#3f2a05;background:linear-gradient(#ffe38c,#f2b840);box-shadow:0 5px 0 #bf7d19}.button:active{transform:translateY(3px);box-shadow:0 2px 0 #0003}.message{min-height:24px;margin:12px 2px 0;color:#2e7558;font-size:14px;font-weight:850;line-height:1.5}.message.error{color:#a23e38}.caution{margin:18px 0 0;color:#7a6250;font-size:12px;font-weight:700;line-height:1.6}@media(max-width:520px){.actions{grid-template-columns:1fr}.panel{border-radius:20px}}
+</style>
+</head>
+<body>
+<main class="app">
+<a class="back" href="index.html">← 章選択へもどる</a>
+<section class="panel">
+<h1>セーブデータ</h1>
+<p class="lead">Safariの進み具合を、ホーム画面のWebアプリへ移せます。</p>
+<div class="steps"><b>Safari側</b>で「セーブをコピー」→ <b>Webアプリ側</b>で下の欄に貼り付けて「読み込む」の順です。</div>
+<label class="label" for="saveCode">セーブコード</label>
+<textarea class="code" id="saveCode" placeholder="ここにセーブコードを貼り付けます" spellcheck="false" autocomplete="off" autocapitalize="off"></textarea>
+<div class="actions">
+<button class="button copy" id="copySave" type="button">📋 セーブをコピー</button>
+<button class="button load" id="loadSave" type="button">📥 このコードを読み込む</button>
+</div>
+<p class="message" id="message" aria-live="polite"></p>
+<p class="caution">読み込むと、この画面にある現在の漢字クエストの記録を置き換えます。セーブコードには進行記録が含まれるため、家族以外には送らないでください。</p>
+</section>
+</main>
+<script>
+"use strict";
+const PREFIX="KQSAVE1-",KEY_PREFIX="kanjiQuest",MAX_CODE_LENGTH=2_000_000;
+const code=document.getElementById("saveCode"),message=document.getElementById("message");
+
+function saveKeys(){const keys=[];for(let i=0;i<localStorage.length;i++){const key=localStorage.key(i);if(key&&key.startsWith(KEY_PREFIX))keys.push(key)}return keys.sort()}
+function toBase64Url(text){const bytes=new TextEncoder().encode(text);let binary="";for(let i=0;i<bytes.length;i+=8192)binary+=String.fromCharCode(...bytes.subarray(i,i+8192));return btoa(binary).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/g,"")}
+function fromBase64Url(text){const normalized=text.replace(/-/g,"+").replace(/_/g,"/");const binary=atob(normalized+"=".repeat((4-normalized.length%4)%4)),bytes=new Uint8Array(binary.length);for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);return new TextDecoder().decode(bytes)}
+function makeCode(){const data={};saveKeys().forEach(key=>data[key]=localStorage.getItem(key));return PREFIX+toBase64Url(JSON.stringify({app:"3rdGradeKANJI",version:1,createdAt:new Date().toISOString(),data}))}
+function parseCode(value){const input=value.trim();if(!input.startsWith(PREFIX))throw new Error("漢字クエストのセーブコードではありません。");if(input.length>MAX_CODE_LENGTH)throw new Error("セーブコードが大きすぎます。");let payload;try{payload=JSON.parse(fromBase64Url(input.slice(PREFIX.length)))}catch{throw new Error("セーブコードを正しく読み取れませんでした。")}if(!payload||payload.app!=="3rdGradeKANJI"||payload.version!==1||!payload.data||Array.isArray(payload.data)||typeof payload.data!=="object")throw new Error("対応していないセーブコードです。");const entries=Object.entries(payload.data);if(!entries.length)throw new Error("セーブデータが入っていません。");if(entries.length>50)throw new Error("セーブコードの項目が多すぎます。");for(const [key,value] of entries){if(!key.startsWith(KEY_PREFIX)||typeof value!=="string")throw new Error("セーブコードに不正な項目があります。");try{JSON.parse(value)}catch{throw new Error("セーブコードの記録が壊れています。")}}return entries}
+function show(text,error=false){message.textContent=text;message.classList.toggle("error",error)}
+
+document.getElementById("copySave").onclick=async()=>{try{const value=makeCode();code.value=value;code.focus();code.select();code.setSelectionRange(0,value.length);try{await navigator.clipboard.writeText(value);show(`セーブをコピーしました（${saveKeys().length}項目）。Webアプリ側で貼り付けてください。`)}catch{show("セーブコードを作りました。選択中の文字をコピーしてください。")}}catch{show("セーブデータを読み出せませんでした。",true)}};
+document.getElementById("loadSave").onclick=()=>{let entries;try{entries=parseCode(code.value)}catch(e){show(e.message,true);return}if(!confirm("現在の漢字クエストの記録を、このセーブコードの内容で置き換えますか？"))return;const before={};saveKeys().forEach(key=>before[key]=localStorage.getItem(key));try{saveKeys().forEach(key=>localStorage.removeItem(key));entries.forEach(([key,value])=>localStorage.setItem(key,value));alert("セーブデータを読み込みました。章選択画面へもどります。");location.href="index.html"}catch{try{saveKeys().forEach(key=>localStorage.removeItem(key));Object.entries(before).forEach(([key,value])=>localStorage.setItem(key,value))}catch{}show("読み込みに失敗したため、元のセーブデータへ戻しました。",true)}};
+</script>
+</body>
+</html>
