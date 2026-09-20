@@ -1,0 +1,10 @@
+{
+  "name": "漢字クエスト",
+  "short_name": "漢字クエスト",
+  "lang": "ja",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#142a40",
+  "theme_color": "#142a40"
+}
