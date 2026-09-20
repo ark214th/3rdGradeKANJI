@@ -4,6 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#075b83">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="漢字クエスト">
+<link rel="manifest" href="../manifest.webmanifest">
 <title>漢字クエスト 第4章 ～海の秘宝をめぐる冒険～</title>
 <style>
 :root{--ink:#2e2925;--muted:#74695f;--gold:#f5bd49;--blue:#59b9eb;--green:#3ca86b;--red:#d95650;--line:#e7ddcf;--panel:rgba(255,255,255,.97);--shadow:0 16px 40px rgba(8,16,33,.28)}
@@ -22,22 +26,25 @@
 @media(max-width:860px){.map{grid-template-columns:repeat(2,minmax(0,1fr))}.area:last-child{grid-column:auto}.shopgrid{grid-template-columns:repeat(2,minmax(0,1fr))}.bookgrid,.pickgrid{grid-template-columns:repeat(2,minmax(0,1fr))}.arena{grid-template-columns:190px 1fr}.sprite{width:125px;height:125px;font-size:80px}}
 @media(max-width:650px){.elitebanner{grid-template-columns:auto 1fr}.elitebutton{grid-column:span 2;width:100%}.brand small{display:none}.crest{width:44px;height:44px;font-size:24px}.topbtn{padding:8px 10px;font-size:13px}.hud{grid-template-columns:repeat(2,minmax(0,1fr))}.xptrack{grid-column:span 2}.hero{grid-template-columns:auto 1fr}.weaponbadge{grid-column:span 2;max-width:none}.map{grid-template-columns:1fr}.area:last-child{grid-column:auto}.specials{grid-template-columns:1fr}.arena{grid-template-columns:1fr}.monsterzone{min-height:205px}.sprite{width:100px;height:100px;margin:6px auto;font-size:65px}.canvaswrap{min-height:255px;height:38vh}.judges{grid-template-columns:1fr}.shopgrid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.bookgrid,.pickgrid{grid-template-columns:1fr}.pickactions{flex-direction:column}.rewards{grid-template-columns:1fr}}
 @media(orientation:landscape) and (max-height:760px){.arena{grid-template-columns:180px 1fr;padding:12px}.monsterzone{min-height:230px}.sprite{width:105px;height:105px;font-size:68px;margin:5px auto}.question{margin:4px 0 7px;font-size:clamp(25px,4vw,38px)}.canvaswrap{height:34vh;min-height:205px}}
-@media(orientation:landscape) and (min-width:700px) and (max-height:1050px){
+@media(orientation:landscape) and (min-width:700px) and (min-height:600px) and (max-height:1050px){
   .app{min-height:100dvh;padding-top:max(7px,env(safe-area-inset-top));padding-bottom:max(7px,env(safe-area-inset-bottom))}
+  html.battle-active .app{height:100dvh;min-height:0;display:grid;grid-template-rows:auto auto minmax(0,1fr)}
+  #battle{min-height:0}
   .topbar{height:38px;margin-bottom:6px}.crest{width:36px;height:36px;border-radius:12px;font-size:21px}.brand h1{font-size:22px}.brand small{display:none}.topbtn{min-height:34px;padding:5px 11px;font-size:13px}
-  .hud{height:35px;margin-bottom:6px;padding:5px 10px;gap:6px}.huditem{font-size:13px}.xptrack{height:8px}
-  #battle .panel{height:calc(100dvh - 92px);display:flex;flex-direction:column}
+  .hud{min-height:35px;height:auto;grid-template-columns:repeat(4,auto) minmax(40px,1fr) auto;margin-bottom:6px;padding:5px 10px;gap:6px}.huditem{font-size:13px}.xptrack{height:8px;grid-column:auto}
+  #battle .panel{height:100%;display:flex;flex-direction:column}
   #battle .battlehead{flex:0 0 auto;padding:6px 12px}.battlehead strong{font-size:15px}.btrack{height:8px;margin-top:3px}.retreat{min-height:33px;padding:5px 11px;font-size:13px}
   #battle .arena{flex:1;min-height:0;grid-template-columns:160px minmax(0,1fr);gap:9px;padding:8px}
   #battle .monsterzone{min-height:0;padding:8px}.monstername{font-size:16px}.monsterlevel{font-size:11px}.sprite{width:92px;height:92px;margin:5px auto 4px;font-size:59px}.hplabel{font-size:11px}.hptrack{height:12px;margin-top:3px}
-  #battle .quest{min-height:0;display:grid;grid-template-columns:minmax(0,1fr);grid-template-areas:"chip" "question" "canvas" "tools" "message";grid-template-rows:auto auto minmax(150px,1fr) auto auto}
+  #battle .quest{min-height:0;display:grid;grid-template-columns:minmax(0,1fr);grid-template-areas:"chip" "question" "answer" "canvas" "tools" "message";grid-template-rows:auto auto auto minmax(118px,1fr) auto 48px;row-gap:3px}
   #battle .chip{grid-area:chip;width:max-content;padding:4px 9px;font-size:12px}
   #battle .question{grid-area:question;margin:2px 0 4px;font-size:clamp(22px,3vw,31px);line-height:1.25}
-  #battle .canvaswrap{grid-area:canvas;height:auto;min-height:150px;border-width:2px;border-radius:16px}
+  #battle .canvaswrap{grid-area:canvas;height:auto;min-height:118px;border-width:2px;border-radius:16px}
   #battle .tools{grid-area:tools;flex-wrap:nowrap;gap:6px;margin-top:6px}.tool{min-height:36px;padding:5px 8px;border-radius:11px;font-size:12px;box-shadow:0 3px 0 #ddd0bd}.tool.answer{box-shadow:0 3px 0 #d89420}
-  #battle .message{grid-area:message;min-height:34px;margin-top:6px;padding:6px 9px;border-radius:12px;font-size:13px;line-height:1.35}
-  #battle .quest.answering{grid-template-columns:minmax(0,1fr);grid-template-areas:"chip" "question" "answer" "canvas" "tools" "message";grid-template-rows:auto auto auto minmax(118px,1fr) auto auto;row-gap:3px}
-  #battle .answerpanel.show{grid-area:answer;display:grid;grid-template-columns:minmax(0,1fr) minmax(330px,1.15fr);grid-template-areas:"label judges" "answer judges";align-items:center;gap:2px 8px;min-height:0;margin:0;padding:5px 7px;border-radius:14px}
+  #battle .message{grid-area:message;min-height:0;margin-top:6px;padding:3px 9px;border-radius:12px;font-size:13px;line-height:1.35}
+  /* 答えと判定の場所を確保し、表示前後で書き取り枠を動かさない。 */
+  #battle .answerpanel{grid-area:answer;display:grid;visibility:hidden;pointer-events:none;grid-template-columns:minmax(0,1fr) minmax(290px,1.15fr);grid-template-areas:"label judges" "answer judges";align-items:center;gap:2px 8px;min-height:0;margin:0;padding:5px 7px;border-radius:14px}
+  #battle .answerpanel.show{visibility:visible;pointer-events:auto}
   #battle .answerlabel{grid-area:label;font-size:10px}#battle .answerbig{grid-area:answer;margin:0;font-size:clamp(25px,4.6vh,38px)}
   #battle .judges{grid-area:judges;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.judge{min-height:38px;border-radius:11px;font-size:13px;box-shadow:0 3px 0 #0002}
 }
@@ -67,6 +74,16 @@ body{background:radial-gradient(circle at 13% 8%,rgba(104,232,255,.28),transpare
 @media(max-width:650px){.map{grid-template-columns:1fr}.test-block .area:last-child{grid-column:auto}.test-block-head{align-items:flex-start;flex-direction:column;gap:2px}}
 @media(max-width:650px){.termquest{grid-template-columns:auto 1fr}.treasures{grid-column:span 2;justify-content:center}}
 @media(prefers-reduced-motion:reduce){.particle,.combo-burst.show,.battle-flash.show,.screen-shake{animation-duration:.01ms}}
+/* Safariの長押し選択と、書き取り中のブラウザ操作を抑える。 */
+body{-webkit-user-select:none;-webkit-touch-callout:none}
+html.battle-active,html.battle-active body{touch-action:pan-y}
+#battle .question,#canvasWrap{touch-action:none}
+.canvaswrap canvas{position:absolute;inset:0;width:100%;height:100%}
+.home-link{touch-action:manipulation}
+@media(orientation:landscape) and (min-width:700px) and (min-height:600px) and (max-height:1050px){
+  .home-link{min-height:34px;padding:5px 11px;font-size:13px}
+  html.battle-active,html.battle-active body{overflow:hidden;touch-action:none}
+}
 </style>
 </head>
 <body>
@@ -376,6 +393,7 @@ const COMPANIONS=[{i:"🥚",n:"ふしぎなタマゴ"},{i:"🐣",n:"生まれた
 const SHARED_KEY="kanjiQuestRpg_v1",CHAPTER_KEY="kanjiQuestRpg_chapter4_v1",TERM_KEY="kanjiQuestSemester2_v1",AREA_LAYOUT=2,OLD_AREA_MAP=[[0],[1],[2,3],[4],[5]];
 const DEF=()=>({xp:0,gold:0,owned:["wood"],weapon:"wood",defeated:[],records:{},battles:0,clears:[],stageClears:{},totalDefeats:0,eliteRank:1,eliteClears:0,customIds:[],bestCombo:0,displayMode:"kana",selectedTest:3});
 let save=load(),term=loadTerm(),session=null,current=null,hp=100,maxHp=100,hintUsed=false,hintVisible=false,locked=false,toastTimer=null,strokes=[],stroke=null,drawing=false,tempCustomIds=[];
+let activePointerId=null,inkWidth=0,inkHeight=0;
 const $=id=>document.getElementById(id),screens={world:$("world"),battle:$("battle"),picker:$("picker"),shop:$("shop"),book:$("book"),result:$("result")},canvas=$("canvas"),ctx=canvas.getContext("2d");
 
 function cleanIds(v,min=1,max=Q.length){return [...new Set((Array.isArray(v)?v:[]).map(Number).filter(id=>id>=min&&id<=max))].sort((a,b)=>a-b)}
@@ -401,7 +419,7 @@ function lvInfo(xp){let l=1,c=xp,n=60;while(c>=n){c-=n;l++;n=60+(l-1)*25}return{
 function titleFor(l){return (TITLES.find(t=>l>=t.min)||TITLES[TITLES.length-1]).n}
 function weap(){return W.find(x=>x.id===save.weapon)||W[0]}
 function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
-function screen(name){Object.entries(screens).forEach(([k,e])=>e.classList.toggle("active",k===name));if(name==="world")renderWorld();if(name==="shop")renderShop();if(name==="book")renderBook();if(name==="picker")renderPicker();scrollTo({top:0,behavior:"smooth"})}
+function screen(name){finishStroke();document.documentElement.classList.toggle("battle-active",name==="battle");Object.entries(screens).forEach(([k,e])=>e.classList.toggle("active",k===name));if(name==="world")renderWorld();if(name==="shop")renderShop();if(name==="book")renderBook();if(name==="picker")renderPicker();scrollTo({top:0,behavior:"instant"})}
 function hud(){const l=lvInfo(save.xp),w=weap();$("hudLv").textContent=`LV ${l.l}`;$("hudGold").textContent=`${save.gold} G`;$("hudWeapon").textContent=w.n;$("hudBook").textContent=`${new Set(save.defeated).size} / ${Q.length}`;$("xpFill").style.width=`${Math.round(l.c/l.n*100)}%`;$("xpText").textContent=`EXP ${l.c} / ${l.n}`}
 function stageMedal(count){return count>=3?"🥇":count===2?"🥈":count===1?"🥉":""}
 function renderTerm(){const v=selectedVolume(),ids=volumeAreas(v),parts=term.fragments[v.key]||[],stage=Math.min(COMPANIONS.length-1,term.treasures.length),c=COMPANIONS[stage];$("companionIcon").textContent=c.i;$("companionName").textContent=c.n;$("companionText").textContent=term.treasures.includes(v.key)?`${v.name}の秘宝を発見！`:`${v.blocks.join("・")}回目を進もう！ ${v.name}の秘宝まで ${parts.length} / ${ids.length}`;$("fragmentRow").innerHTML=ids.map(i=>`<span class="fragment${parts.includes(i)?" got":""}" title="${AREAS[i].n}">${parts.includes(i)?"◆":"・"}</span>`).join("");$("treasureShelf").innerHTML=Array.from({length:7},(_,i)=>`<span class="treasure${term.treasures.includes(`test${i+1}`)?" got":""}" title="第${i+1}の秘宝">${term.treasures.includes(`test${i+1}`)?VOLUMES[i]?.icon||"💎":"🔒"}</span>`).join("");$("displayMode").textContent=save.displayMode==="clue"?"⚙️ 問題表示：漢字ヒントあり":"⚙️ 問題表示：すべてかな"}
@@ -454,22 +472,60 @@ function renderBook(){const l=lvInfo(save.xp),d=new Set(save.defeated);$("bookLv
 function reset(){if(!confirm("第4章の図鑑・戦績・苦手な漢字の選択だけを消しますか？ レベル・ゴールド・武器、二学期の秘宝は消えません。"))return;localStorage.removeItem(CHAPTER_KEY);save=load();hud();renderBook();toast("第4章の冒険記録だけを消しました。秘宝は残っています。")}
 function toast(t){const e=$("toast");e.textContent=t;e.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>e.classList.remove("show"),2200)}
 
-function resize(){if(!screens.battle.classList.contains("active"))return;const r=$("canvasWrap").getBoundingClientRect(),before=canvas.getBoundingClientRect(),sx=before.width?r.width/before.width:1,sy=before.height?r.height/before.height:1,dpr=Math.max(devicePixelRatio||1,1),old=strokes.map(s=>s.map(p=>({x:p.x*sx,y:p.y*sy})));canvas.width=Math.max(1,Math.floor(r.width*dpr));canvas.height=Math.max(1,Math.floor(r.height*dpr));canvas.style.width=`${r.width}px`;canvas.style.height=`${r.height}px`;strokes=old;redraw();fitGuide()}
-function fitGuide(){if(!current)return;const r=$("canvasWrap").getBoundingClientRect(),len=[...current.a].length,size=Math.max(28,Math.min(r.width*.9/Math.max(1,len*1.05),r.height*.55,150));$("guide").style.fontSize=`${size}px`}
-function pt(e){const r=canvas.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}}
-function begin(e){if(locked)return;e.preventDefault();drawing=true;stroke=[pt(e)];try{canvas.setPointerCapture(e.pointerId)}catch{}}
-function move(e){if(!drawing||!stroke)return;e.preventDefault();const p=pt(e),last=stroke[stroke.length-1];stroke.push(p);seg(last,p)}
-function end(e){if(!drawing||!stroke)return;e.preventDefault();drawing=false;if(stroke.length)strokes.push(stroke);stroke=null;try{canvas.releasePointerCapture(e.pointerId)}catch{}}
-function seg(a,b){const d=Math.max(devicePixelRatio||1,1);ctx.save();ctx.setTransform(d,0,0,d,0,0);ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.lineWidth=7;ctx.lineCap="round";ctx.lineJoin="round";ctx.strokeStyle="#201c18";ctx.stroke();ctx.restore()}
-function redraw(){const d=Math.max(devicePixelRatio||1,1);ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,canvas.width,canvas.height);ctx.save();ctx.setTransform(d,0,0,d,0,0);ctx.lineWidth=7;ctx.lineCap="round";ctx.lineJoin="round";ctx.strokeStyle="#201c18";ctx.fillStyle="#201c18";for(const s of strokes){if(s.length===1){ctx.beginPath();ctx.arc(s[0].x,s[0].y,3.5,0,Math.PI*2);ctx.fill();continue}ctx.beginPath();ctx.moveTo(s[0].x,s[0].y);for(let i=1;i<s.length;i++)ctx.lineTo(s[i].x,s[i].y);ctx.stroke()}ctx.restore()}
-function clearCanvas(){strokes=[];stroke=null;drawing=false;redraw()}
-function undo(){strokes.pop();redraw()}
+// 筆跡は書き始めの座標で保持する。回転やリサイズ時も縦横を同率で拡縮する。
+function inkTransform(){
+  const r=canvas.getBoundingClientRect(),scale=inkWidth&&inkHeight?Math.min(r.width/inkWidth,r.height/inkHeight):1;
+  return{scale:scale||1,x:(r.width-inkWidth*scale)/2,y:(r.height-inkHeight*scale)/2};
+}
+function resize(){
+  if(!screens.battle.classList.contains("active"))return;
+  const r=canvas.getBoundingClientRect(),dpr=Math.max(devicePixelRatio||1,1);
+  if(!r.width||!r.height)return;
+  if(!strokes.length&&!stroke){inkWidth=r.width;inkHeight=r.height}
+  const width=Math.max(1,Math.round(r.width*dpr)),height=Math.max(1,Math.round(r.height*dpr));
+  if(canvas.width!==width)canvas.width=width;
+  if(canvas.height!==height)canvas.height=height;
+  redraw();fitGuide();
+}
+function fitGuide(){if(!current)return;const r=canvas.getBoundingClientRect(),t=inkTransform(),len=[...current.a].length,size=Math.max(28,Math.min((inkWidth||r.width)*.9/Math.max(1,len*1.05),(inkHeight||r.height)*.55,150))*t.scale;$("guide").style.fontSize=`${size}px`}
+function pt(e){const r=canvas.getBoundingClientRect(),t=inkTransform();return{x:(e.clientX-r.left-t.x)/t.scale,y:(e.clientY-r.top-t.y)/t.scale}}
+function begin(e){
+  if(locked||!current||activePointerId!==null||e.isPrimary===false||e.button!==0)return;
+  e.preventDefault();resize();activePointerId=e.pointerId;drawing=true;stroke=[pt(e)];redraw();
+  try{canvas.setPointerCapture(e.pointerId)}catch{}
+}
+function move(e){if(e.pointerId!==activePointerId||!stroke)return;e.preventDefault();const p=pt(e),last=stroke[stroke.length-1];stroke.push(p);seg(last,p)}
+function end(e){if(e.pointerId!==activePointerId)return;if(e.cancelable)e.preventDefault();finishStroke()}
+function finishStroke(){
+  const id=activePointerId;activePointerId=null;drawing=false;
+  if(stroke&&stroke.length)strokes.push(stroke);
+  stroke=null;
+  if(id!==null){try{canvas.releasePointerCapture(id)}catch{}redraw()}
+}
+function setInkStyle(){const d=Math.max(devicePixelRatio||1,1),t=inkTransform();ctx.setTransform(d*t.scale,0,0,d*t.scale,d*t.x,d*t.y);ctx.lineWidth=7;ctx.lineCap="round";ctx.lineJoin="round";ctx.strokeStyle="#201c18";ctx.fillStyle="#201c18"}
+function seg(a,b){ctx.save();setInkStyle();ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();ctx.restore()}
+function redraw(){ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,canvas.width,canvas.height);ctx.save();setInkStyle();for(const s of stroke?[...strokes,stroke]:strokes){if(s.length===1){ctx.beginPath();ctx.arc(s[0].x,s[0].y,3.5,0,Math.PI*2);ctx.fill();continue}ctx.beginPath();ctx.moveTo(s[0].x,s[0].y);for(let i=1;i<s.length;i++)ctx.lineTo(s[i].x,s[i].y);ctx.stroke()}ctx.restore()}
+function clearCanvas(){finishStroke();strokes=[];inkWidth=inkHeight=0;resize()}
+function undo(){finishStroke();strokes.pop();redraw()}
+
+function preventBattleGesture(e){if(screens.battle.classList.contains("active")&&e.cancelable)e.preventDefault()}
+function guardBattleTouch(e){
+  if(!screens.battle.classList.contains("active")||!e.cancelable)return;
+  const edgeTouch=[...e.touches].some(t=>t.clientX<24||t.clientX>document.documentElement.clientWidth-24);
+  if(e.touches.length>1||edgeTouch||(drawing&&e.target!==canvas))e.preventDefault();
+}
 
 $("testSelect").onchange=e=>selectTest(e.target.value);$("randomSelected").onclick=startRandomTest;$("randomSelectedAlt").onclick=startRandomTest;$("randomAll").onclick=startRandomAll;$("eliteStart").onclick=startElite;$("openPicker").onclick=()=>screen("picker");$("startCustom").onclick=startCustom;$("openBook").onclick=()=>screen("book");$("openShop").onclick=()=>screen("shop");$("topShop").onclick=()=>screen("shop");$("topMap").onclick=()=>screen("world");$("displayMode").onclick=toggleDisplayMode;$("retreat").onclick=()=>{session=null;current=null;screen("world")};
 $("selectFromHistory").onclick=selectHistory;$("selectAll").onclick=()=>setPicker(selectedQuestions().map(q=>q.id));$("clearSelection").onclick=()=>setPicker([]);$("pickerBack").onclick=()=>screen("world");$("saveSelection").onclick=saveCustom;
 $("shopBack").onclick=()=>screen("world");$("bookBack").onclick=()=>screen("world");$("reset").onclick=reset;$("termRewardClose").onclick=()=>$("termRewardModal").classList.remove("show");$("undo").onclick=undo;$("clear").onclick=clearCanvas;$("hint").onclick=useHint;$("showAnswer").onclick=reveal;$("good").onclick=()=>judge("good");$("close").onclick=()=>judge("close");$("retry").onclick=()=>judge("retry");$("again").onclick=repeat;$("resultMap").onclick=()=>{session=null;screen("world")};$("resultShop").onclick=()=>screen("shop");
-canvas.addEventListener("pointerdown",begin);canvas.addEventListener("pointermove",move);canvas.addEventListener("pointerup",end);canvas.addEventListener("pointercancel",end);addEventListener("resize",()=>{if(screens.battle.classList.contains("active"))resize()});persistTerm();hud();renderWorld();
+canvas.addEventListener("pointerdown",begin);canvas.addEventListener("pointermove",move);canvas.addEventListener("pointerup",end);canvas.addEventListener("pointercancel",end);canvas.addEventListener("lostpointercapture",end);
+canvas.addEventListener("touchstart",preventBattleGesture,{passive:false});canvas.addEventListener("touchmove",preventBattleGesture,{passive:false});
+document.addEventListener("touchstart",guardBattleTouch,{passive:false,capture:true});document.addEventListener("touchmove",guardBattleTouch,{passive:false,capture:true});
+for(const type of ["gesturestart","gesturechange","gestureend","selectstart","contextmenu"])document.addEventListener(type,preventBattleGesture,{passive:false});
+document.addEventListener("click",e=>{if(drawing&&e.target!==canvas){e.preventDefault();e.stopPropagation()}},true);
+addEventListener("blur",finishStroke);document.addEventListener("visibilitychange",()=>{if(document.hidden)finishStroke()});
+addEventListener("resize",resize);if(typeof ResizeObserver!=="undefined")new ResizeObserver(resize).observe($("canvasWrap"));
+persistTerm();hud();renderWorld();
 </script>
 </body>
 </html>
-
