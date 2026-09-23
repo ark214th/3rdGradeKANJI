@@ -33,6 +33,7 @@
 "use strict";
 const W={wood:["木のつるぎ","🗡️"],bronze:["青銅のつるぎ","⚔️"],flame:["ほのおの剣","🔥"],ice:["こおりの刃","❄️"],thunder:["いかずちソード","⚡"],hero:["勇者の聖剣","🌟"],dragon:["竜王の大剣","🐉"],sky:["天空の神剣","☀️"],galaxy:["銀河の超剣","🌌"],infinity:["無限の漢字剣","♾️"]};
 function level(xp){let l=1,n=60;xp=Math.max(0,Number(xp)||0);while(xp>=n){xp-=n;l++;n=60+(l-1)*25}return l}
+Object.assign(W,{"treasure_staff":["宝さがしの杖","🪄"],"pirate_blade":["海賊王の宝剣","🏴‍☠️"],"sage_staff":["賢者の宝杖","🔮"]});
 try{const s=JSON.parse(localStorage.getItem("kanjiQuestRpg_v1"))||{},w=W[s.weapon||s.equippedWeapon]||W.wood;document.getElementById("level").textContent=`⭐ LV ${level(s.xp)}`;document.getElementById("gold").textContent=`🪙 ${Math.max(0,Number(s.gold)||0)} G`;document.getElementById("weapon").textContent=`${w[1]} ${w[0]}`}catch{}
 </script>
 </body>
