@@ -89,3 +89,25 @@ const old=boot({clears:[2],stageClears:{2:7}});assert.equal(old.run('save.stageC
 const reload=boot(JSON.parse(b.storage.get('kanjiQuestRpg_chapter4_v1')),JSON.parse(b.storage.get('kanjiQuestSemester2_v1')),JSON.parse(b.storage.get('kanjiQuestRpg_v1')));
 assert.equal(reload.run('save.sentenceRecords[114].last'),'retry');
 console.log('PASS: 60 sentences/170 legacy IDs, grouping, all test scopes, old saves, rewards/retries/chest, DOM IDs, and ink preservation.');
+
+// Light smoothing must reduce tiny jitter without pulling corners/flicks far from the pen.
+assert(b.run(`(()=>{
+ let last={x:0,y:0};let filteredVariation=0,rawVariation=0,previousRaw=last;
+ for(let i=1;i<=40;i++){
+  const raw={x:i*.4,y:i%2?.3:-.3},p=smoothInkPoint(last,raw);
+  filteredVariation+=Math.abs(p.y-last.y);rawVariation+=Math.abs(raw.y-previousRaw.y);
+  if(Math.hypot(p.x-raw.x,p.y-raw.y)>.600001)return false;
+  last=p;previousRaw=raw;
+ }
+ const corner=smoothInkPoint(last,{x:80,y:80});
+ return filteredVariation<rawVariation&&Math.hypot(corner.x-80,corner.y-80)<=.600001;
+})()`));
+b.run('startArea(13);resize()');
+b.run(`(()=>{
+ const t=inkTransform();const event=(type,x,y)=>({type,pointerId:9,button:0,isPrimary:true,clientX:x*t.scale+t.x,clientY:y*t.scale+t.y,preventDefault(){}});
+ begin(event('pointerdown',130,20));move(event('pointermove',132,22));end(event('pointerup',133,23));
+})()`);
+assert(b.run('Math.abs(strokes[0].at(-1).x-133)<1e-8&&Math.abs(strokes[0].at(-1).y-23)<1e-8'));
+const smoothed=b.run('JSON.stringify(strokes)');b.run('redraw();resize()');assert.equal(b.run('JSON.stringify(strokes)'),smoothed);
+b.run('undo()');assert.equal(b.run('strokes.length'),0);
+console.log('PASS: bounded smoothing, exact pen-up endpoint, redraw stability and undo.');
