@@ -1,0 +1,272 @@
+[
+  {
+    "char": "る",
+    "sha": "b726f4bfb6bc0fde62af8e9d02c2223f0d75e4ce",
+    "path": "hiragana/308B.xml"
+  },
+  {
+    "char": "が",
+    "sha": "f0340bc58f0d8e3507fe8feb0818d064aa10dab5",
+    "path": "hiragana/304C.xml"
+  },
+  {
+    "char": "ぶ",
+    "sha": "4eacdbc175db837a9daf92e7605f74878d2a2bf5",
+    "path": "hiragana/3076.xml"
+  },
+  {
+    "char": "を",
+    "sha": "533c9fdbb645e21bc7ae0b932a77a6afd8622d2e",
+    "path": "hiragana/3092.xml"
+  },
+  {
+    "char": "ま",
+    "sha": "9840de1f4ff57efe55195a919feb8db8b6eacf70",
+    "path": "hiragana/307E.xml"
+  },
+  {
+    "char": "げ",
+    "sha": "0a36665bae360836a3a2ba7c60a58e0b274ddeb9",
+    "path": "hiragana/3052.xml"
+  },
+  {
+    "char": "し",
+    "sha": "8e9ddb2a2a5abfccc3a082d1c7afc2732ebe8ded",
+    "path": "hiragana/3057.xml"
+  },
+  {
+    "char": "け",
+    "sha": "2fc96fac64209f7c338898960872ba813c59c306",
+    "path": "hiragana/3051.xml"
+  },
+  {
+    "char": "つ",
+    "sha": "6c8129c87a5841fd6e1e93ecdfc7f5406e3e107f",
+    "path": "hiragana/3064.xml"
+  },
+  {
+    "char": "に",
+    "sha": "73a94118408abe796f406ac23255babe1e9fb150",
+    "path": "hiragana/306B.xml"
+  },
+  {
+    "char": "の",
+    "sha": "16a050c21435ee85a6776569fe057097687fbd04",
+    "path": "hiragana/306E.xml"
+  },
+  {
+    "char": "い",
+    "sha": "731b7f8d28173f4ee666ea12f0ca95f20866ad94",
+    "path": "hiragana/3044.xml"
+  },
+  {
+    "char": "す",
+    "sha": "8e0d437eb019cbddb07fdab9da28fedce1d855db",
+    "path": "hiragana/3059.xml"
+  },
+  {
+    "char": "え",
+    "sha": "45f0d9c729a1311a8e5c8d33f8cec847d53f5d77",
+    "path": "hiragana/3048.xml"
+  },
+  {
+    "char": "ス",
+    "sha": "7e0d35d46106a111b7dd69c4618a9dc49f0c96f6",
+    "path": "katakana/30B9.xml"
+  },
+  {
+    "char": "ラ",
+    "sha": "39bddfe0e7226248ed5e847d1a5bffc50388d725",
+    "path": "katakana/30E9.xml"
+  },
+  {
+    "char": "た",
+    "sha": "dcfec8dedc01581c95fa4c80883b1cbebe8fc3f4",
+    "path": "hiragana/305F.xml"
+  },
+  {
+    "char": "ク",
+    "sha": "ead06afd864782c712b8459ef3b0e2d2460006aa",
+    "path": "katakana/30AF.xml"
+  },
+  {
+    "char": "く",
+    "sha": "d42d9985b789fd9582ab66e1ac3d9e8c42f986ad",
+    "path": "hiragana/304F.xml"
+  },
+  {
+    "char": "り",
+    "sha": "df0cb527997b061265e0c55a96c1a7748842696c",
+    "path": "hiragana/308A.xml"
+  },
+  {
+    "char": "お",
+    "sha": "1a1e656c59f2164eb2e0aeb9fcad39b8105ad80f",
+    "path": "hiragana/304A.xml"
+  },
+  {
+    "char": "せ",
+    "sha": "d32f489e4cfe81790b241f3a33414ee3aa855ab8",
+    "path": "hiragana/305B.xml"
+  },
+  {
+    "char": "で",
+    "sha": "f62497ccb1806bcdd84a471a1784248744e719fd",
+    "path": "hiragana/3067.xml"
+  },
+  {
+    "char": "う",
+    "sha": "59003bd5140f264f7a87e8cf7650c4bf47171f38",
+    "path": "hiragana/3046.xml"
+  },
+  {
+    "char": "ぐ",
+    "sha": "bbad217623d7048b5b182881d1a330a601421b69",
+    "path": "hiragana/3050.xml"
+  },
+  {
+    "char": "き",
+    "sha": "16ea1a87d03824ca2dcc3dc8e7cfb4ae1b8a75cc",
+    "path": "hiragana/304D.xml"
+  },
+  {
+    "char": "よ",
+    "sha": "b66acdc6ab22056eeaea9a8653c71aa5a32b75a6",
+    "path": "hiragana/3088.xml"
+  },
+  {
+    "char": "だ",
+    "sha": "d4e8a606af4e106d5ec0b00ae46dd4f052876749",
+    "path": "hiragana/3060.xml"
+  },
+  {
+    "char": "ら",
+    "sha": "76b0a568bbe06ca97a691602cf3f576bf81fcc03",
+    "path": "hiragana/3089.xml"
+  },
+  {
+    "char": "て",
+    "sha": "6805efb36a702941294651af96284f40aa3427c0",
+    "path": "hiragana/3066.xml"
+  },
+  {
+    "char": "か",
+    "sha": "b0397e503f71cb2746aa22ec42cc06a44813a4a4",
+    "path": "hiragana/304B.xml"
+  },
+  {
+    "char": "じ",
+    "sha": "0f82964e0d55f4ff02a6e0cb629055050b066d0b",
+    "path": "hiragana/3058.xml"
+  },
+  {
+    "char": "ゆ",
+    "sha": "1e1a2c37d9f3c7f8238c929e9e054d3ff839103f",
+    "path": "hiragana/3086.xml"
+  },
+  {
+    "char": "ん",
+    "sha": "1f3394222c1c30077e80f4c97be0a0843aeb2e25",
+    "path": "hiragana/3093.xml"
+  },
+  {
+    "char": "め",
+    "sha": "4e652b4b303f474d6854f5d55ecd093dfbb869f3",
+    "path": "hiragana/3081.xml"
+  },
+  {
+    "char": "ず",
+    "sha": "3b7ea31c1b44cd65493eb9ff1054e372f68a9397",
+    "path": "hiragana/305A.xml"
+  },
+  {
+    "char": "さ",
+    "sha": "82c593b094d9a75f380c2691b7ef0d07477a23f5",
+    "path": "hiragana/3055.xml"
+  },
+  {
+    "char": "ふ",
+    "sha": "41688a3a00fd19ab9c2d63824937f6c3a22f5cc2",
+    "path": "hiragana/3075.xml"
+  },
+  {
+    "char": "ほ",
+    "sha": "9eb42fae55dce05e7c4a9e4016a194232517fcb8",
+    "path": "hiragana/307B.xml"
+  },
+  {
+    "char": "へ",
+    "sha": "a78c52b62b4a16ed841ed230179e1d0f6946609c",
+    "path": "hiragana/3078.xml"
+  },
+  {
+    "char": "び",
+    "sha": "b72a1eea4b572666ad8a07a77a3d8434e27e1200",
+    "path": "hiragana/3073.xml"
+  },
+  {
+    "char": "や",
+    "sha": "0ab8f6d61f2795cfa883562e69c6d1e3c9f53d0b",
+    "path": "hiragana/3084.xml"
+  },
+  {
+    "char": "な",
+    "sha": "5d72f275ba26b28d5616082e69ae5b91b22c5709",
+    "path": "hiragana/306A.xml"
+  },
+  {
+    "char": "は",
+    "sha": "3d905676dfd8242803ecc69a0417d7d3677399ca",
+    "path": "hiragana/306F.xml"
+  },
+  {
+    "char": "む",
+    "sha": "ed6dfc873e77373a781967604781e36e8f3f5480",
+    "path": "hiragana/3080.xml"
+  },
+  {
+    "char": "レ",
+    "sha": "290cfe77d94b8b9c4ecdb0bd6ad0238453ded2ae",
+    "path": "katakana/30EC.xml"
+  },
+  {
+    "char": "テ",
+    "sha": "4d5711525702b8cae14ab328f2aec23ecf973a9a",
+    "path": "katakana/30C6.xml"
+  },
+  {
+    "char": "と",
+    "sha": "0c72021e0d5c45ebc5a85c5f65a6eeb9e0f442db",
+    "path": "hiragana/3068.xml"
+  },
+  {
+    "char": "み",
+    "sha": "0b4205a777f506dc413d6b982cbf5df7b7965d9a",
+    "path": "hiragana/307F.xml"
+  },
+  {
+    "char": "わ",
+    "sha": "e9bae06626423a461650555882fc3ae60c87451c",
+    "path": "hiragana/308F.xml"
+  },
+  {
+    "char": "ち",
+    "sha": "3e87a9ae9b11ad602754aa408861abb8f66c147c",
+    "path": "hiragana/3061.xml"
+  },
+  {
+    "char": "ぎ",
+    "sha": "32f39072be4cbdce8d47ed35e81805cea759df11",
+    "path": "hiragana/304E.xml"
+  },
+  {
+    "char": "ビ",
+    "sha": "be476d136d76c58324ba0afd4aaaf436854096d1",
+    "path": "katakana/30D3.xml"
+  },
+  {
+    "char": "も",
+    "sha": "e4855d242c5964c8389b1a5b3b427bf863812a67",
+    "path": "hiragana/3082.xml"
+  }
+]

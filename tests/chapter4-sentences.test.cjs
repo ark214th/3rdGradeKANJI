@@ -111,3 +111,50 @@ assert(b.run('Math.abs(strokes[0].at(-1).x-133)<1e-8&&Math.abs(strokes[0].at(-1)
 const smoothed=b.run('JSON.stringify(strokes)');b.run('redraw();resize()');assert.equal(b.run('JSON.stringify(strokes)'),smoothed);
 b.run('undo()');assert.equal(b.run('strokes.length'),0);
 console.log('PASS: bounded smoothing, exact pen-up endpoint, redraw stability and undo.');
+
+
+// The real recognizer runs independently of the DOM, with no correct answer supplied.
+const workerContext={console:{log(){}},postMessage(){}};workerContext.self=workerContext;
+vm.createContext(workerContext);
+workerContext.importScripts=(...files)=>files.forEach(file=>vm.runInContext(fs.readFileSync(path.join(__dirname,'../chapter4',file),'utf8'),workerContext));
+vm.runInContext(fs.readFileSync(path.join(__dirname,'../chapter4/recognition-worker.js'),'utf8'),workerContext);
+const recognize=strokes=>workerContext.recognizeCell(strokes);
+const patterns=workerContext.KanjiCanvas.refPatterns;
+const answerChars=b.run('[...new Set(SENTENCES.flatMap(q=>[...q.a]))]');
+for(const char of answerChars)if(!/[。、ゃゅょっ]/u.test(char))assert(patterns.some(p=>p[0]===char),`missing recognition pattern: ${char}`);
+assert.equal(recognize([]).status,'empty');
+assert.equal(recognize([[[50,50],[50,50]]]).status,'uncertain');
+assert.equal(recognize([[[NaN,0],[20,20]]]).status,'uncertain');
+for(const char of ['本','感','想','く','の','が','一']){
+ const pattern=patterns.find(p=>p[0]===char)[2];
+ // Translation, size variation and deterministic small jitter. This is NOT a child's handwriting sample.
+ const rough=pattern.map(s=>s.map(([x,y],i)=>[x*.83+12+(i%2?1:-1),y*.91+6+(i%3-1)]));
+ assert.equal(recognize(rough).candidates[0].text,char,`synthetic recognition: ${char}`);
+}
+assert.equal(b.run('recognitionMark("本",{status:"read",candidates:[{text:"本",distance:30},{text:"木",distance:45}]})'),'○');
+assert.equal(b.run('recognitionMark("感",{status:"read",candidates:[{text:"本",distance:30},{text:"木",distance:45}]})'),'×');
+assert.equal(b.run('recognitionMark("感",{status:"read",candidates:[{text:"本",distance:30},{text:"感",distance:45}]})'),'？');
+assert.equal(b.run('recognitionMark("本",{status:"read",candidates:[{text:"木",distance:90}]})'),'？');
+assert.equal(b.run('recognitionMark("。",null)'),'・');
+assert.equal(b.run('recognitionMark("っ",{status:"read",candidates:[{text:"つ",distance:10}]})'),'？');
+// Fake transport verifies races, errors and self-marking while the real worker is busy.
+b.run(`globalThis.Worker=class {constructor(){globalThis.lastWorker=this;this.terminated=false}postMessage(data){this.request=data}terminate(){this.terminated=true}};
+startArea(13);resize();strokes=[[{x:130,y:20},{x:180,y:70}],[{x:15,y:20},{x:75,y:70}]];reveal();`);
+assert.equal(b.run('lastWorker.request.cells[0].length'),1);
+assert.equal(b.run('lastWorker.request.cells[6].length'),1);
+assert.equal(b.run('Object.keys(lastWorker.request).join(",")'),'id,cells','answer must not be sent to recognizer');
+const savedBefore=b.run('JSON.stringify(save)');
+b.run('lastWorker.onmessage({data:{id:lastWorker.request.id,index:0,result:{status:"read",candidates:[{text:"本",distance:20}]},done:false}})');
+assert.equal(b.run('recognitionResults[0].mark'),'○');
+assert.equal(b.run('JSON.stringify(save)'),savedBefore,'recognition must never award or grade');
+b.run('globalThis.oldWorker=lastWorker;undo()');
+assert(b.run('oldWorker.terminated'));
+b.run('oldWorker.onmessage({data:{id:oldWorker.request.id,index:0,result:{status:"read",candidates:[{text:"本",distance:20}]},done:true}})');
+assert.equal(b.run('recognitionResults.length'),0,'ignore a stale result after undo');
+b.run('startRecognition();lastWorker.onerror()');
+assert.equal(b.run('recognitionResults.length'),0);
+assert(!b.nodes.get('good').disabled,'worker failure must not block self-marking');
+b.run('startRecognition();judge("retry")');
+assert(b.run('lastWorker.terminated'));
+assert.equal(b.run('save.sentenceRecords[current.id].last'),'retry','user judgment remains authoritative');
+console.log('PASS: real local recognition, model coverage, advisory marks, stale-worker rejection, failure fallback and independent self-marking.');
