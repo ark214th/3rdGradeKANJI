@@ -31,7 +31,7 @@ function boot(chapter={},term={},shared={}){
  vm.createContext(sandbox);vm.runInContext(script,sandbox);
  return {run:code=>vm.runInContext(code,sandbox),nodes,storage,timers};
 }
-const legacy={areaLayout:2,selectedTest:6,defeated:[1,53,114],records:{114:{retry:3,last:'retry'}},customIds:[115,160],clears:[0,6,13],stageClears:{0:8,6:4,13:5},displayMode:'clue'};
+const legacy={areaLayout:2,selectedTest:6,practiceMode:'sentence',defeated:[1,53,114],records:{114:{retry:3,last:'retry'}},customIds:[115,160],clears:[0,6,13],stageClears:{0:8,6:4,13:5},displayMode:'clue'};
 const b=boot(legacy,{treasures:['test1','test2'],fragments:{test1:[0,1,2,3,4,5],test2:[6,7,8,9,10,11,12]},areaLayouts:{test1:2,test2:2}},{xp:5000,gold:4321,owned:['wood','treasure_staff'],weapon:'treasure_staff'});
 assert.equal(b.run('SENTENCES.length'),60);
 assert.equal(b.run('Math.max(...SENTENCES.map(q=>[...q.a].length))'),11);
@@ -111,3 +111,46 @@ assert(b.run('Math.abs(strokes[0].at(-1).x-133)<1e-8&&Math.abs(strokes[0].at(-1)
 const smoothed=b.run('JSON.stringify(strokes)');b.run('redraw();resize()');assert.equal(b.run('JSON.stringify(strokes)'),smoothed);
 b.run('undo()');assert.equal(b.run('strokes.length'),0);
 console.log('PASS: bounded smoothing, exact pen-up endpoint, redraw stability and undo.');
+
+// A save made before mode selection starts in gentle character practice; sentence mode remains available.
+const c=boot({areaLayout:2,selectedTest:4,customIds:[88],records:{88:{retry:2,last:'retry'}},stageClears:{9:4}});
+assert.equal(c.run('save.practiceMode'),'character');
+assert.equal(c.run('save.selectedTest'),4);
+assert.equal(c.nodes.get('practiceChar').attrs['aria-pressed'],'true');
+assert.equal(c.nodes.get('practiceSentence').attrs['aria-pressed'],'false');
+assert.equal(c.run('writingLayout("勝つ").width'),100);
+assert.equal(c.run('writingLayout("勝つ").rows'),2);
+assert.equal(c.run('practiceQuestions().length'),c.run('selectedQuestions().length'));
+assert.equal(c.run('customForTest()[0]'),88);
+c.run('startArea(9)');
+assert.equal(c.run('session.practiceMode'),'character');
+assert.equal(c.run('session.original.length'),c.run('Q.slice(AREAS[9].start,AREAS[9].end).length'));
+assert.equal(c.run('current.id'),c.run('Q[AREAS[9].start].id'));
+assert.equal(c.run('inkWidth'),100);
+assert.equal(c.run('inkHeight'),[...c.run('current.a')].length*100);
+assert.equal(c.run('JSON.stringify(save.sentenceRecords)'),'{}');
+const charId=c.run('current.id');const charGold=c.run('save.gold');
+c.run('reveal();judge("good")');
+assert.equal(c.run(`save.records[${charId}].good`),1);
+assert.equal(c.run('JSON.stringify(save.sentenceRecords)'),'{}');
+assert.equal(c.run('save.gold')-charGold,8);
+assert.equal(c.run('save.stageClears[9]'),4,'stage clear only on completion');
+c.run('session=null;current=null;selectPracticeMode("sentence")');
+assert.equal(c.run('save.practiceMode'),'sentence');
+assert.equal(c.nodes.get('practiceSentence').attrs['aria-pressed'],'true');
+assert.equal(c.run('writingLayout("勝負に勝つ。").width'),212);
+assert.equal(c.run('customForTest().length'),1);
+c.run('startRandomTest()');assert.equal(c.run('session.original.length'),10);
+assert(c.run('session.original.every(id=>SENTENCE_BY_CHAR.get(id).test===4)'));
+const savedSession=c.run('session.practiceMode');
+c.run('save.practiceMode="character";repeat()');assert.equal(c.run('session.practiceMode'),savedSession,'repeat holds the selected mode');
+c.run('session=null;current=null;selectPracticeMode("character");startRandomTest()');
+assert.equal(c.run('session.original.length'),10);
+assert(c.run('session.original.every(id=>Q[id-1].test===4)'));
+c.run('startRandomAll()');assert.equal(c.run('session.original.length'),c.run('selectedQuestions().length'));
+c.run('selectTest(1);startArea(0);session.done=new Set(session.original);finish()');
+assert.equal(c.run('save.stageClears[0]'),1);
+const reloadedChar=boot(JSON.parse(c.storage.get('kanjiQuestRpg_chapter4_v1')));
+assert.equal(reloadedChar.run('save.practiceMode'),'character');
+assert.equal(reloadedChar.run(`save.records[${charId}].good`),1);
+console.log('PASS: default character mode, both routes/random scopes, independent histories, persisted switch, repeat and shared progression.');
