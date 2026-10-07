@@ -33,14 +33,14 @@ function boot(chapter={},term={},shared={}){
 }
 const legacy={areaLayout:2,selectedTest:6,practiceMode:'sentence',defeated:[1,53,114],records:{114:{retry:3,last:'retry'}},customIds:[115,160],clears:[0,6,13],stageClears:{0:8,6:4,13:5},displayMode:'clue'};
 const b=boot(legacy,{treasures:['test1','test2'],fragments:{test1:[0,1,2,3,4,5],test2:[6,7,8,9,10,11,12]},areaLayouts:{test1:2,test2:2}},{xp:5000,gold:4321,owned:['wood','treasure_staff'],weapon:'treasure_staff'});
-assert.equal(b.run('SENTENCES.length'),60);
+assert.equal(b.run('SENTENCES.length'),80);
 assert.equal(b.run('Math.max(...SENTENCES.map(q=>[...q.a].length))'),11);
 assert.equal(b.run('SENTENCES.find(q=>q.test===4&&q.s===14).a'),'勝負に勝つ。');
-assert.equal(b.run('new Set(SENTENCES.flatMap(q=>q.ids)).size'),170);
-assert.equal(b.run('SENTENCES.reduce((n,q)=>n+q.ids.length,0)'),170);
+assert.equal(b.run('new Set(SENTENCES.flatMap(q=>q.ids)).size'),219);
+assert.equal(b.run('SENTENCES.reduce((n,q)=>n+q.ids.length,0)'),219);
 assert(b.run('TESTS.every(t=>SENTENCES.filter(q=>q.test===t).length===10)'));
 assert(b.run('AREAS.every((a,i)=>sentencesForArea(i).every(q=>q.test===a.block&&q.ids.every(id=>id>a.start&&id<=a.end)))'));
-assert.equal(b.run('AREAS.flatMap((a,i)=>sentencesForArea(i)).length'),60);
+assert.equal(b.run('AREAS.flatMap((a,i)=>sentencesForArea(i)).length'),80);
 assert.equal(b.run('JSON.stringify(save.records)'),JSON.stringify(legacy.records));
 assert.equal(b.run('save.stageClears[0]'),8);
 assert.equal(b.run('save.selectedTest'),6);
@@ -69,7 +69,7 @@ assert.equal(b.run('save.records[114].retry'),3,'old character history preserved
 const paid=b.run('save.gold');b.run('judge("good")');assert.equal(b.run('save.gold'),paid,'double judging cannot pay twice');
 b.run('finish()');const completed=b.run('save.gold');b.run('finish()');assert.equal(b.run('save.gold'),completed,'chest cannot pay twice');
 // Every launch path keeps the test boundary and uses ten sentences at most.
-for(const test of [1,2,3,4,5,6]){
+for(const test of [1,2,3,4,5,6,7,8]){
  b.run(`selectTest(${test});startRandomTest()`);assert.equal(b.run('session.original.length'),10);assert(b.run(`session.original.every(id=>SENTENCE_BY_CHAR.get(id).test===${test})`));
  b.run('startRandomAll()');assert.equal(b.run('session.original.length'),10);
 }
@@ -88,7 +88,7 @@ b.run('startArea(13);session.done=new Set(session.original);finish()');assert.eq
 const old=boot({clears:[2],stageClears:{2:7}});assert.equal(old.run('save.stageClears[2]'),7);assert.equal(old.run('save.stageClears[3]'),7);
 const reload=boot(JSON.parse(b.storage.get('kanjiQuestRpg_chapter4_v1')),JSON.parse(b.storage.get('kanjiQuestSemester2_v1')),JSON.parse(b.storage.get('kanjiQuestRpg_v1')));
 assert.equal(reload.run('save.sentenceRecords[114].last'),'retry');
-console.log('PASS: 60 sentences/170 legacy IDs, grouping, all test scopes, old saves, rewards/retries/chest, DOM IDs, and ink preservation.');
+console.log('PASS: 80 sentences/219 IDs (170 legacy IDs preserved), grouping, all test scopes, old saves, rewards/retries/chest, DOM IDs, and ink preservation.');
 
 // Light smoothing must reduce tiny jitter without pulling corners/flicks far from the pen.
 assert(b.run(`(()=>{
@@ -154,3 +154,22 @@ const reloadedChar=boot(JSON.parse(c.storage.get('kanjiQuestRpg_chapter4_v1')));
 assert.equal(reloadedChar.run('save.practiceMode'),'character');
 assert.equal(reloadedChar.run(`save.records[${charId}].good`),1);
 console.log('PASS: default character mode, both routes/random scopes, independent histories, persisted switch, repeat and shared progression.');
+
+// Drill 28: worksheet targets, full sentences, contiguous IDs, new scopes and treasure.
+assert.deepEqual(JSON.parse(b.run('JSON.stringify(SENTENCES.filter(q=>q.test>=7).map(q=>q.a))')),["問いをもつ。","詩を読み返す。","主語とじゅつ語。","明日の予定。","九州にいる友だち。","風船をとばす。","屋根に鳥が止まる。","おもい荷物。","やくそくを守る。","勉強にはげむ。","本は役立つ。","新米を食べる。","話し合いの進行。","返事がとどく。","持ち主をさがす。","主な人物。","屋上に上る。","大根をそだてる。","守びにつく。","る守番をする。"]);
+assert(b.run('Q.every((q,i)=>q.id===i+1)'));
+assert.equal(b.run('CLUE_P.length'),219);
+assert.equal(b.run('Q.filter(q=>q.test===7).length'),24);
+assert.equal(b.run('Q.filter(q=>q.test===8).length'),25);
+for(const test of [7,8]){
+ const n=boot({areaLayout:2,selectedTest:test});
+ assert(n.nodes.get('selectedTestRange').textContent.includes('ドリル28'));
+ n.run('startRandomTest()');assert(n.run(`session.original.every(id=>Q[id-1].test===${test})`));
+ n.run('persist()');assert.equal(boot(JSON.parse(n.storage.get('kanjiQuestRpg_chapter4_v1'))).run('save.selectedTest'),test);
+}
+const complete=boot({areaLayout:2,selectedTest:7,clears:Array.from({length:19},(_,i)=>i)}, {treasures:['test1','test2','test3'],areaLayouts:{test1:2,test2:2,test3:2}});
+assert.equal(complete.run('term.treasures.length'),3);
+assert.equal(complete.run('volumeAreas(selectedVolume()).length'),6);
+for(let area=19;area<25;area++)complete.run(`startArea(${area});session.done=new Set(session.original);finish()`);
+assert(complete.run('term.treasures.includes("test4")'));
+console.log('PASS: drill 28 transcription, IDs, both test selections and fourth treasure.');
