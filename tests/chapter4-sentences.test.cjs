@@ -28,7 +28,7 @@ function boot(chapter={},term={},shared={}){
  const doc={getElementById:id=>nodes.get(id),createElement:element,documentElement:element(),addEventListener(){},hidden:false};
  const sandbox={console,document:doc,localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)},devicePixelRatio:2,
   setTimeout(fn){timers.push(fn);return timers.length},clearTimeout(){},requestAnimationFrame(){},addEventListener(){},scrollTo(){},confirm:()=>true};
- vm.createContext(sandbox);vm.runInContext(script,sandbox);
+ vm.createContext(sandbox);for(const file of ["kanji-strokes.js","tracing-core.js"])vm.runInContext(fs.readFileSync(path.join(__dirname,"../chapter4",file),"utf8"),sandbox);vm.runInContext(script,sandbox);
  return {run:code=>vm.runInContext(code,sandbox),nodes,storage,timers};
 }
 const legacy={areaLayout:2,selectedTest:6,practiceMode:'sentence',defeated:[1,53,114],records:{114:{retry:3,last:'retry'}},customIds:[115,160],clears:[0,6,13],stageClears:{0:8,6:4,13:5},displayMode:'clue'};
@@ -61,6 +61,7 @@ b.nodes.get('canvas').getBoundingClientRect=()=>({width:600,height:400,left:0,to
 b.run('resize()');assert.equal(b.run('JSON.stringify(strokes)'),ink);assert.equal(b.run('inkTransform().scale'),(400-8)/600);
 b.run('useHint();begin({pointerId:1,button:0,isPrimary:true,clientX:320,clientY:30,preventDefault(){}});move({pointerId:1,clientX:322,clientY:34,preventDefault(){}});end({pointerId:1,cancelable:false})');
 assert(b.run('hintVisible'),'writing must not hide tracing hint');
+assert(b.run('traceState!==null'));b.run('while(traceState){traceState.stroke=tracePaths().length;traceNextLetter()}');
 b.run('judge("good")');
 assert.equal(b.run('save.gold')-before,4*(6+25+2));
 assert(b.run('current.ids.every(id=>save.defeated.includes(id))'));
@@ -173,3 +174,30 @@ assert.equal(complete.run('volumeAreas(selectedVolume()).length'),6);
 for(let area=19;area<25;area++)complete.run(`startArea(${area});session.done=new Set(session.original);finish()`);
 assert(complete.run('term.treasures.includes("test4")'));
 console.log('PASS: drill 28 transcription, IDs, both test selections and fourth treasure.');
+
+// Trace coverage and synthetic path direction: all existing answers, including kana.
+const traced=boot({areaLayout:2,selectedTest:7,practiceMode:'trace',records:{171:{good:2}},sentenceRecords:{171:{retry:1}}});
+assert(traced.run('SENTENCES.every(q=>[...q.a].every(ch=>"。、".includes(ch)||KANJI_STROKES[ch]?.length))'));
+assert(traced.run('Object.values(KANJI_STROKES).every(paths=>paths.every(d=>{const p=KanjiCore.flatten(d);return p.length>1&&p.every(a=>a.every(Number.isFinite))&&KanjiCore.judgeStroke(p,d).ok}))'));
+assert(!traced.run('KanjiCore.judgeStroke([[90,20],[10,20]],"M10 20L90 20").ok'));
+traced.run('startSession("trace",[171],true,"custom",-1)');
+assert(traced.run('traceState!==null'));assert.equal(traced.run('session.practiceMode'),'trace');
+traced.run('traceNextLetter();reveal();judge("good")');assert.equal(traced.run('save.gold'),0,'unfinished tracing cannot award');
+// Use real pointer handlers to complete the first stroke, and ensure cancellation/multi-touch cannot advance it.
+traced.run(`(()=>{const p=KanjiCore.flatten(tracePaths()[0]);const e=a=>({pointerId:1,button:0,isPrimary:true,clientX:a[0]*420/109,clientY:a[1]*900/109,preventDefault(){}});traceDown(e(p[0]));traceMove({...e(p[1]),pointerId:2});if(traceState.points.length!==1)throw Error('second pointer changed ink');traceCancel({pointerId:1});if(traceState.stroke!==0)throw Error('cancel accepted');traceDown(e(p[0]));p.slice(1).forEach(a=>traceMove(e(a)));traceUp(e(p.at(-1)))})()`);
+assert.equal(traced.run('traceState.stroke'),1);
+traced.run('while(traceState){traceState.stroke=tracePaths().length;traceNextLetter()}');
+assert(traced.run('strokes.length>0'));traced.run('judge("good")');assert.equal(traced.run('save.traceRecords[171].good'),1);
+assert.equal(traced.run('save.records[171].good'),2);assert.equal(traced.run('save.sentenceRecords[171].retry'),1);
+const savedTrace=JSON.parse(traced.storage.get('kanjiQuestRpg_chapter4_v1'));
+assert.equal(boot(savedTrace).run('save.practiceMode'),'trace');assert.equal(boot(savedTrace).run('save.traceRecords[171].good'),1);
+for(const kind of ['close','retry']){
+ const r=boot({areaLayout:2,selectedTest:7});r.run(`startSession("correction",[171,172],true,"custom",-1);reveal();judge("${kind}")`);
+ assert(r.run('traceState!==null'));assert.equal(r.run('save.records[171].last'),kind);assert.equal(r.run('session.done.size'),0);
+ r.run('while(traceState){traceState.stroke=tracePaths().length;traceNextLetter()}');
+ assert.equal(r.run('current.id'),172,'correction finishes before next problem');assert(r.run('session.queue.includes(171)'),'original problem still requeued');
+}
+const hint=boot();hint.run('startSession("hint",[1],true,"custom",-1);strokes=[[{x:20,y:20},{x:40,y:30}]];useHint()');
+const originalInk=hint.run('JSON.stringify(strokes)');hint.run('while(traceState){traceState.stroke=tracePaths().length;traceNextLetter()}');assert.equal(hint.run('JSON.stringify(strokes)'),originalInk);
+hint.run('useHint();screen("world")');assert.equal(hint.run('traceState'),null);assert(!hint.nodes.get('traceModal').classList.contains('show'));
+console.log('PASS: 218-character coverage, path validity/direction, pointer/cancel guards, trace mode saves/rewards, correction sequencing and hint ink preservation.');
