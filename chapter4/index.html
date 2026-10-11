@@ -10,6 +10,8 @@
 <link rel="manifest" href="../manifest.webmanifest">
 <title>漢字クエスト 第4章 ～海の秘宝をめぐる冒険～</title>
 <style>
+@font-face{font-family:"Klee One";src:url("vendor/KleeOne-Regular.woff") format("woff");font-weight:400;font-style:normal;font-display:swap}
+
 :root{--ink:#2e2925;--muted:#74695f;--gold:#f5bd49;--blue:#59b9eb;--green:#3ca86b;--red:#d95650;--line:#e7ddcf;--panel:rgba(255,255,255,.97);--shadow:0 16px 40px rgba(8,16,33,.28)}
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;overscroll-behavior:none}body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;color:var(--ink);background:radial-gradient(circle at 10% 10%,rgba(74,169,233,.3),transparent 28%),radial-gradient(circle at 90% 15%,rgba(245,189,73,.22),transparent 27%),linear-gradient(145deg,#0e1729,#263e67 68%,#31556d);-webkit-tap-highlight-color:transparent;user-select:none}button{font:inherit;touch-action:manipulation}.app{width:min(1080px,100%);min-height:100vh;margin:auto;padding:max(12px,env(safe-area-inset-top)) max(10px,env(safe-area-inset-right)) max(18px,env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left))}
 .topbar{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;margin-bottom:10px;color:#fff}.brand{display:flex;align-items:center;gap:10px;min-width:0}.crest{width:49px;height:49px;display:grid;place-items:center;border:2px solid #ffffff88;border-radius:16px;background:linear-gradient(145deg,#ffe078,#d9871a);font-size:28px;box-shadow:0 7px 18px #0005}.brand h1{margin:0;font-size:clamp(23px,4vw,37px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.brand small{display:block;margin-top:3px;color:#ffffffb8;font-weight:700}.top-actions{display:flex;gap:7px}.topbtn{min-height:43px;padding:8px 13px;border:1px solid #ffffff66;border-radius:999px;background:#ffffff1f;color:#fff;font-weight:900;cursor:pointer;backdrop-filter:blur(7px)}.topbtn:active{transform:translateY(2px)}
@@ -26,8 +28,13 @@
 @media(max-width:860px){.map{grid-template-columns:repeat(2,minmax(0,1fr))}.area:last-child{grid-column:auto}.shopgrid{grid-template-columns:repeat(2,minmax(0,1fr))}.bookgrid,.pickgrid{grid-template-columns:repeat(2,minmax(0,1fr))}.arena{grid-template-columns:190px 1fr}.sprite{width:125px;height:125px;font-size:80px}}
 @media(max-width:650px){.elitebanner{grid-template-columns:auto 1fr}.elitebutton{grid-column:span 2;width:100%}.brand small{display:none}.crest{width:44px;height:44px;font-size:24px}.topbtn{padding:8px 10px;font-size:13px}.hud{grid-template-columns:repeat(2,minmax(0,1fr))}.xptrack{grid-column:span 2}.hero{grid-template-columns:auto 1fr}.weaponbadge{grid-column:span 2;max-width:none}.map{grid-template-columns:1fr}.area:last-child{grid-column:auto}.specials{grid-template-columns:1fr}.arena{grid-template-columns:1fr}.monsterzone{min-height:205px}.sprite{width:100px;height:100px;margin:6px auto;font-size:65px}.canvaswrap{min-height:255px;height:38vh}.judges{grid-template-columns:1fr}.shopgrid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.bookgrid,.pickgrid{grid-template-columns:1fr}.pickactions{flex-direction:column}.rewards{grid-template-columns:1fr}}
 @media(orientation:landscape) and (max-height:760px){.arena{grid-template-columns:180px 1fr;padding:12px}.monsterzone{min-height:230px}.sprite{width:105px;height:105px;font-size:68px;margin:5px auto}.question{margin:4px 0 7px;font-size:clamp(25px,4vw,38px)}.canvaswrap{height:34vh;min-height:205px}}
-.guide,.answerbig{font-family:"YuKyokasho","Yu Kyokasho","UD Digi Kyokasho N-R","Hiragino Mincho ProN",serif;font-weight:400}
+.guide,.answerbig{font-family:"Klee One","YuKyokasho","Yu Kyokasho","UD Digi Kyokasho N-R","Hiragino Mincho ProN",serif;font-weight:400}
 .weapon-chest{max-width:590px;margin:0 auto 20px;padding:16px;display:flex;align-items:center;justify-content:center;gap:18px;border:3px solid #efbd45;border-radius:22px;background:linear-gradient(120deg,#fff1b8,#fffaf0);box-shadow:0 5px 20px #b8801820}.weapon-chest[hidden]{display:none}.chest-icon{font-size:64px;line-height:1.2}.weapon-chest h3{margin:0 0 6px;color:#81540b;font-size:22px}.weapon-chest p{margin:0 0 12px;font-size:16px;font-weight:800}.weapon-chest.opened .chest-icon{animation:pop .6s}.weapon-chest.opened{border-color:#f2a825;background:#fff3c5}@media(prefers-reduced-motion:reduce){.weapon-chest.opened .chest-icon{animation:none}}
+.trace-box{width:min(580px,100%);max-height:calc(100dvh - 40px);overflow:auto;padding:16px;overscroll-behavior:contain}
+.trace-box h2{font-size:21px;margin:0 0 6px}.trace-box p{margin:6px 0;font-weight:700}
+#traceBoard{display:block;width:min(100%,48vh);max-height:48vh;aspect-ratio:1;margin:8px auto;border:3px solid #83b9ca;border-radius:16px;background:#fffdf8;touch-action:none;user-select:none;-webkit-user-select:none}
+.trace-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:10px}.trace-actions .topbtn{color:#315870;background:#eaf3f8}
+.question,.answerbig,.pickkanji,.bookkanji,.bookchar{font-family:"Klee One","YuKyokasho",serif;font-weight:400}
 </style>
 <style>
 :root{--ink:#29332f;--muted:#65736c;--gold:#f0bd55;--line:#dce5dc;--panel:rgba(255,255,248,.97);--shadow:0 18px 50px rgba(5,34,29,.3)}
@@ -116,7 +123,7 @@ html.battle-active .topbar,html.battle-active .hud{display:none}
 }
 </style>
 <style>
-.practice-choice{margin:0 0 16px;padding:10px;border:2px solid #8fd2df;border-radius:18px;background:#ecfaff}.practice-choice legend{padding:0 7px;color:#135c73;font-weight:950}.practice-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.practice-options button{min-height:66px;border:2px solid #b9d9e2;border-radius:13px;background:#fff;color:#17465a;font:inherit;font-weight:950;cursor:pointer}.practice-options button[aria-pressed="true"]{border-color:#1488ae;background:#d9f4fc;box-shadow:inset 0 0 0 2px #fff}.practice-options small{display:block;margin-top:3px;color:#526c76;font-size:12px;font-weight:750}@media(max-width:450px){.practice-options button{font-size:13px}}
+.practice-choice{margin:0 0 16px;padding:10px;border:2px solid #8fd2df;border-radius:18px;background:#ecfaff}.practice-choice legend{padding:0 7px;color:#135c73;font-weight:950}.practice-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.practice-options button{min-height:66px;border:2px solid #b9d9e2;border-radius:13px;background:#fff;color:#17465a;font:inherit;font-weight:950;cursor:pointer}.practice-options button[aria-pressed="true"]{border-color:#1488ae;background:#d9f4fc;box-shadow:inset 0 0 0 2px #fff}.practice-options small{display:block;margin-top:3px;color:#526c76;font-size:12px;font-weight:750}@media(max-width:450px){.practice-options button{font-size:13px}}
 #battle.character-practice .writing-label{justify-content:center}#battle.character-practice .answerbig{color:#206b69}
 </style>
 </head>
@@ -126,10 +133,10 @@ html.battle-active .topbar,html.battle-active .hud{display:none}
 <div class="hud"><div class="huditem">⭐ <strong id="hudLv">LV 1</strong></div><div class="huditem">🪙 <strong id="hudGold">0 G</strong></div><div class="huditem">⚔️ <strong id="hudWeapon">木のつるぎ</strong></div><div class="huditem">🐠 <strong id="hudBook">0 / 219</strong></div><div class="xptrack"><div class="xpfill" id="xpFill"></div></div><div class="huditem"><strong id="xpText">EXP 0 / 60</strong></div></div>
 
 <section class="screen active" id="world"><div class="panel"><div class="body">
-<h2>海の秘宝をめぐる冒険</h2><p class="lead">練習するテストを選ぼう。次も同じテストから始められます。最初は一文字ずつ。テスト前には本番練習へ切り替えられます。iPadは縦向きがおすすめ。</p>
+<h2>海の秘宝をめぐる冒険</h2><p style="font-size:12px;text-align:right"><a href="credits.html" target="_blank" rel="noopener">フォント・書き順データの権利表記</a></p><p class="lead">練習するテストを選ぼう。次も同じテストから始められます。初めての字はなぞって覚えよう。慣れたら一文字ずつ、テスト前には本番練習へ切り替えられます。iPadは縦向きがおすすめ。</p>
 <div class="hero"><div class="avatar">🧭</div><div><div class="heroname" id="heroTitle">書き取りの勇者</div><div class="herosub" id="heroText">青い海へ、新しい冒険が始まる。</div></div><div class="weaponbadge"><span id="heroWeaponIcon">🗡️</span><span id="heroWeaponName">木のつるぎ</span></div></div>
 <div class="termquest"><div class="companion" id="companionIcon">🥚</div><div class="termcopy"><strong id="companionName">ふしぎなタマゴ</strong><small id="companionText">航路を進み、秘宝のかけらを集めよう。</small><div class="fragments" id="fragmentRow"></div></div><div class="treasures" id="treasureShelf" aria-label="二学期の七つの秘宝"></div></div>
-<fieldset class="practice-choice" aria-label="練習方法"><legend>練習方法</legend><div class="practice-options"><button type="button" id="practiceChar" aria-pressed="true">✏️ 一文字ずつ<small>新しい漢字を覚える</small></button><button type="button" id="practiceSentence" aria-pressed="false">📜 本番練習（全文）<small>テスト前にまとめて書く</small></button></div></fieldset>
+<fieldset class="practice-choice" aria-label="練習方法"><legend>練習方法</legend><div class="practice-options"><button type="button" id="practiceChar" aria-pressed="true">✏️ 一文字ずつ<small>新しい漢字を覚える</small></button><button type="button" id="practiceTrace" aria-pressed="false">🪄 なぞって練習<small>書き順を覚える</small></button><button type="button" id="practiceSentence" aria-pressed="false">📜 本番練習（全文）<small>テスト前にまとめて書く</small></button></div></fieldset>
 <div class="test-blocks">
 <section class="test-block"><label for="testSelect"><strong>れんしゅうするテスト</strong></label> <select id="testSelect" class="secondary" aria-label="練習するテスト"></select><div class="test-block-head" style="margin-top:14px"><h3 id="selectedTestTitle"></h3><span id="selectedTestRange"></span></div><div class="map" id="areaGrid"></div><div class="block-actions"><button class="block-random" id="randomSelected" type="button">この範囲からランダム10問</button></div></section>
 </div>
@@ -176,11 +183,18 @@ html.battle-active .topbar,html.battle-active .hud{display:none}
 <section class="screen" id="result"><div class="panel"><div class="result"><div class="crown">🏆</div><h2 id="resultTitle">航路クリア！</h2><p id="resultText">海の漢字モンスターを倒しました。</p><div class="rewards"><div class="reward"><strong id="resultDefeated">10</strong><span>倒した魔物</span></div><div class="reward"><strong id="resultXp">+100</strong><span>獲得EXP</span></div><div class="reward"><strong id="resultGold">+60</strong><span>獲得G</span></div></div><div id="weaponChest" class="weapon-chest" hidden><div class="chest-icon" id="chestIcon" aria-hidden="true">🎁</div><div><h3 id="chestTitle">宝箱を発見！</h3><p id="chestText" aria-live="polite"></p><button class="primary" id="openWeaponChest">宝箱をあける</button></div></div><div class="resultactions"><button class="primary" id="again">もう一度冒険</button><button class="secondary" id="resultMap">海図へもどる</button><button class="primary" id="resultShop">武器屋へ</button></div></div></div></section>
 </div>
 
+<div class="modal" id="traceModal" role="dialog" aria-modal="true" aria-labelledby="traceTitle">
+ <div class="modalbox trace-box"><h2 id="traceTitle">書き順どおりになぞろう</h2><p id="traceProgress"></p>
+ <svg id="traceBoard" viewBox="0 0 109 109" aria-label="書き順にそって一文字ずつなぞる場所"></svg>
+ <p id="traceMessage" aria-live="polite"></p><div class="trace-actions"><button class="secondary" id="traceRestart">この字をやり直す</button><button class="primary" id="traceNext" disabled>次の文字へ</button><button class="topbtn" id="traceQuit">海図へもどる</button></div></div>
+</div>
 <div class="toast" id="toast"></div>
 <div class="modal" id="levelModal"><div class="modalbox"><div class="lvicon">🌟</div><h2>レベルアップ！</h2><p id="levelText">勇者レベルが2になった！</p><button class="primary" id="levelClose">冒険をつづける</button></div></div>
 <div class="modal reward-modal" id="termRewardModal"><div class="modalbox"><div class="lvicon" id="termRewardIcon">💎</div><h2 class="treasure-title" id="termRewardTitle">秘宝のかけらを発見！</h2><p id="termRewardText">航路を進んだ証を手に入れた！</p><button class="primary" id="termRewardClose">受け取る</button></div></div>
 <div class="effect-layer" id="effectLayer"></div><div class="battle-flash" id="battleFlash"></div><div class="combo-burst" id="comboBurst">2 COMBO!</div>
 
+<script src="kanji-strokes.js"></script>
+<script src="tracing-core.js"></script>
 <script>
 "use strict";
 const Q=[
@@ -710,9 +724,10 @@ W.push({"id":"treasure_staff","n":"宝さがしの杖","i":"🪄","p":12000,"atk
 const TITLES=[{min:50,n:"無限の漢字王"},{min:40,n:"漢字界の英雄"},{min:30,n:"伝説の書き取り勇者"},{min:25,n:"漢字討伐の達人"},{min:20,n:"熟練の漢字剣士"},{min:15,n:"漢字マスターの勇者"},{min:10,n:"漢字を斬る勇者"},{min:6,n:"一人前の書き取り勇者"},{min:3,n:"漢字見習いの勇者"},{min:1,n:"かけだしの書き取り勇者"}];
 const COMPANIONS=[{i:"🥚",n:"ふしぎなタマゴ"},{i:"🐣",n:"生まれたばかりの相棒"},{i:"🐥",n:"元気な相棒"},{i:"🦎",n:"かけだし竜"},{i:"🐲",n:"若きドラゴン"},{i:"🐉",n:"大空のドラゴン"},{i:"🐉",n:"輝く守護竜"},{i:"🌟",n:"伝説の相棒"}];
 const SHARED_KEY="kanjiQuestRpg_v1",CHAPTER_KEY="kanjiQuestRpg_chapter4_v1",TERM_KEY="kanjiQuestSemester2_v1",AREA_LAYOUT=2,OLD_AREA_MAP=[[0],[1],[2,3],[4],[5]];
-const DEF=()=>({xp:0,gold:0,owned:["wood"],weapon:"wood",defeated:[],records:{},sentenceRecords:{},battles:0,clears:[],stageClears:{},totalDefeats:0,eliteRank:1,eliteClears:0,customIds:[],bestCombo:0,displayMode:"kana",practiceMode:"character",selectedTest:3});
+const DEF=()=>({xp:0,gold:0,owned:["wood"],weapon:"wood",defeated:[],records:{},traceRecords:{},sentenceRecords:{},battles:0,clears:[],stageClears:{},totalDefeats:0,eliteRank:1,eliteClears:0,customIds:[],bestCombo:0,displayMode:"kana",practiceMode:"character",selectedTest:3});
 let save=load(),term=loadTerm(),session=null,current=null,hp=100,maxHp=100,hintUsed=false,hintVisible=false,locked=false,toastTimer=null,strokes=[],stroke=null,drawing=false,tempCustomIds=[];
 let activePointerId=null,inkWidth=0,inkHeight=0;
+let traceState=null,traceReturnFocus=null;
 const $=id=>document.getElementById(id),screens={world:$("world"),battle:$("battle"),picker:$("picker"),shop:$("shop"),book:$("book"),result:$("result")},canvas=$("canvas"),ctx=canvas.getContext("2d");
 
 function cleanIds(v,min=1,max=Q.length){return [...new Set((Array.isArray(v)?v:[]).map(Number).filter(id=>id>=min&&id<=max))].sort((a,b)=>a-b)}
@@ -721,7 +736,7 @@ function cleanStageClears(v,clears){const out={};for(let i=0;i<AREAS.length;i++)
 function migrateOldAreas(v){const old=[...new Set((Array.isArray(v)?v:[]).map(Number).filter(id=>id>=0&&id<OLD_AREA_MAP.length))];return cleanAreas(old.flatMap(id=>OLD_AREA_MAP[id]))}
 function migrateStageClears(v,clears,current){if(current)return cleanStageClears(v,clears);const mapped={};for(let old=0;old<OLD_AREA_MAP.length;old++){const n=Math.max(0,Math.floor(Number(v&&v[old])||0));if(n)for(const id of OLD_AREA_MAP[old])mapped[id]=Math.max(mapped[id]||0,n)}return cleanStageClears(mapped,clears)}
 function readJson(key){try{return JSON.parse(localStorage.getItem(key))||{}}catch{return{}}}
-function load(){const shared=readJson(SHARED_KEY),chapter=readJson(CHAPTER_KEY),d=DEF(),current=chapter.areaLayout===AREA_LAYOUT;d.owned=Array.isArray(shared.owned)?shared.owned:Array.isArray(shared.ownedWeapons)?shared.ownedWeapons:["wood"];d.weapon=shared.weapon||shared.equippedWeapon||"wood";d.xp=Math.max(0,Number(shared.xp)||0);d.gold=Math.max(0,Number(shared.gold)||0);d.totalDefeats=Math.max(0,Number(shared.totalDefeats)||0);d.defeated=cleanIds(chapter.defeated);d.records=chapter.records&&typeof chapter.records==="object"?chapter.records:{};d.sentenceRecords=chapter.sentenceRecords&&typeof chapter.sentenceRecords==="object"?chapter.sentenceRecords:{};d.clears=current?cleanAreas(chapter.clears):migrateOldAreas(chapter.clears);d.stageClears=migrateStageClears(chapter.stageClears,d.clears,current);d.battles=Math.max(0,Number(chapter.battles)||0);d.eliteRank=Math.max(1,Number(chapter.eliteRank)||1);d.eliteClears=Math.max(0,Number(chapter.eliteClears)||0);d.customIds=cleanIds(chapter.customIds);d.bestCombo=Math.max(0,Number(chapter.bestCombo)||0);d.displayMode=chapter.displayMode==="clue"?"clue":"kana";d.practiceMode=chapter.practiceMode==="sentence"?"sentence":"character";d.selectedTest=TESTS.includes(chapter.selectedTest)?chapter.selectedTest:3;return d}
+function load(){const shared=readJson(SHARED_KEY),chapter=readJson(CHAPTER_KEY),d=DEF(),current=chapter.areaLayout===AREA_LAYOUT;d.owned=Array.isArray(shared.owned)?shared.owned:Array.isArray(shared.ownedWeapons)?shared.ownedWeapons:["wood"];d.weapon=shared.weapon||shared.equippedWeapon||"wood";d.xp=Math.max(0,Number(shared.xp)||0);d.gold=Math.max(0,Number(shared.gold)||0);d.totalDefeats=Math.max(0,Number(shared.totalDefeats)||0);d.defeated=cleanIds(chapter.defeated);d.records=chapter.records&&typeof chapter.records==="object"?chapter.records:{};d.sentenceRecords=chapter.sentenceRecords&&typeof chapter.sentenceRecords==="object"?chapter.sentenceRecords:{};d.clears=current?cleanAreas(chapter.clears):migrateOldAreas(chapter.clears);d.stageClears=migrateStageClears(chapter.stageClears,d.clears,current);d.battles=Math.max(0,Number(chapter.battles)||0);d.eliteRank=Math.max(1,Number(chapter.eliteRank)||1);d.eliteClears=Math.max(0,Number(chapter.eliteClears)||0);d.customIds=cleanIds(chapter.customIds);d.bestCombo=Math.max(0,Number(chapter.bestCombo)||0);d.displayMode=chapter.displayMode==="clue"?"clue":"kana";d.practiceMode=["sentence","trace"].includes(chapter.practiceMode)?chapter.practiceMode:"character";d.traceRecords=chapter.traceRecords&&typeof chapter.traceRecords==="object"?chapter.traceRecords:{};d.selectedTest=TESTS.includes(chapter.selectedTest)?chapter.selectedTest:3;return d}
 function loadTerm(){
  const raw=readJson(TERM_KEY),fragments={...(raw.fragments||{})},layouts={...(raw.areaLayouts||{})};
  const treasures=[...new Set((Array.isArray(raw.treasures)?raw.treasures:[]).filter(x=>/^test[1-7]$/.test(x)))];
@@ -732,18 +747,18 @@ function loadTerm(){
  if(ids.every(i=>fragments[v.key].includes(i))&&!treasures.includes(v.key))treasures.push(v.key);
  }return {...raw,fragments,treasures,areaLayouts:layouts}
 }
-function persist(){const shared=readJson(SHARED_KEY);shared.xp=save.xp;shared.gold=save.gold;shared.owned=save.owned.slice();shared.weapon=save.weapon;shared.totalDefeats=save.totalDefeats;localStorage.setItem(SHARED_KEY,JSON.stringify(shared));localStorage.setItem(CHAPTER_KEY,JSON.stringify({areaLayout:AREA_LAYOUT,defeated:cleanIds(save.defeated),records:save.records,sentenceRecords:save.sentenceRecords,battles:save.battles,clears:save.clears,stageClears:save.stageClears,totalDefeats:save.totalDefeats,eliteRank:save.eliteRank,eliteClears:save.eliteClears,customIds:cleanIds(save.customIds),bestCombo:save.bestCombo,displayMode:save.displayMode,practiceMode:save.practiceMode,selectedTest:save.selectedTest}));hud()}
+function persist(){const shared=readJson(SHARED_KEY);shared.xp=save.xp;shared.gold=save.gold;shared.owned=save.owned.slice();shared.weapon=save.weapon;shared.totalDefeats=save.totalDefeats;localStorage.setItem(SHARED_KEY,JSON.stringify(shared));localStorage.setItem(CHAPTER_KEY,JSON.stringify({areaLayout:AREA_LAYOUT,defeated:cleanIds(save.defeated),records:save.records,traceRecords:save.traceRecords,sentenceRecords:save.sentenceRecords,battles:save.battles,clears:save.clears,stageClears:save.stageClears,totalDefeats:save.totalDefeats,eliteRank:save.eliteRank,eliteClears:save.eliteClears,customIds:cleanIds(save.customIds),bestCombo:save.bestCombo,displayMode:save.displayMode,practiceMode:save.practiceMode,selectedTest:save.selectedTest}));hud()}
 function persistTerm(){localStorage.setItem(TERM_KEY,JSON.stringify(term))}
 function lvInfo(xp){let l=1,c=xp,n=60;while(c>=n){c-=n;l++;n=60+(l-1)*25}return{l,c,n}}
 function titleFor(l){return (TITLES.find(t=>l>=t.min)||TITLES[TITLES.length-1]).n}
 function weap(){return W.find(x=>x.id===save.weapon)||W[0]}
 function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
-function screen(name){finishStroke();document.documentElement.classList.toggle("battle-active",name==="battle");Object.entries(screens).forEach(([k,e])=>e.classList.toggle("active",k===name));if(name==="world")renderWorld();if(name==="shop")renderShop();if(name==="book")renderBook();if(name==="picker")renderPicker();scrollTo({top:0,behavior:"instant"})}
+function screen(name){if(name!=="battle")stopTracing();finishStroke();document.documentElement.classList.toggle("battle-active",name==="battle");Object.entries(screens).forEach(([k,e])=>e.classList.toggle("active",k===name));if(name==="world")renderWorld();if(name==="shop")renderShop();if(name==="book")renderBook();if(name==="picker")renderPicker();scrollTo({top:0,behavior:"instant"})}
 function hud(){const l=lvInfo(save.xp),w=weap();$("hudLv").textContent=`LV ${l.l}`;$("hudGold").textContent=`${save.gold} G`;$("hudWeapon").textContent=w.n;$("hudBook").textContent=`${new Set(save.defeated).size} / ${Q.length}`;$("xpFill").style.width=`${Math.round(l.c/l.n*100)}%`;$("xpText").textContent=`EXP ${l.c} / ${l.n}`}
 function stageMedal(count){return count>=3?"🥇":count===2?"🥈":count===1?"🥉":""}
 function renderTerm(){const v=selectedVolume(),ids=volumeAreas(v),parts=term.fragments[v.key]||[],stage=Math.min(COMPANIONS.length-1,term.treasures.length),c=COMPANIONS[stage];$("companionIcon").textContent=c.i;$("companionName").textContent=c.n;$("companionText").textContent=term.treasures.includes(v.key)?`${v.name}の秘宝を発見！`:`${v.blocks.join("・")}回目を進もう！ ${v.name}の秘宝まで ${parts.length} / ${ids.length}`;$("fragmentRow").innerHTML=ids.map(i=>`<span class="fragment${parts.includes(i)?" got":""}" title="${AREAS[i].n}">${parts.includes(i)?"◆":"・"}</span>`).join("");$("treasureShelf").innerHTML=Array.from({length:7},(_,i)=>`<span class="treasure${term.treasures.includes(`test${i+1}`)?" got":""}" title="第${i+1}の秘宝">${term.treasures.includes(`test${i+1}`)?VOLUMES[i]?.icon||"💎":"🔒"}</span>`).join("")}
-function selectPracticeMode(mode){if(mode!=="character"&&mode!=="sentence")return;save.practiceMode=mode;persist();renderWorld()}
-function renderPracticeMode(){for(const [id,mode] of [["practiceChar","character"],["practiceSentence","sentence"]])$(id).setAttribute("aria-pressed",String(save.practiceMode===mode))}
+function selectPracticeMode(mode){if(!["character","sentence","trace"].includes(mode))return;save.practiceMode=mode;persist();renderWorld()}
+function renderPracticeMode(){for(const [id,mode] of [["practiceChar","character"],["practiceTrace","trace"],["practiceSentence","sentence"]])$(id).setAttribute("aria-pressed",String(save.practiceMode===mode))}
 function selectTest(value){const n=Number(value);if(!TESTS.includes(n))return;save.selectedTest=n;persist();renderWorld()}
 
 
@@ -758,7 +773,7 @@ function startCustom(){const ids=customForTest();if(!ids.length)return toast("�
 function startElite(){const u=NEW_Q.filter(q=>save.defeated.includes(q.id)).length;if(!Q.slice(0,52).every(q=>save.defeated.includes(q.id))&&!save.owned.includes("hero"))return toast(`まずは1・2回目の52体を倒すか、勇者の聖剣を手に入れよう。`);const rank=save.eliteRank||1;startSession(`${save.selectedTest}回目・海竜の試練・ランク${rank}`,shuffle(practiceQuestions().map(q=>q.id)).slice(0,10),false,"elite",-1,rank)}
 function startSession(title,ids,ordered,mode,area,rank=0,practiceMode=save.practiceMode){ids=isSentencePractice(practiceMode)?sentenceIds(ids):cleanIds(ids);if(!ids.length)return toast("問題が選ばれていません。");session={title,original:ids.slice(),queue:ordered?ids.slice():shuffle(ids),done:new Set(),hps:{},reward:{xp:0,g:0},weaponId:weap().id,finished:false,chestGold:0,chestOpened:false,ordered,mode,area,rank,practiceMode,combo:0,maxCombo:0};$("battle").classList.remove("fever");screen("battle");battleHead();next();setTimeout(resize,40)}
 
-function next(){if(!session)return;if(session.done.size>=session.original.length)return finish();let id=session.queue.shift();while(id&&session.done.has(id))id=session.queue.shift();if(!id){const rest=session.original.filter(x=>!session.done.has(x));session.queue.push(...(session.ordered?rest:shuffle(rest)));id=session.queue.shift()}current=isSentencePractice(session.practiceMode)?SENTENCES.find(q=>q.id===id):Q[id-1];maxHp=session.mode==="elite"?180+(session.rank||1)*55:100;hp=session.hps[id]??maxHp;hintUsed=false;hintVisible=false;locked=false;renderMonster();resetQuestion();battleHead()}
+function next(){stopTracing();if(!session)return;if(session.done.size>=session.original.length)return finish();let id=session.queue.shift();while(id&&session.done.has(id))id=session.queue.shift();if(!id){const rest=session.original.filter(x=>!session.done.has(x));session.queue.push(...(session.ordered?rest:shuffle(rest)));id=session.queue.shift()}current=isSentencePractice(session.practiceMode)?SENTENCES.find(q=>q.id===id):Q[id-1];maxHp=session.mode==="elite"?180+(session.rank||1)*55:100;hp=session.hps[id]??maxHp;hintUsed=false;hintVisible=false;locked=false;renderMonster();resetQuestion();battleHead()}
 function monster(id){if(session&&session.mode==="elite"){const r=session.rank||1,em=["🐉","🦈","🧿","🐲","🔱","🌊","🦑","🐋"],pre=["海竜","古代ざめ","深海目","青竜","海王","大うず","魔王いか","白鯨"];return{emoji:em[(id+r)%em.length],name:`${pre[(r-1)%pre.length]}ランク${r}の強敵`,elite:true}}const ai=Math.max(0,AREAS.findIndex(a=>id>a.start&&id<=a.end)),a=AREAS[ai],v=(id-a.start-1)%a.m.length;return{emoji:a.m[v],name:`${a.pre[v]}海の漢字モンスター`,elite:false}}
 function renderMonster(){
  const m=monster(current.id);$("monsterName").textContent=m.name;$("monsterLevel").textContent=`ドリル${current.s}`;
@@ -773,7 +788,7 @@ function renderMonster(){
 function resetQuestion(){
  $("answerPanel").classList.remove("show");$("answerBig").setAttribute("aria-hidden","true");$("questPanel").classList.remove("answering");$("judges").setAttribute("inert","");
  $("hint").disabled=false;$("hint").textContent="✨ ヒント";$("good").disabled=false;$("showAnswer").disabled=false;
- msg(isSentencePractice(session.practiceMode)?"右から縦に、一マス一文字。文をぜんぶ書こう。":"出題された漢字を書こう。送り仮名もいっしょにね。");clearCanvas();requestAnimationFrame(resize);
+ msg(isSentencePractice(session.practiceMode)?"右から縦に、一マス一文字。文をぜんぶ書こう。":"出題された漢字を書こう。送り仮名もいっしょにね。");clearCanvas();requestAnimationFrame(resize);if(session.practiceMode==="trace")startTracing(()=>{showTracedAnswer();reveal();msg("書き順どおりに書けたね。できた！で進もう。","good")});
 }
 
 function battleHead(){if(!session)return;const t=session.original.length,d=session.done.size;$("battleTitle").textContent=session.title;$("battleCount").textContent=`${d} / ${t}${isSentencePractice(session.practiceMode)?"文":"問"}`;$("battleFill").style.width=`${d/t*100}%`;$("comboText").textContent=session.combo>=5?`🔥 FEVER ${session.combo}`:`COMBO ${session.combo}`;$("battle").classList.toggle("fever",session.combo>=5)}
@@ -781,17 +796,17 @@ function updateHp(){$("hpText").textContent=`${Math.max(0,hp)} / ${maxHp}`;$("hp
 function updateJudge(){$("good").disabled=false;$("good").textContent="⚔️ できた"}
 
 function reveal(){
- if(!current||locked)return;finishStroke();$("answerPanel").classList.add("show");$("answerBig").setAttribute("aria-hidden","false");$("questPanel").classList.add("answering");$("judges").removeAttribute("inert");
+ if(!current||locked||traceState)return;finishStroke();$("answerPanel").classList.add("show");$("answerBig").setAttribute("aria-hidden","false");$("questPanel").classList.add("answering");$("judges").removeAttribute("inert");
  $("showAnswer").disabled=true;updateJudge();msg("左の正解と、一文字ずつ見くらべよう。","warn");
 }
 
 function useHint(){
- if(!current||locked)return;hintUsed=false;hintVisible=!hintVisible;$("hint").textContent=hintVisible?"お手本を隠す":"✨ ヒント";
- redraw();msg(hintVisible?"薄いお手本をなぞってみよう。":"お手本を隠したよ。","warn");
+ if(!current||locked||traceState)return;hintUsed=false;hintVisible=true;redraw();
+ startTracing(()=>{redraw();msg("書き順を確かめたね。お手本を見ながら書いてみよう。","good")});
 }
 
 function requeue(id,far=false){const pos=Math.min(far?5:3,session.queue.length);session.queue.splice(pos,0,id)}
-function judge(kind){if(!current||locked||!session||!$("answerPanel").classList.contains("show"))return;locked=true;save.battles++;const id=current.id,records=isSentencePractice(session.practiceMode)?save.sentenceRecords:save.records,r=records[id]||{good:0,close:0,retry:0};r[kind]=(r[kind]||0)+1;r.last=kind;records[id]=r;const old=lvInfo(save.xp).l,w=weap();if(kind==="good"){session.combo++;session.maxCombo=Math.max(session.maxCombo,session.combo);const comboBonus=Math.min(50,session.combo*6),dmg=(session.mode==="elite"?100+w.atk*14:100+w.atk*12)+comboBonus;hp=Math.max(0,hp-dmg);session.hps[id]=hp;const dead=hp<=0;attack(dmg,dead);showCombo(session.combo);if(dead){session.done.add(id);const mult=session.mode==="elite"?1+Math.floor((session.rank||1)/2):1,xp=(10+w.xp+2)*mult*questionIds(current).length,g=(6+w.g+(session.mode==="elite"?(session.rank||1)*3:2))*questionIds(current).length;save.xp+=xp;save.gold+=g;save.totalDefeats+=questionIds(current).length;session.reward.xp+=xp;session.reward.g+=g;for(const charId of questionIds(current))if(!save.defeated.includes(charId))save.defeated.push(charId);msg(session.combo>=5?`フィーバー${session.combo}コンボ！ ${xp} EXP と ${g} G！`:`${session.combo}コンボ！ ${xp} EXP と ${g} G を手に入れた！`,"good")}else{const hitXp=3+(session.rank||1);save.xp+=hitXp;session.reward.xp+=hitXp;requeue(id);msg(`${session.combo}コンボ！ ${dmg}ダメージ。HPはあと${hp}！`,"warn")}}else if(kind==="close"){session.combo=0;const dmg=Math.max(5,8+Math.floor(w.atk*1.5));hp=Math.max(1,hp-dmg);session.hps[id]=hp;const xp=1+Math.floor(w.xp/12);save.xp+=xp;session.reward.xp+=xp;attack(dmg,false);requeue(id,true);msg(`おしい！ ${dmg}ダメージと ${xp} EXP。数問あとにもう一度！`,"warn")}else{session.combo=0;requeue(id);msg("今回はやり直し。数問あとに同じ魔物がもう一度現れるよ。","bad")}persist();updateHp();battleHead();const now=lvInfo(save.xp).l;const judgedSession=session;setTimeout(()=>{if(session!==judgedSession)return;now>old?levelUp(now,()=>{if(session===judgedSession)next()}):next()},kind==="good"?1050:800)}
+function judge(kind){if(!current||locked||traceState||!session||!$("answerPanel").classList.contains("show"))return;locked=true;save.battles++;const id=current.id,records=isSentencePractice(session.practiceMode)?save.sentenceRecords:session.practiceMode==="trace"?save.traceRecords:save.records,r=records[id]||{good:0,close:0,retry:0};r[kind]=(r[kind]||0)+1;r.last=kind;records[id]=r;const old=lvInfo(save.xp).l,w=weap();if(kind==="good"){session.combo++;session.maxCombo=Math.max(session.maxCombo,session.combo);const comboBonus=Math.min(50,session.combo*6),dmg=(session.mode==="elite"?100+w.atk*14:100+w.atk*12)+comboBonus;hp=Math.max(0,hp-dmg);session.hps[id]=hp;const dead=hp<=0;attack(dmg,dead);showCombo(session.combo);if(dead){session.done.add(id);const mult=session.mode==="elite"?1+Math.floor((session.rank||1)/2):1,xp=(10+w.xp+2)*mult*questionIds(current).length,g=(6+w.g+(session.mode==="elite"?(session.rank||1)*3:2))*questionIds(current).length;save.xp+=xp;save.gold+=g;save.totalDefeats+=questionIds(current).length;session.reward.xp+=xp;session.reward.g+=g;for(const charId of questionIds(current))if(!save.defeated.includes(charId))save.defeated.push(charId);msg(session.combo>=5?`フィーバー${session.combo}コンボ！ ${xp} EXP と ${g} G！`:`${session.combo}コンボ！ ${xp} EXP と ${g} G を手に入れた！`,"good")}else{const hitXp=3+(session.rank||1);save.xp+=hitXp;session.reward.xp+=hitXp;requeue(id);msg(`${session.combo}コンボ！ ${dmg}ダメージ。HPはあと${hp}！`,"warn")}}else if(kind==="close"){session.combo=0;const dmg=Math.max(5,8+Math.floor(w.atk*1.5));hp=Math.max(1,hp-dmg);session.hps[id]=hp;const xp=1+Math.floor(w.xp/12);save.xp+=xp;session.reward.xp+=xp;attack(dmg,false);requeue(id,true);msg(`おしい！ ${dmg}ダメージと ${xp} EXP。数問あとにもう一度！`,"warn")}else{session.combo=0;requeue(id);msg("今回はやり直し。数問あとに同じ魔物がもう一度現れるよ。","bad")}persist();updateHp();battleHead();const now=lvInfo(save.xp).l;const judgedSession=session;const advance=()=>{if(session!==judgedSession)return;now>old?levelUp(now,()=>{if(session===judgedSession)next()}):next()};if(kind==="good")setTimeout(advance,1050);else startTracing(advance,"答えをなぞって覚えよう")}
 function burstParticles(element,count=18){const r=element.getBoundingClientRect(),colors=["#c7f8ff","#5be4ff","#2e9fff","#ffffff","#ffd966"];for(let i=0;i<count;i++){const p=document.createElement("i"),a=Math.random()*Math.PI*2,d=45+Math.random()*105;p.className="particle";p.style.left=`${r.left+r.width/2}px`;p.style.top=`${r.top+r.height/2}px`;p.style.setProperty("--tx",`${Math.cos(a)*d}px`);p.style.setProperty("--ty",`${Math.sin(a)*d}px`);p.style.setProperty("--color",colors[i%colors.length]);$("effectLayer").appendChild(p);setTimeout(()=>p.remove(),800)}}
 function showCombo(combo){if(combo<2)return;const e=$("comboBurst");e.innerHTML=combo>=10&&combo%5===0?`🌊 海王一閃！<br>${combo} COMBO`:combo>=5?`🔥 FEVER!<br>${combo} COMBO`:`${combo} COMBO!`;e.classList.remove("show");void e.offsetWidth;e.classList.add("show")}
 function attack(dmg,dead){const s=$("sprite"),sl=$("slash"),d=$("damage");sl.classList.remove("show");d.classList.remove("show");s.classList.remove("hit","defeat");void sl.offsetWidth;d.textContent=dmg;sl.classList.add("show");d.classList.add("show");s.classList.add(dead?"defeat":"hit");burstParticles(s,dead?30:16);if(dead||session.combo>=5){const f=$("battleFlash"),p=$("battlePanel");f.classList.remove("show");p.classList.remove("screen-shake");void f.offsetWidth;f.classList.add("show");p.classList.add("screen-shake");setTimeout(()=>p.classList.remove("screen-shake"),340)}setTimeout(()=>{sl.classList.remove("show");d.classList.remove("show")},800)}
@@ -835,7 +850,7 @@ function pickerChanged(){tempCustomIds=[...$("pickGrid").querySelectorAll("input
 function updatePickSummary(){$("pickSummary").textContent=`${tempCustomIds.length}問を選択中`;$("saveSelection").disabled=!tempCustomIds.length}
 function setPicker(ids){tempCustomIds=isSentencePractice()?sentenceIds(cleanIds(ids)):cleanIds(ids);$("pickGrid").querySelectorAll("input").forEach(x=>x.checked=tempCustomIds.includes(Number(x.value)));updatePickSummary()}
 function selectHistory(){const ids=practiceQuestions().filter(q=>{
- const records=isSentencePractice()?((save.sentenceRecords[q.id])?[save.sentenceRecords[q.id]]:q.ids.map(id=>save.records[id]||{})):[save.records[q.id]||{}];
+ const records=save.practiceMode==="trace"?[save.traceRecords[q.id]||{}]:isSentencePractice()?((save.sentenceRecords[q.id])?[save.sentenceRecords[q.id]]:q.ids.map(id=>save.records[id]||{})):[save.records[q.id]||{}];
  return records.some(r=>(r.retry||0)+(r.close||0)>(r.good||0)||r.last==="retry"||r.last==="close")
 }).map(q=>q.id);if(!ids.length)return toast("履歴から苦手な問題が見つかりませんでした。手動で選んでね。");setPicker(ids);toast(`${ids.length}問を履歴から選びました。`)}
 function saveCustom(){if(!tempCustomIds.length)return;save.customIds=cleanIds([...save.customIds.filter(id=>!selectedQuestions().some(q=>q.id===id)),...tempCustomIds.flatMap(id=>isSentencePractice()?SENTENCE_BY_CHAR.get(id).ids:[id])]);persist();startCustom()}
@@ -869,7 +884,7 @@ function fitVerticalText(){
 }
 function pt(e){const r=canvas.getBoundingClientRect(),t=inkTransform();return{x:(e.clientX-r.left-t.x)/t.scale,y:(e.clientY-r.top-t.y)/t.scale}}
 function begin(e){
- if(locked||!current||activePointerId!==null||e.isPrimary===false||e.button!==0)return;
+ if(locked||traceState||!current||activePointerId!==null||e.isPrimary===false||e.button!==0)return;
  e.preventDefault();resize();const p=pt(e);if(p.x<0||p.y<0||p.x>inkWidth||p.y>inkHeight)return;
  activePointerId=e.pointerId;drawing=true;stroke=[p];redraw();try{canvas.setPointerCapture(e.pointerId)}catch{}
 }
@@ -906,7 +921,7 @@ function redraw(){
  for(let i=0;i<rows*(isSentencePractice(session.practiceMode)?2:1);i++){
   const {x,y}=cellPosition(i,rows,session.practiceMode);ctx.lineWidth=.8;ctx.strokeStyle="#97baca";ctx.setLineDash([]);ctx.strokeRect(x,y,100,100);
   ctx.lineWidth=.45;ctx.strokeStyle="#c8dbe2";ctx.setLineDash([2,2]);ctx.beginPath();ctx.moveTo(x+50,y);ctx.lineTo(x+50,y+100);ctx.moveTo(x,y+50);ctx.lineTo(x+100,y+50);ctx.stroke();
-  if(hintVisible&&letters[i]){ctx.fillStyle="#63766d45";ctx.font='72px "YuKyokasho", "Yu Kyokasho", "UD Digi Kyokasho N-R", "Hiragino Mincho ProN", serif';ctx.textAlign="center";ctx.textBaseline="middle";const punct="。、".includes(letters[i]);ctx.fillText(letters[i],x+(punct?74:50),y+(punct?25:52));}
+  if(hintVisible&&letters[i]){ctx.fillStyle="#63766d45";ctx.font='72px "Klee One", "YuKyokasho", "Yu Kyokasho", "UD Digi Kyokasho N-R", "Hiragino Mincho ProN", serif';ctx.textAlign="center";ctx.textBaseline="middle";const punct="。、".includes(letters[i]);ctx.fillText(letters[i],x+(punct?74:50),y+(punct?25:52));}
  }
  ctx.setLineDash([]);setInkStyle();
  for(const s of stroke?[...strokes,stroke]:strokes){if(s.length===1){ctx.beginPath();ctx.arc(s[0].x,s[0].y,INK_WIDTH/2,0,Math.PI*2);ctx.fill();continue}ctx.beginPath();ctx.moveTo(s[0].x,s[0].y);for(let i=1;i<s.length;i++)ctx.lineTo(s[i].x,s[i].y);ctx.stroke()}
@@ -915,6 +930,43 @@ function redraw(){
 function clearCanvas(){finishStroke();strokes=[];resize()}
 function undo(){if(locked)return;finishStroke();strokes.pop();redraw()}
 
+// A separate one-character board keeps the original answer and handwriting intact.
+function stopTracing(){traceState=null;$("traceModal").classList.remove("show");$("battle").removeAttribute("inert");document.querySelector?.(".topbar")?.removeAttribute("inert");if(traceReturnFocus?.focus)traceReturnFocus.focus();traceReturnFocus=null}
+function startTracing(onDone,title="書き順どおりになぞろう"){
+ finishStroke();traceReturnFocus=document.activeElement;
+ traceState={letters:[...current.a].filter(c=>!"。、".includes(c)),letter:0,stroke:0,misses:0,points:null,pid:null,onDone,session};
+ $("traceTitle").textContent=title;$("traceModal").classList.add("show");$("battle").setAttribute("inert","");document.querySelector?.(".topbar")?.setAttribute("inert","");
+ drawTraceBoard();$("traceRestart").focus?.();
+}
+function showTracedAnswer(){
+ strokes=[];const layout=writingLayout(current.a,session.practiceMode);
+ [...current.a].forEach((ch,i)=>{const pos=cellPosition(i,layout.rows,session.practiceMode);for(const d of KANJI_STROKES[ch]||[])strokes.push(KanjiCore.flatten(d).map(p=>({x:pos.x+10+p[0]*80/109,y:pos.y+10+p[1]*80/109})))});redraw();
+}
+function tracePaths(){return typeof KANJI_STROKES!=="undefined"?KANJI_STROKES[traceState.letters[traceState.letter]]||[]:[]}
+function drawTraceBoard(){
+ const t=traceState;if(!t)return;const paths=tracePaths(),done=t.stroke>=paths.length;
+ $("traceProgress").textContent=`${t.letter+1} / ${t.letters.length}文字 「${t.letters[t.letter]}」${done?"":`・${t.stroke+1} / ${paths.length}画`}`;
+ $("traceNext").disabled=!done;$("traceNext").textContent=t.letter+1===t.letters.length?"練習を終える":"次の文字へ";
+ let svg='<path d="M54.5 0V109M0 54.5H109" stroke="#ccdce5" stroke-dasharray="2 2" fill="none"/>';
+ paths.forEach((d,i)=>{svg+=`<path d="${d}" fill="none" stroke="${i<t.stroke?"#247d79":i===t.stroke?"#efb434":"#d8dee3"}" stroke-width="${i===t.stroke?4:3}" stroke-linecap="round" stroke-linejoin="round"/>`});
+ if(!done){const p=KanjiCore.flatten(paths[t.stroke]),a=p[0],b=KanjiCore.resample(p,5)[1],angle=Math.atan2(b[1]-a[1],b[0]-a[0])*180/Math.PI;
+ svg+=`<g transform="translate(${a[0]} ${a[1]})"><circle r="5" fill="#248567"/><path d="M-2 -2L2 0L-2 2" transform="rotate(${angle})" stroke="white" stroke-width="1" fill="none"/></g>`;}
+ svg+='<polyline id="traceInk" fill="none" stroke="#253c53" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>';
+ $("traceBoard").innerHTML=svg;
+ $("traceMessage").textContent=done?paths.length?"書けたね！ 次へ進もう。":"この文字の書き順は準備中です。次へ進めます。":"緑の丸から、黄色の線を矢印の向きになぞろう。";
+}
+function tracePoint(e){const r=$("traceBoard").getBoundingClientRect();return[(e.clientX-r.left)/r.width*109,(e.clientY-r.top)/r.height*109]}
+function traceDown(e){const t=traceState;if(!t||t.points||e.isPrimary===false||e.button!==0||t.stroke>=tracePaths().length)return;e.preventDefault();t.pid=e.pointerId;t.points=[tracePoint(e)];$("traceBoard").setPointerCapture(e.pointerId)}
+function traceMove(e){const t=traceState;if(!t?.points||t.pid!==e.pointerId)return;e.preventDefault();t.points.push(tracePoint(e));$("traceInk").setAttribute("points",t.points.map(p=>p.join(",")).join(" "))}
+function traceCancel(e){const t=traceState;if(!t||t.pid!==e.pointerId)return;t.points=null;t.pid=null;drawTraceBoard()}
+function traceUp(e){const t=traceState;if(!t?.points||t.pid!==e.pointerId)return;e.preventDefault();t.points.push(tracePoint(e));const r=KanjiCore.judgeStroke(t.points,tracePaths()[t.stroke]);t.points=null;t.pid=null;
+ if(r.ok){t.stroke++;t.misses=0;drawTraceBoard()}else{
+  t.misses++;drawTraceBoard();$("traceMessage").textContent=r.reason==="reverse"?"緑の丸から、矢印の向きに書いてみよう。":"緑の丸から、黄色の線を最後までなぞろう。";
+  if(t.misses>=3){$("traceMessage").textContent="この画はお手伝いするね。次の画へ進もう。";t.stroke++;t.misses=0;drawTraceBoard();$("traceMessage").textContent="この画はお手伝いしたよ。次へ進もう。";}
+ }
+}
+function traceNextLetter(){const t=traceState;if(!t||t.stroke<tracePaths().length)return;if(++t.letter<t.letters.length){t.stroke=0;t.misses=0;t.points=null;drawTraceBoard();return}const callback=t.onDone,owner=t.session;stopTracing();if(session===owner)callback()}
+
 function preventBattleGesture(e){if(screens.battle.classList.contains("active")&&e.cancelable)e.preventDefault()}
 function guardBattleTouch(e){
   if(!screens.battle.classList.contains("active")||!e.cancelable)return;
@@ -922,10 +974,14 @@ function guardBattleTouch(e){
   if(e.touches.length>1||edgeTouch||(drawing&&e.target!==canvas))e.preventDefault();
 }
 
-$("practiceChar").onclick=()=>selectPracticeMode("character");$("practiceSentence").onclick=()=>selectPracticeMode("sentence");$("testSelect").onchange=e=>selectTest(e.target.value);$("randomSelected").onclick=startRandomTest;$("randomSelectedAlt").onclick=startRandomTest;$("randomAll").onclick=startRandomAll;$("eliteStart").onclick=startElite;$("openPicker").onclick=()=>screen("picker");$("startCustom").onclick=startCustom;$("openBook").onclick=()=>screen("book");$("openShop").onclick=()=>screen("shop");$("topShop").onclick=()=>screen("shop");$("topMap").onclick=()=>screen("world");$("retreat").onclick=()=>{session=null;current=null;screen("world")};
+$("practiceTrace").onclick=()=>selectPracticeMode("trace");$("practiceChar").onclick=()=>selectPracticeMode("character");$("practiceSentence").onclick=()=>selectPracticeMode("sentence");$("testSelect").onchange=e=>selectTest(e.target.value);$("randomSelected").onclick=startRandomTest;$("randomSelectedAlt").onclick=startRandomTest;$("randomAll").onclick=startRandomAll;$("eliteStart").onclick=startElite;$("openPicker").onclick=()=>screen("picker");$("startCustom").onclick=startCustom;$("openBook").onclick=()=>screen("book");$("openShop").onclick=()=>screen("shop");$("topShop").onclick=()=>screen("shop");$("topMap").onclick=()=>screen("world");$("retreat").onclick=()=>{session=null;current=null;screen("world")};
 $("selectFromHistory").onclick=selectHistory;$("selectAll").onclick=()=>setPicker(practiceQuestions().map(q=>q.id));$("clearSelection").onclick=()=>setPicker([]);$("pickerBack").onclick=()=>screen("world");$("saveSelection").onclick=saveCustom;
 $("openWeaponChest").onclick=openWeaponChest;
 $("shopBack").onclick=()=>screen("world");$("bookBack").onclick=()=>screen("world");$("reset").onclick=reset;$("termRewardClose").onclick=()=>$("termRewardModal").classList.remove("show");$("undo").onclick=undo;$("clear").onclick=clearCanvas;$("hint").onclick=useHint;$("showAnswer").onclick=reveal;$("good").onclick=()=>judge("good");$("close").onclick=()=>judge("close");$("retry").onclick=()=>judge("retry");$("again").onclick=repeat;$("resultMap").onclick=()=>{session=null;screen("world")};$("resultShop").onclick=()=>screen("shop");
+$("traceNext").onclick=traceNextLetter;$("traceRestart").onclick=()=>{if(traceState){traceState.stroke=0;traceState.misses=0;traceState.points=null;drawTraceBoard()}};
+$("traceQuit").onclick=()=>{stopTracing();session=null;screen("world")};
+$("traceBoard").addEventListener("pointerdown",traceDown);$("traceBoard").addEventListener("pointermove",traceMove);$("traceBoard").addEventListener("pointerup",traceUp);$("traceBoard").addEventListener("pointercancel",traceCancel);$("traceBoard").addEventListener("lostpointercapture",traceCancel);
+document.fonts?.ready.then(()=>{if(current){redraw();fitVerticalText()}});
 canvas.addEventListener("pointerdown",begin);canvas.addEventListener("pointermove",move);canvas.addEventListener("pointerup",end);canvas.addEventListener("pointercancel",end);canvas.addEventListener("lostpointercapture",end);
 canvas.addEventListener("touchstart",preventBattleGesture,{passive:false});canvas.addEventListener("touchmove",preventBattleGesture,{passive:false});
 document.addEventListener("touchstart",guardBattleTouch,{passive:false,capture:true});document.addEventListener("touchmove",guardBattleTouch,{passive:false,capture:true});
