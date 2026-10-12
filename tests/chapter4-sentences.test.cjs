@@ -6,6 +6,7 @@ const vm=require('node:vm');
 const assert=require('node:assert/strict');
 const html=fs.readFileSync(path.join(__dirname,'../chapter4/index.html'),'utf8');
 const script=html.match(/<script>([\s\S]*?)<\/script>/)[1];
+const assets=['kanji-strokes.js','stroke-trace.js'].map(f=>{assert(html.includes(`<script src="${f}"></script>`),`missing ${f}`);return fs.readFileSync(path.join(__dirname,'../chapter4',f),'utf8')});
 new vm.Script(script);
 const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
 assert.equal(ids.length,new Set(ids).size,'duplicate DOM IDs');
@@ -28,7 +29,7 @@ function boot(chapter={},term={},shared={}){
  const doc={getElementById:id=>nodes.get(id),createElement:element,documentElement:element(),addEventListener(){},hidden:false};
  const sandbox={console,document:doc,localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)},devicePixelRatio:2,
   setTimeout(fn){timers.push(fn);return timers.length},clearTimeout(){},requestAnimationFrame(){},addEventListener(){},scrollTo(){},confirm:()=>true};
- vm.createContext(sandbox);vm.runInContext(script,sandbox);
+ vm.createContext(sandbox);for(const asset of assets)vm.runInContext(asset,sandbox);vm.runInContext(script,sandbox);
  return {run:code=>vm.runInContext(code,sandbox),nodes,storage,timers};
 }
 const legacy={areaLayout:2,selectedTest:6,practiceMode:'sentence',defeated:[1,53,114],records:{114:{retry:3,last:'retry'}},customIds:[115,160],clears:[0,6,13],stageClears:{0:8,6:4,13:5},displayMode:'clue'};
@@ -60,7 +61,11 @@ b.run('reveal();resize()');assert.equal(b.run('JSON.stringify(strokes)'),ink);as
 b.nodes.get('canvas').getBoundingClientRect=()=>({width:600,height:400,left:0,top:0});
 b.run('resize()');assert.equal(b.run('JSON.stringify(strokes)'),ink);assert.equal(b.run('inkTransform().scale'),(400-8)/600);
 b.run('useHint();begin({pointerId:1,button:0,isPrimary:true,clientX:320,clientY:30,preventDefault(){}});move({pointerId:1,clientX:322,clientY:34,preventDefault(){}});end({pointerId:1,cancelable:false})');
-assert(b.run('hintVisible'),'writing must not hide tracing hint');
+assert.equal(b.run('trace&&trace.kind'),'hint','writing must not hide tracing hint');
+// Sentence hints trace only the rewritten characters (本・感想・書く), in stroke order.
+assert.equal(b.run('JSON.stringify(current.targets)'),'[0,2,3,5,6]');
+assert(b.run('trace.steps.every(s=>current.targets.includes(s.cell))'));
+b.run('useHint()');assert.equal(b.run('trace'),null);assert.equal(b.run('JSON.stringify(strokes)'),ink,'stopping the hint restores earlier writing');
 b.run('judge("good")');
 assert.equal(b.run('save.gold')-before,4*(6+25+2));
 assert(b.run('current.ids.every(id=>save.defeated.includes(id))'));
@@ -173,3 +178,47 @@ assert.equal(complete.run('volumeAreas(selectedVolume()).length'),6);
 for(let area=19;area<25;area++)complete.run(`startArea(${area});session.done=new Set(session.original);finish()`);
 assert(complete.run('term.treasures.includes("test4")'));
 console.log('PASS: drill 28 transcription, IDs, both test selections and fourth treasure.');
+
+// Tracing: KanjiVG glyphs, stroke judging, trace practice mode, hint and review flows.
+assert.equal(b.run('Object.keys(KANJI_STROKES).length'),234);
+assert(b.run('Q.every(q=>[...q.a].every(ch=>KANJI_STROKES[ch]))'),'every answer character has stroke data');
+assert(b.run('SENTENCES.every(q=>[...q.a].every(ch=>KANJI_STROKES[ch]))'),'every sentence character has stroke data');
+assert(b.run('StrokeTrace.judgeStroke(StrokeTrace.flatten(KANJI_STROKES["一"][0]),KANJI_STROKES["一"][0]).ok'));
+assert(!b.run('StrokeTrace.judgeStroke(StrokeTrace.flatten(KANJI_STROKES["一"][0]).reverse(),KANJI_STROKES["一"][0]).ok'),'reverse stroke is rejected');
+assert.equal((b.run('glyphHtml("<span class=\\"answer-target\\">本</span>。")').match(/<svg/g)||[]).length,2);
+const t=boot({areaLayout:2,selectedTest:3,practiceMode:'trace'});
+assert.equal(t.nodes.get('practiceTrace').attrs['aria-pressed'],'true');
+assert(t.nodes.get('eliteStart').disabled,'elite trial is closed in trace practice');
+t.run('startArea(6)');
+assert.equal(t.run('trace.kind'),'mode');assert(t.nodes.get('answerPanel').classList.contains('show'));
+const traceAll=`(()=>{const tr=inkTransform();for(const s of [...trace.steps]){const pts=s.pts.map(([x,y])=>({clientX:(s.x+x*KV)*tr.scale+tr.x,clientY:(s.y+y*KV)*tr.scale+tr.y}));
+ begin({pointerId:5,button:0,isPrimary:true,...pts[0],preventDefault(){}});for(const p of pts.slice(1))move({pointerId:5,...p,preventDefault(){}});end({type:'pointerup',pointerId:5,...pts.at(-1),preventDefault(){}})}})()`;
+const tGold=t.run('save.gold'),tId=t.run('current.id'),tSteps=t.run('trace.steps.length');
+assert.equal(tSteps,t.run('[...current.a].reduce((n,ch)=>n+KANJI_STROKES[ch].length,0)'));
+t.run(traceAll);
+assert.equal(t.run('trace.pos'),tSteps);
+assert.equal(t.run(`save.traceRecords[${tId}].done`),1);
+assert.equal(t.run('save.gold')-tGold,Math.ceil((6+0+2)/2));
+assert(!t.run(`save.defeated.includes(${tId})`),'tracing does not register the monster book');
+assert.equal(t.run('JSON.stringify(save.records)'),'{}');
+t.run('session.done=new Set(session.original);finish()');
+assert.equal(t.run('save.stageClears[6]||0'),0,'trace practice does not award route clears');
+assert(!t.run('term.fragments.test2.includes(6)'));
+assert.equal(boot(JSON.parse(t.storage.get('kanjiQuestRpg_chapter4_v1'))).run(`save.traceRecords[${tId}].done`),1);
+// Hint: tracing a character problem, then the guide disappears so the child writes from memory.
+t.run('session=null;current=null;selectPracticeMode("character");startArea(6);useHint()');
+assert.equal(t.run('trace.kind'),'hint');
+t.run(traceAll);t.timers.splice(0).forEach(f=>f());
+assert.equal(t.run('trace'),null);assert.equal(t.run('strokes.length'),0);
+// "おしい" and "もう一回" show the answer as a tracing exercise before the next problem.
+for(const kind of ['close','retry']){
+ const id=t.run('current.id');t.run(`reveal();judge("${kind}")`);t.timers.splice(0).forEach(f=>f());
+ assert.equal(t.run('trace&&trace.kind'),'review');assert.equal(t.run('current.id'),id);
+ t.run(traceAll);t.timers.splice(0).forEach(f=>f());
+ assert.equal(t.run('trace'),null);assert.notEqual(t.run('current.id'),id,'next problem after tracing');
+}
+// Three misses on a stroke draws it together and moves on.
+t.run('useHint()');const pos0=t.run('trace.pos');
+for(let i=0;i<3;i++)t.run('begin({pointerId:7,button:0,isPrimary:true,clientX:1,clientY:1,preventDefault(){}});move({pointerId:7,clientX:2,clientY:300,preventDefault(){}});end({type:"pointerup",pointerId:7,clientX:2,clientY:300,preventDefault(){}})');
+assert.equal(t.run('trace.pos'),pos0+1);
+console.log('PASS: KanjiVG coverage, stroke judging, trace practice rewards/records, hint tracing and review tracing after close/retry.');

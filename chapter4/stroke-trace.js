@@ -1,0 +1,135 @@
+/*
+ * 第4章のなぞり判定（画面に依存しない部分）。
+ * ark214th/1stGradeMath の kanji_mahou/kanji-core.js から、SVGパスの点列化となぞり判定だけを移植。
+ * 座標は KanjiVG と同じ 109×109。ブラウザでは window.StrokeTrace、node では require() で使う。
+ */
+(function (root) {
+  'use strict';
+
+  /* ---------- SVG パス → 点の列 ---------- */
+  function tokenize(d) {
+    return d.match(/[MmCcSsLlHhVvZz]|-?\d*\.?\d+(?:e-?\d+)?/g) || [];
+  }
+
+  function cubic(p0, p1, p2, p3, t) {
+    const u = 1 - t;
+    return [
+      u * u * u * p0[0] + 3 * u * u * t * p1[0] + 3 * u * t * t * p2[0] + t * t * t * p3[0],
+      u * u * u * p0[1] + 3 * u * u * t * p1[1] + 3 * u * t * t * p2[1] + t * t * t * p3[1],
+    ];
+  }
+
+  // パスを細かい折れ線にする
+  function flatten(d) {
+    const tk = tokenize(d);
+    const pts = [];
+    let i = 0, cmd = '', cur = [0, 0], start = [0, 0], lastCtrl = null;
+    const n = () => parseFloat(tk[i++]);
+    const curve = (c1, c2, end) => {
+      const steps = 12;
+      for (let k = 1; k <= steps; k++) pts.push(cubic(cur, c1, c2, end, k / steps));
+      lastCtrl = c2; cur = end;
+    };
+    while (i < tk.length) {
+      if (/[A-Za-z]/.test(tk[i])) cmd = tk[i++];
+      const rel = cmd === cmd.toLowerCase();
+      const ox = rel ? cur[0] : 0, oy = rel ? cur[1] : 0;
+      switch (cmd.toUpperCase()) {
+        case 'M': {
+          cur = [ox + n(), oy + n()]; start = cur; pts.push(cur); lastCtrl = null;
+          cmd = rel ? 'l' : 'L';
+          break;
+        }
+        case 'L': { cur = [ox + n(), oy + n()]; pts.push(cur); lastCtrl = null; break; }
+        case 'H': { cur = [(rel ? cur[0] : 0) + n(), cur[1]]; pts.push(cur); lastCtrl = null; break; }
+        case 'V': { cur = [cur[0], (rel ? cur[1] : 0) + n()]; pts.push(cur); lastCtrl = null; break; }
+        case 'C': {
+          const c1 = [ox + n(), oy + n()], c2 = [ox + n(), oy + n()], e = [ox + n(), oy + n()];
+          curve(c1, c2, e);
+          break;
+        }
+        case 'S': {
+          const c1 = lastCtrl ? [2 * cur[0] - lastCtrl[0], 2 * cur[1] - lastCtrl[1]] : cur;
+          const c2 = [ox + n(), oy + n()], e = [ox + n(), oy + n()];
+          curve(c1, c2, e);
+          break;
+        }
+        case 'Z': { cur = start; pts.push(cur); lastCtrl = null; break; }
+        default: i++;
+      }
+    }
+    return pts;
+  }
+
+  const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
+
+  function polyLength(pts) {
+    let L = 0;
+    for (let k = 1; k < pts.length; k++) L += dist(pts[k - 1], pts[k]);
+    return L;
+  }
+
+  // 折れ線を、道のりで等間隔な n 点に打ち直す
+  function resample(pts, n) {
+    if (!pts.length) return [];
+    if (pts.length === 1) return Array.from({ length: n }, () => pts[0].slice());
+    const L = polyLength(pts);
+    if (L === 0) return Array.from({ length: n }, () => pts[0].slice());
+    const out = [pts[0].slice()];
+    const step = L / (n - 1);
+    let k = 1, acc = 0, prev = pts[0];
+    for (let j = 1; j < n - 1; j++) {
+      const target = j * step;
+      while (k < pts.length) {
+        const seg = dist(prev, pts[k]);
+        if (acc + seg >= target) {
+          const t = seg ? (target - acc) / seg : 0;
+          prev = [prev[0] + (pts[k][0] - prev[0]) * t, prev[1] + (pts[k][1] - prev[1]) * t];
+          acc = target;
+          out.push(prev.slice());
+          break;
+        }
+        acc += seg; prev = pts[k]; k++;
+      }
+    }
+    out.push(pts[pts.length - 1].slice());
+    while (out.length < n) out.push(pts[pts.length - 1].slice());
+    return out;
+  }
+
+  /* ---------- なぞりの判定 ----------
+   * user: 子どもが書いた点列（109×109 の座標）
+   * model: お手本の画のパス文字列、または点列
+   * 書きはじめの位置・向き・かたちを見る。娘側と同じ、ゆるめの基準。
+   */
+  const TOL = 17;
+
+  function judgeStroke(user, model, opts) {
+    const tol = (opts && opts.tol) || TOL;
+    const M = typeof model === 'string' ? flatten(model) : model;
+    const mLen = polyLength(M);
+    const uLen = polyLength(user || []);
+    const res = { ok: false, reason: '' };
+    if (!user || user.length < 2 || uLen < Math.min(6, mLen * 0.4)) { res.reason = 'short'; return res; }
+    const N = 20;
+    const m = resample(M, N), u = resample(user, N);
+    const startD = dist(u[0], m[0]);
+    const endD = dist(u[N - 1], m[N - 1]);
+    // 逆向きに書いたか（はじめと おわりが いれかわっている）
+    if (dist(u[0], m[N - 1]) + dist(u[N - 1], m[0]) < (startD + endD) * 0.6 && mLen > 12) { res.reason = 'reverse'; return res; }
+    if (startD > tol * 1.25) { res.reason = 'start'; return res; }
+    if (endD > tol * 1.5) { res.reason = 'end'; return res; }
+    let sum = 0;
+    for (let k = 0; k < N; k++) sum += dist(u[k], m[k]);
+    const mean = sum / N;
+    if (mean > tol * 0.85) { res.reason = 'shape'; return res; }
+    if (uLen < mLen * 0.45) { res.reason = 'short'; return res; }
+    res.ok = true;
+    res.score = mean;
+    return res;
+  }
+
+  const api = { tokenize, flatten, resample, polyLength, judgeStroke, TOL };
+  root.StrokeTrace = api;
+  if (typeof module !== 'undefined') module.exports = api;
+})(typeof window !== 'undefined' ? window : globalThis);
