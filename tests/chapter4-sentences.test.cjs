@@ -201,10 +201,26 @@ const uncertain=lessonBoot();uncertain.run('startSession("uncertain",[1],true,"a
 assert(uncertain.run('session.finished'));assert.equal(uncertain.run('session.done.size'),0);assert.equal(uncertain.run('save.gold'),0);assert.equal(uncertain.run('save.stageClears[0]||0'),0);assert.equal(uncertain.run('save.reviewNotes.length'),1);
 const notesReload=boot(JSON.parse(uncertain.storage.get('kanjiQuestRpg_chapter4_v1')));assert.equal(notesReload.run('save.reviewNotes[0].ink[0][1][1]'),80);notesReload.run('showReviewNotes()');assert(notesReload.nodes.get('reviewModal').classList.contains('show'));
 // Sentence repairs touch only the selected letter and keep the complete original handwriting.
-const whole=boot({areaLayout:2,selectedTest:5,practiceMode:'sentence'});whole.run('startSession("sentence",[114],true,"custom",-1);resize();strokes=[[{x:125,y:20},{x:135,y:30}],[{x:125,y:120},{x:140,y:150}]];reveal()');
+const whole=boot({areaLayout:2,selectedTest:5,practiceMode:'sentence'});whole.run('startSession("sentence",[114],true,"custom",-1);resize();strokes=[[{x:125,y:20},{x:135,y:30}],[{x:125,y:120},{x:140,y:150}],[{x:20,y:20},{x:30,y:40}]];reveal()');
 assert.equal(whole.run('lesson.phase'),'compare');const allInk=whole.run('JSON.stringify(strokes)'),firstInk=whole.run('JSON.stringify(lesson.items[0].ink)');
+// Every written cell has its own adjacent, equal-viewBox model, including the second column and punctuation.
+assert(!whole.nodes.get('lessonComparisons').hidden);assert(whole.nodes.get('lessonBoards').hidden);
+const pairs=[...whole.nodes.get('lessonComparisons').innerHTML.matchAll(/<button\b[^>]*>([\s\S]*?)<\/button>/g)].map(m=>m[0]);
+assert.equal(pairs.length,whole.run('[...current.a].length'));
+for(let index=0;index<pairs.length;index++){
+ assert.equal((pairs[index].match(/viewBox="0 0 109 109"/g)||[]).length,2,'both adjacent characters use the same square');
+ const ch=whole.run(`[...current.a][${index}]`);
+ if(!'。、'.includes(ch))assert(pairs[index].includes(`d="${whole.run(`KANJI_STROKES[${JSON.stringify(ch)}][0]`)}"`),'model belongs to this written character');
+}
+const pairPoints=index=>pairs[index].match(/<polyline points="([^"]+)"/)[1].split(/[ ,]/).map(Number);
+assert(Math.abs(pairPoints(0)[0]-13*1.09)<1e-8,'right-column ink stays with the first model');
+assert(Math.abs(pairPoints(6)[0]-20*1.09)<1e-8,'left-column ink stays with the seventh model');
+assert(pairs.at(-1).includes('disabled'),'punctuation is shown without changing self-grading');
+whole.run('lesson.overlay=true;renderLesson()');assert(whole.nodes.get('lessonComparisons').innerHTML.includes('#d84762'),'optional overlay remains on the selected pair');
 whole.run('lesson.at=1;lessonVerdict("fix")');assert.equal(whole.run('lesson.phase'),'demo');assert.equal(whole.run('lesson.items[1].repairs'),1);assert.equal(whole.run('JSON.stringify(lesson.items[0].ink)'),firstInk);assert.equal(whole.run('JSON.stringify(strokes)'),allInk);
+assert(whole.nodes.get('lessonComparisons').hidden);assert.equal(whole.nodes.get('lessonComparisons').innerHTML,'','answer overview must disappear during recall and tracing');
 whole.run('returnToSentence()');assert.equal(whole.run('lesson.at'),1);assert.equal(whole.run('lesson.phase'),'compare');assert.equal(whole.run('JSON.stringify(strokes)'),allInk);
+assert(!whole.nodes.get('lessonComparisons').hidden,'return from repair restores all adjacent models');
 whole.run('lessonVerdict("fix")');assert.equal(whole.run('lesson.items[1].verdict'),'unsure','repair loop is bounded');
 // Pointer cancellation, secondary fingers and returned controls cannot silently accept a stroke.
 const pen=lessonBoot();pen.run('startSession("pen",[1],true,"custom",-1);lessonMain();lesson.phase="write";lessonDown({pointerId:1,button:0,isPrimary:true,clientX:100,clientY:100,preventDefault(){}});lessonMove({pointerId:2,clientX:200,clientY:200,preventDefault(){}})');assert.equal(pen.run('lesson.points.length'),1);pen.run('lessonCancel({pointerId:1})');assert.equal(pen.run('activeLetter().ink.length'),0);

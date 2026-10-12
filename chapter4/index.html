@@ -137,6 +137,10 @@ html.battle-active .topbar,html.battle-active .hud{display:none}
 #lessonBoard{touch-action:none;user-select:none;-webkit-user-select:none}.lesson-model{display:grid;place-items:center;background:#f4faf1}#lessonModel{width:100%;height:100%;display:block}.lesson-model p{padding:20px;font-size:clamp(16px,2vw,23px);color:#59726a}
 .lesson-tools,.lesson-actions{display:flex;justify-content:center;flex-wrap:wrap;gap:9px}.lesson-tools .tool{font-size:14px;min-height:40px;padding:8px 12px}.lesson-actions{padding:8px 0 12px}.lesson-actions button{min-height:48px;font-size:16px}.lesson-actions #lessonUnsure{font-size:14px}
 .lesson-letters{display:flex;justify-content:center;flex-wrap:wrap;gap:6px}.lesson-letters button{min-width:40px;min-height:40px;border:2px solid #c7dbe1;border-radius:8px;background:white;font-size:22px}.lesson-letters button[aria-pressed=true]{border-color:#21889b;background:#e4f7fa}.lesson-letters .checked{color:#267a5c}
+.lesson-comparisons{--comparison-cell:clamp(80px,calc((100dvh - 360px)/var(--comparison-rows)),160px);display:grid;grid-template-columns:repeat(var(--comparison-columns),minmax(0,1fr));grid-template-rows:repeat(var(--comparison-rows),auto);grid-auto-flow:column;direction:rtl;gap:6px 14px;width:min(100%,calc(var(--comparison-cell)*2*var(--comparison-columns) + 28px));margin:8px auto;flex-shrink:0}
+.comparison-pair{direction:ltr;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3px;min-width:0;margin:0;padding:5px;border:2px solid #c7dbe1;border-radius:10px;background:#fff;color:#275761;font:inherit;cursor:pointer;touch-action:pan-y}
+.comparison-pair[aria-pressed=true]{border-color:#117d90;box-shadow:0 0 0 2px #117d90;background:#e4f7fa}.comparison-pair:focus-visible{outline:3px solid #d99b25;outline-offset:2px}.comparison-pair.checked{border-color:#7eb49b}.comparison-pair[aria-pressed=true].checked{border-color:#117d90}
+.comparison-pair span{display:block;min-width:0;text-align:center;font-size:12px;font-weight:800}.comparison-pair svg{display:block;width:100%;aspect-ratio:1;border:1px solid #96c0cd;border-radius:6px;background:#fffdf8}.comparison-pair .comparison-model{background:#f4faf1}.comparison-pair:disabled{cursor:default}
 .lesson-preview{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;max-height:48vh;overflow:auto;padding:24px 0}.lesson-preview span{border:1px solid #a6c6d2;background:#fffdf7;padding:12px;border-radius:12px;min-width:90px;text-align:center}.lesson-preview b{font-family:"Klee One",serif;font-size:32px;display:block}.lesson-preview small{display:block}
 .lesson-draw{stroke-dasharray:1;stroke-dashoffset:1;animation:lesson-draw .45s linear forwards}@keyframes lesson-draw{to{stroke-dashoffset:0}}
 .review-box{width:min(800px,100%);max-height:90dvh;overflow:auto;overscroll-behavior:contain;touch-action:pan-y}.review-note{border-top:2px solid #cbdce1;margin-top:24px;padding:16px 0}.note-pair{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:650px;margin:12px auto}.note-pair svg{display:block;width:100%;aspect-ratio:1;border:2px solid #a5c3cc;border-radius:10px;background:#fffdf8}
@@ -181,6 +185,7 @@ html.battle-active .topbar,html.battle-active .hud{display:none}
  <h2 id="lessonTitle"></h2><p id="lessonInstruction" role="status" aria-live="polite"></p>
  <div id="lessonPreview" class="lesson-preview" hidden></div>
  <div id="lessonLetters" class="lesson-letters"></div>
+ <div id="lessonComparisons" class="lesson-comparisons" aria-label="一文字ずつ、自分の字とお手本を見くらべる" hidden></div>
  <div id="lessonBoards" class="lesson-boards">
   <div class="lesson-cell"><strong id="lessonOwnLabel">ここに書こう</strong><svg id="lessonBoard" viewBox="0 0 109 109" aria-label="漢字を書く場所"></svg></div>
   <div class="lesson-cell"><strong id="lessonModelLabel">学び方</strong><div class="lesson-model"><svg id="lessonModel" viewBox="0 0 109 109" aria-label="お手本" hidden></svg><p id="lessonHelp"></p></div></div>
@@ -994,8 +999,20 @@ function prepareLetter(){const t=lesson,item=activeLetter();t.overlay=false;t.po
 function glyphMarkup(ch,color='#245d68',animated=false){const paths=KANJI_STROKES[ch]||[];return paths.map((d,i)=>`<path d="${d}" fill="none" stroke="${color}" stroke-width="3.1" stroke-linecap="round" stroke-linejoin="round"${animated?` pathLength="1" class="lesson-draw" style="animation-delay:${i*.48}s"`:''}/>`).join('')}
 function gridMarkup(){return '<path d="M54.5 0V109M0 54.5H109" fill="none" stroke="#cfdee4" stroke-width=".5" stroke-dasharray="2 2"/>'}
 function inkMarkup(ink,color='#263b52'){return ink.map(s=>s.length===1?`<circle cx="${s[0][0]}" cy="${s[0][1]}" r="1.2" fill="${color}"/>`:`<polyline points="${s.map(p=>p.join(',')).join(' ')}" fill="none" stroke="${color}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>`).join('')}
+function renderSentenceComparisons(){
+ const t=lesson,letters=[...current.a],rows=writingLayout(current.a,'sentence').rows,panel=$("lessonComparisons");
+ panel.style.setProperty('--comparison-rows',String(rows));panel.style.setProperty('--comparison-columns',letters.length>rows?'2':'1');
+ panel.innerHTML=letters.map((ch,index)=>{
+  const at=t.items.findIndex(x=>x.index===index),item=t.items[at],selected=at===t.at,ink=item?.ink||sentenceInk(index);
+  const model="。、".includes(ch)?`<text x="80" y="30" font-size="72" font-family="Klee One, serif">${escapeText(ch)}</text>`:glyphMarkup(ch);
+  const overlay=selected&&t.overlay?`<g opacity=".42">${glyphMarkup(ch,'#d84762')}</g>`:'';
+  const status=item?.verdict==='good'?' ✓':item?.verdict==='unsure'?' ？':'';
+  return `<button type="button" class="comparison-pair${item?.verdict?' checked':''}" data-letter="${at}" ${at<0?'disabled':`aria-pressed="${selected}"`} aria-label="${index+1}文字目・${escapeText(ch)}${status}を見くらべる"><span>${index+1} 自分の字${status}<svg viewBox="0 0 109 109" aria-label="自分の字">${gridMarkup()+inkMarkup(ink)+overlay}</svg></span><span>お手本<svg class="comparison-model" viewBox="0 0 109 109" aria-label="お手本">${gridMarkup()+model}</svg></span></button>`;
+ }).join('');
+ panel.querySelectorAll('button:not(:disabled)').forEach(b=>b.onclick=()=>{if(t.points)return;t.at=Number(b.dataset.letter);t.overlay=false;renderLesson()});
+}
 function renderLesson(){
- const t=lesson;if(!t)return;const item=activeLetter(),phase=t.phase,compare=phase==='compare';
+ const t=lesson;if(!t)return;const item=activeLetter(),phase=t.phase,compare=phase==='compare',sentenceCompare=compare&&t.source==='sentence';
  $("lessonEnemy").textContent=`${monster(current.id).emoji} ${session.reviewing?'あとで思い出す練習':`HP ${hp} / ${maxHp}`}`;
  $("lessonProgress").textContent=`${t.at+1} / ${t.items.length}文字`;
  $("lessonContext").innerHTML=current.p;
@@ -1005,9 +1022,11 @@ function renderLesson(){
  $("lessonInstruction").textContent=compare?'線の数は同じ？ つながるところ・はなれるところは同じ？':phase==='write'?'分からなくても大丈夫。「書き方を教えて」で確かめよう。':phase==='trace'?'黄色の一画を最後までなぞると、次の画が出るよ。':phase==='intro'?'初めての字は書き方から。覚えた字は自分で書くところから。':'例文と読みを確かめながら進もう。';
  $("lessonPreview").hidden=phase!=='intro';
  if(phase==='intro')$("lessonPreview").innerHTML=session.original.map(id=>Q[id-1]).map(q=>`<span><b>${[...q.a].some(ch=>/[一-龯]/.test(ch)&&!save.learning[ch]?.traced)?escapeText(q.a):'？'}</b><small>${escapeText(q.r)}</small></span>`).join('');
- const choices=t.source==='sentence'||t.source==='hint';$("lessonLetters").hidden=!choices;
+ const choices=t.source==='sentence'||t.source==='hint';$("lessonLetters").hidden=!choices||sentenceCompare;
  if(choices){$("lessonLetters").innerHTML=t.items.map((x,i)=>`<button type="button" data-letter="${i}" aria-pressed="${i===t.at}" class="${x.verdict?'checked':''}">${escapeText(x.ch)}${x.verdict==='unsure'?'？':x.verdict==='good'?'✓':''}</button>`).join('');$("lessonLetters").querySelectorAll('button').forEach(b=>b.onclick=()=>{if(t.points)return;t.points=null;t.pid=null;t.at=Number(b.dataset.letter);t.overlay=false;if(t.source==='hint')lessonHint();else{t.phase='compare';renderLesson()}})}
- $("lessonBoards").hidden=['intro','choose'].includes(phase);
+ $("lessonBoards").hidden=['intro','choose'].includes(phase)||sentenceCompare;
+ $("lessonComparisons").hidden=!sentenceCompare;
+ if(sentenceCompare)renderSentenceComparisons();else $("lessonComparisons").innerHTML='';
  $("lessonOwnLabel").textContent=compare?'自分の字':phase==='write'?'ここに書こう':'書き方のお手本';$("lessonModelLabel").textContent=compare?'お手本':'練習のヒント';
  $("lessonModel").hidden=!compare;$("lessonHelp").hidden=compare;
  $("lessonHelp").textContent=phase==='write'?'書き終えたら、下の「大きく見くらべる」へ。':phase==='demo'?'見る → なぞる → 自分で書く。書き方はいつでも見直せるよ。':'なぞり終わったら、お手本を隠して同じ場所に書こう。';
@@ -1025,7 +1044,7 @@ function renderLesson(){
  for(const [id,on]of Object.entries(visible))$(id).hidden=!on;
  $("lessonMain").textContent=({intro:'冒険をはじめる',demo:'なぞってみる',trace:'一画ずつなぞろう',traceDone:'お手本なしで書く',write:'大きく見くらべる'})[phase]||'次へ';
  $("lessonMain").disabled=phase==='trace'||(phase==='write'&&!item.ink.length);
- $("lessonGood").textContent='同じに書けた';$("lessonGood").disabled=!item.ink.length;$("lessonOverlay").setAttribute('aria-pressed',String(t.overlay));
+ $("lessonGood").textContent=sentenceCompare?`${item.index+1}文字目は同じに書けた`:'同じに書けた';$("lessonGood").disabled=!item.ink.length;$("lessonOverlay").setAttribute('aria-pressed',String(t.overlay));
 }
 function lessonMain(){const t=lesson;if(!t||t.points)return;const item=activeLetter();
  if(t.phase==='intro'){prepareLetter();renderLesson()}
