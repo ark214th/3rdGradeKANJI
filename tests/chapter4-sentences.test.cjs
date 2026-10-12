@@ -28,7 +28,7 @@ function boot(chapter={},term={},shared={}){
  const doc={getElementById:id=>nodes.get(id),createElement:element,documentElement:element(),addEventListener(){},hidden:false};
  const sandbox={console,document:doc,localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)},devicePixelRatio:2,
   setTimeout(fn){timers.push(fn);return timers.length},clearTimeout(){},requestAnimationFrame(){},addEventListener(){},scrollTo(){},confirm:()=>true};
- vm.createContext(sandbox);for(const file of ["kanji-strokes.js","tracing-core.js"])vm.runInContext(fs.readFileSync(path.join(__dirname,"../chapter4",file),"utf8"),sandbox);vm.runInContext(script,sandbox);
+ vm.createContext(sandbox);vm.runInContext(script,sandbox);
  return {run:code=>vm.runInContext(code,sandbox),nodes,storage,timers};
 }
 const legacy={areaLayout:2,selectedTest:6,practiceMode:'sentence',defeated:[1,53,114],records:{114:{retry:3,last:'retry'}},customIds:[115,160],clears:[0,6,13],stageClears:{0:8,6:4,13:5},displayMode:'clue'};
@@ -53,19 +53,20 @@ b.run('selectTest(5);startSession("特訓",[114,115,116],true,"custom",-1)');
 assert.equal(b.run('session.original.length'),1);
 assert.equal(b.run('current.a'),'本の感想を書く。');
 assert(!b.nodes.get('question').innerHTML.includes('本'),'saved clue mode must not leak target answers');
-const before=b.run('save.gold');b.run('commitJudge("good")');assert.equal(b.run('save.gold'),before,'cannot judge before revealing');
+const before=b.run('save.gold');b.run('judge("good")');assert.equal(b.run('save.gold'),before,'cannot judge before revealing');
 b.run('resize();strokes=[[{x:150,y:20},{x:160,y:35}]]');
 const ink=b.run('JSON.stringify(strokes)');const bounds=b.run('JSON.stringify([inkWidth,inkHeight])');
 b.run('reveal();resize()');assert.equal(b.run('JSON.stringify(strokes)'),ink);assert.equal(b.run('JSON.stringify([inkWidth,inkHeight])'),bounds);
 b.nodes.get('canvas').getBoundingClientRect=()=>({width:600,height:400,left:0,top:0});
 b.run('resize()');assert.equal(b.run('JSON.stringify(strokes)'),ink);assert.equal(b.run('inkTransform().scale'),(400-8)/600);
-b.run('stopTracing()');
-b.run('commitJudge("good")');
+b.run('useHint();begin({pointerId:1,button:0,isPrimary:true,clientX:320,clientY:30,preventDefault(){}});move({pointerId:1,clientX:322,clientY:34,preventDefault(){}});end({pointerId:1,cancelable:false})');
+assert(b.run('hintVisible'),'writing must not hide tracing hint');
+b.run('judge("good")');
 assert.equal(b.run('save.gold')-before,4*(6+25+2));
 assert(b.run('current.ids.every(id=>save.defeated.includes(id))'));
 assert.equal(b.run('save.sentenceRecords[114].good'),1);
 assert.equal(b.run('save.records[114].retry'),3,'old character history preserved');
-const paid=b.run('save.gold');b.run('commitJudge("good")');assert.equal(b.run('save.gold'),paid,'double judging cannot pay twice');
+const paid=b.run('save.gold');b.run('judge("good")');assert.equal(b.run('save.gold'),paid,'double judging cannot pay twice');
 b.run('finish()');const completed=b.run('save.gold');b.run('finish()');assert.equal(b.run('save.gold'),completed,'chest cannot pay twice');
 // Every launch path keeps the test boundary and uses ten sentences at most.
 for(const test of [1,2,3,4,5,6,7,8]){
@@ -82,7 +83,7 @@ for(const [width,height] of [[420,900],[600,400]]){
  assert(b.run('(()=>{const t=inkTransform(),p=pt({clientX:150*t.scale+t.x,clientY:250*t.scale+t.y});return Math.abs(p.x-150)<1e-8&&Math.abs(p.y-250)<1e-8})()'));
 }
 // Per-sentence retry history, completed stage count and old five-area migration.
-b.run('startArea(13);reveal();commitJudge("retry")');assert.equal(b.run('save.sentenceRecords[current.id].last'),'retry');assert.equal(b.run('session.done.size'),0);
+b.run('startArea(13);reveal();judge("retry")');assert.equal(b.run('save.sentenceRecords[current.id].last'),'retry');assert.equal(b.run('session.done.size'),0);
 b.run('startArea(13);session.done=new Set(session.original);finish()');assert.equal(b.run('save.stageClears[13]'),6);
 const old=boot({clears:[2],stageClears:{2:7}});assert.equal(old.run('save.stageClears[2]'),7);assert.equal(old.run('save.stageClears[3]'),7);
 const reload=boot(JSON.parse(b.storage.get('kanjiQuestRpg_chapter4_v1')),JSON.parse(b.storage.get('kanjiQuestSemester2_v1')),JSON.parse(b.storage.get('kanjiQuestRpg_v1')));
@@ -101,7 +102,7 @@ assert(b.run(`(()=>{
  const corner=smoothInkPoint(last,{x:80,y:80});
  return filteredVariation<rawVariation&&Math.hypot(corner.x-80,corner.y-80)<=.600001;
 })()`));
-b.run('startArea(13);stopTracing();resize()');
+b.run('startArea(13);resize()');
 b.run(`(()=>{
  const t=inkTransform();const event=(type,x,y)=>({type,pointerId:9,button:0,isPrimary:true,clientX:x*t.scale+t.x,clientY:y*t.scale+t.y,preventDefault(){}});
  begin(event('pointerdown',130,20));move(event('pointermove',132,22));end(event('pointerup',133,23));
@@ -129,7 +130,7 @@ assert.equal(c.run('inkWidth'),100);
 assert.equal(c.run('inkHeight'),[...c.run('current.a')].length*100);
 assert.equal(c.run('JSON.stringify(save.sentenceRecords)'),'{}');
 const charId=c.run('current.id');const charGold=c.run('save.gold');
-c.run('reveal();stopTracing();commitJudge("good")');
+c.run('reveal();judge("good")');
 assert.equal(c.run(`save.records[${charId}].good`),1);
 assert.equal(c.run('JSON.stringify(save.sentenceRecords)'),'{}');
 assert.equal(c.run('save.gold')-charGold,8);
@@ -172,74 +173,3 @@ assert.equal(complete.run('volumeAreas(selectedVolume()).length'),6);
 for(let area=19;area<25;area++)complete.run(`startArea(${area});session.done=new Set(session.original);finish()`);
 assert(complete.run('term.treasures.includes("test4")'));
 console.log('PASS: drill 28 transcription, IDs, both test selections and fourth treasure.');
-
-
-// Learning flow: a guided model is never submitted as the child's recalled writing.
-const lessonBoot=()=>boot({areaLayout:2,selectedTest:1});
-const teach=lessonBoot();teach.run('startSession("lesson",[1,2,3,4],true,"custom",-1)');
-assert.equal(teach.run('lesson.phase'),'intro');teach.run('lessonMain()');assert.equal(teach.run('lesson.phase'),'demo');
-assert(!teach.nodes.get('lessonModel').innerHTML,'no answer in the second board while writing');
-teach.run('lessonMain()');assert.equal(teach.run('lesson.phase'),'trace');
-// Draw every model stroke through the real handlers in the SVG coordinate system.
-function traceLetter(b){b.run(`(()=>{const paths=KANJI_STROKES[activeLetter().ch];const event=(p,pid=7)=>({pointerId:pid,isPrimary:true,button:0,clientX:2+p[0]*416/109,clientY:2+p[1]*416/109,preventDefault(){}});for(const d of paths){const pts=KanjiCore.flatten(d);lessonDown(event(pts[0]));pts.slice(1).forEach(p=>lessonMove(event(p)));lessonUp(event(pts.at(-1)))}})()`)}
-traceLetter(teach);assert.equal(teach.run('lesson.phase'),'traceDone');assert.equal(teach.run('save.gold'),0);assert.equal(teach.run('save.learning["両"].traced'),1);
-teach.run('lessonMain()');assert.equal(teach.run('lesson.phase'),'write');assert.equal(teach.run('activeLetter().ink.length'),0,'blank canvas after tracing');
-teach.run('lessonMain();lessonVerdict("good")');assert.equal(teach.run('save.gold'),0,'blank writing cannot proceed');
-function selfCheck(b){b.run('activeLetter().ink=[[[20,20],[70,30]]];lessonMain();lessonVerdict("good")')}
-selfCheck(teach);assert.equal(teach.run('save.records[1].good'),1);assert.equal(teach.run('save.learning["両"].independent'),1);assert.equal(teach.run('save.learning["両"].later'),0);
-const paidLesson=teach.run('save.gold');teach.run('lessonVerdict("good")');assert.equal(teach.run('save.gold'),paidLesson,'double click cannot pay again');
-teach.run('next()');assert.equal(teach.run('current.id'),2,'another problem before recall');
-// Simulate later normal questions having been completed, then check the scheduled recall reward boundary.
-teach.run('session.done.add(2);session.done.add(3);session.done.add(4);session.turn=4;next()');assert(teach.run('session.reviewing'));assert.equal(teach.run('lesson.phase'),'write');
-selfCheck(teach);assert.equal(teach.run('save.gold'),paidLesson);assert.equal(teach.run('save.learning["両"].later'),1);
-assert.equal(teach.run('save.records[1].good'),1,'spaced recall does not pay or add a second battle verdict');
-// A one-question lesson defers retrieval to a future session rather than calling immediate copying "later".
-const one=lessonBoot();one.run('startSession("one",[1],true,"custom",-1);lessonMain();lessonMain()');traceLetter(one);one.run('lessonMain()');selfCheck(one);one.run('next()');assert(one.run('session.finished'));assert.equal(one.run('save.learning["両"].later'),0);assert(one.run('save.learning["両"].waiting'));
-const durable=boot(JSON.parse(one.storage.get('kanjiQuestRpg_chapter4_v1')));durable.run('startSession("later",[1],true,"custom",-1);lessonMain()');assert.equal(durable.run('lesson.phase'),'write');selfCheck(durable);assert.equal(durable.run('save.learning["両"].later'),1);
-// Unknown verdict ends an attempt without unearned defeat, treasure, route clear or gold; the handwriting survives reload.
-const uncertain=lessonBoot();uncertain.run('startSession("uncertain",[1],true,"area",0);lessonMain();lesson.phase="write";activeLetter().ink=[[[11,15],[36,80]]];lessonMain();lessonVerdict("unsure")');
-assert(uncertain.run('session.finished'));assert.equal(uncertain.run('session.done.size'),0);assert.equal(uncertain.run('save.gold'),0);assert.equal(uncertain.run('save.stageClears[0]||0'),0);assert.equal(uncertain.run('save.reviewNotes.length'),1);
-const notesReload=boot(JSON.parse(uncertain.storage.get('kanjiQuestRpg_chapter4_v1')));assert.equal(notesReload.run('save.reviewNotes[0].ink[0][1][1]'),80);notesReload.run('showReviewNotes()');assert(notesReload.nodes.get('reviewModal').classList.contains('show'));
-// Sentence repairs touch only the selected letter and keep the complete original handwriting.
-const whole=boot({areaLayout:2,selectedTest:5,practiceMode:'sentence'});whole.run('startSession("sentence",[114],true,"custom",-1);resize();strokes=[[{x:125,y:20},{x:135,y:30}],[{x:125,y:120},{x:140,y:150}],[{x:20,y:20},{x:30,y:40}]];reveal()');
-assert.equal(whole.run('lesson.phase'),'compare');const allInk=whole.run('JSON.stringify(strokes)'),firstInk=whole.run('JSON.stringify(lesson.items[0].ink)');
-// Every written cell has its own adjacent, equal-viewBox model, including the second column and punctuation.
-assert(!whole.nodes.get('lessonComparisons').hidden);assert(whole.nodes.get('lessonBoards').hidden);
-const pairs=[...whole.nodes.get('lessonComparisons').innerHTML.matchAll(/<button\b[^>]*>([\s\S]*?)<\/button>/g)].map(m=>m[0]);
-assert.equal(pairs.length,whole.run('[...current.a].length'));
-for(let index=0;index<pairs.length;index++){
- assert.equal((pairs[index].match(/viewBox="0 0 109 109"/g)||[]).length,2,'both adjacent characters use the same square');
- const ch=whole.run(`[...current.a][${index}]`);
- if(!'。、'.includes(ch))assert(pairs[index].includes(`d="${whole.run(`KANJI_STROKES[${JSON.stringify(ch)}][0]`)}"`),'model belongs to this written character');
-}
-const pairPoints=index=>pairs[index].match(/<polyline points="([^"]+)"/)[1].split(/[ ,]/).map(Number);
-assert(Math.abs(pairPoints(0)[0]-13*1.09)<1e-8,'right-column ink stays with the first model');
-assert(Math.abs(pairPoints(6)[0]-20*1.09)<1e-8,'left-column ink stays with the seventh model');
-assert(pairs.at(-1).includes('disabled'),'punctuation is shown without changing self-grading');
-whole.run('lesson.overlay=true;renderLesson()');assert(whole.nodes.get('lessonComparisons').innerHTML.includes('#d84762'),'optional overlay remains on the selected pair');
-whole.run('lesson.at=1;lessonVerdict("fix")');assert.equal(whole.run('lesson.phase'),'demo');assert.equal(whole.run('lesson.items[1].repairs'),1);assert.equal(whole.run('JSON.stringify(lesson.items[0].ink)'),firstInk);assert.equal(whole.run('JSON.stringify(strokes)'),allInk);
-assert(whole.nodes.get('lessonComparisons').hidden);assert.equal(whole.nodes.get('lessonComparisons').innerHTML,'','answer overview must disappear during recall and tracing');
-whole.run('returnToSentence()');assert.equal(whole.run('lesson.at'),1);assert.equal(whole.run('lesson.phase'),'compare');assert.equal(whole.run('JSON.stringify(strokes)'),allInk);
-assert(!whole.nodes.get('lessonComparisons').hidden,'return from repair restores all adjacent models');
-whole.run('lessonVerdict("fix")');assert.equal(whole.run('lesson.items[1].verdict'),'unsure','repair loop is bounded');
-// Pointer cancellation, secondary fingers and returned controls cannot silently accept a stroke.
-const pen=lessonBoot();pen.run('startSession("pen",[1],true,"custom",-1);lessonMain();lesson.phase="write";lessonDown({pointerId:1,button:0,isPrimary:true,clientX:100,clientY:100,preventDefault(){}});lessonMove({pointerId:2,clientX:200,clientY:200,preventDefault(){}})');assert.equal(pen.run('lesson.points.length'),1);pen.run('lessonCancel({pointerId:1})');assert.equal(pen.run('activeLetter().ink.length'),0);
-pen.run('screen("world")');assert.equal(pen.run('lesson'),null);assert(pen.nodes.get('lessonPanel').hidden);
-assert(pen.run('SENTENCES.every(q=>[...q.a].every(ch=>"。、".includes(ch)||KANJI_STROKES[ch]?.length))'));
-console.log('PASS: integrated lesson/blank recall/large comparison, delayed retrieval, reward guards, persistent review notes, bounded per-letter sentence repairs and pointer cancellation.');
-const compareGuard=boot({areaLayout:2,selectedTest:5,practiceMode:'sentence'});compareGuard.run('startSession("compare",[114],true,"custom",-1);reveal();lessonVerdict("good")');assert.equal(compareGuard.run('lesson.items[0].verdict'),null,'blank full-sentence cell cannot be marked correct');
-compareGuard.run('lesson.items[0].ink=[[[10,10],[70,60]]];lessonVerdict("good");lesson.at=0;lessonVerdict("good")');assert.equal(compareGuard.run('save.learning[lesson.items[0].ch].independent'),1,'revisiting an already checked letter does not inflate progress');
-console.log('PASS: empty-cell and repeated per-letter verdict guards.');
-// A hint remains assisted after returning to the full sentence; recall starts on blank paper.
-const hinted=boot({areaLayout:2,selectedTest:5,practiceMode:'sentence'});
-hinted.run('startSession("hint",[114],true,"custom",-1);useHint();lessonHint();returnToSentence();reveal()');
-assert(hinted.run('activeLetter().assisted'),'sentence hint survives the return to writing');
-hinted.run('lessonVerdict("fix");activeLetter().ink=[[[10,10],[20,20]]]');
-hinted.nodes.get('lessonTry').onclick();
-assert.equal(hinted.run('activeLetter().ink.length'),0,'skipping demonstration still starts blank');
-const traceUncertain=boot({areaLayout:2,selectedTest:1,practiceMode:'trace'});
-traceUncertain.run('startSession("trace",[1],true,"custom",-1);lessonMain();lessonMain();lessonVerdict("unsure")');
-assert.equal(traceUncertain.run('save.traceRecords[1].retry'),1);
-assert.equal(traceUncertain.run('save.records[1]'),undefined,'trace deferral keeps separate history');
-assert(durable.nodes.get('lessonPreview').innerHTML.includes('<b>？</b>'),'learned answers are not disclosed in the route preview');
-console.log('PASS: hint provenance, blank recall transition, trace history and concealed review preview.');
