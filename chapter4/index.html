@@ -75,7 +75,7 @@ html.battle-active .topbar,html.battle-active .hud{display:none}
 #battle .battlehead strong{font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #battle .battlehead small{color:#fff;white-space:nowrap;font-size:13px}
 #battle .btrack{position:absolute;bottom:0;left:0;width:100%;height:3px;margin:0;border-radius:0;background:#ffffff33}
-#battle .arena{flex:1;min-height:0;display:grid;grid-template-columns:minmax(84px,14fr) minmax(66px,14fr) minmax(0,56fr) minmax(72px,16fr);gap:6px;padding:6px}
+#battle .arena{flex:1;min-height:0;display:grid;grid-template-columns:minmax(84px,14fr) minmax(0,70fr) minmax(72px,16fr);gap:6px;padding:6px}
 #battle .action-rail{min-width:0;min-height:0;display:flex;flex-direction:column;gap:8px;padding:4px;background:#eaf7fb;border-radius:12px;overflow:auto;overscroll-behavior:contain;touch-action:pan-y}
 #battle .retreat{width:100%;min-height:38px;padding:5px;font-size:13px}
 #battle .monsterzone{flex:0 0 auto;min-height:0;padding:4px;border:0;border-radius:10px;overflow:hidden}
@@ -99,17 +99,18 @@ html.battle-active .topbar,html.battle-active .hud{display:none}
 #battle .answer-target{color:#087b83}
 #battle .reading{display:inline;min-width:0;min-height:0;padding:0;margin:0;border:0;border-radius:0;background:none;font:inherit;color:inherit;vertical-align:baseline;white-space:normal;text-decoration:underline;text-decoration-color:#ef765d;text-decoration-thickness:3px;text-underline-offset:5px}
 #battle .writing-panel{min-width:0;min-height:0;display:flex;flex-direction:column}
-#battle .writing-label{flex:0 0 25px;display:flex;justify-content:space-around;align-items:center;font-size:12px;font-weight:800;color:#3a6a80}
+#battle .answerpanel{display:none}
+#battle .writing-label{display:none;flex:0 0 25px;display:flex;justify-content:space-around;align-items:center;font-size:12px;font-weight:800;color:#3a6a80}
 #battle .canvaswrap{flex:1;width:100%;height:auto;min-height:0;border:0;border-radius:0;background:#fffdf8;overflow:hidden;touch-action:none}
 #battle canvas{position:absolute;inset:0;display:block;width:100%;height:100%}
 @media(orientation:landscape){
- #battle .arena{grid-template-columns:minmax(100px,15fr) minmax(90px,20fr) minmax(0,45fr) minmax(95px,20fr)}
+ #battle .arena{grid-template-columns:minmax(100px,15fr) minmax(0,65fr) minmax(95px,20fr)}
  #battle .monsterzone{display:none}#battle .action-rail{gap:6px}
  #battle .tools{display:grid;grid-template-columns:1fr 1fr;gap:6px}#battle .tool{font-size:11px}
  #battle .judges{gap:5px}#battle .judge{min-height:40px;font-size:12px}
 }
 @media(max-width:500px){
- #battle .arena{grid-template-columns:72px 48px minmax(0,1fr) 54px;gap:3px;padding:3px}
+ #battle .arena{grid-template-columns:72px minmax(0,1fr) 54px;gap:3px;padding:3px}
  #battle .monstername{display:none}#battle .sprite{width:46px;height:46px;font-size:36px}
  #battle .tool,#battle .judge{font-size:11px}#battle .writing-label{font-size:10px}
  #battle .answerlabel,#battle .question-label{font-size:12px}
@@ -790,7 +791,7 @@ function updateJudge(){$("good").disabled=false;$("good").textContent="⚔️ �
 
 function reveal(){
  if(!current||locked||(trace&&trace.kind!=="hint"))return;if(trace)stopTrace(true);finishStroke();$("answerPanel").classList.add("show");$("answerBig").setAttribute("aria-hidden","false");$("questPanel").classList.add("answering");$("judges").removeAttribute("inert");
- $("showAnswer").disabled=true;updateJudge();msg("左の正解と、一文字ずつ見くらべよう。","warn");
+ $("showAnswer").disabled=true;updateJudge();redraw();msg("自分の字のとなりに出た正解と、一文字ずつ見くらべよう。","warn");
 }
 
 // ヒント魔法：お手本を書き順どおりになぞる。やめると、それまでの手書きにもどる。
@@ -864,8 +865,11 @@ function reset(){if(!confirm("第4章の図鑑・戦績・苦手な漢字の選�
 function toast(t){const e=$("toast");e.textContent=t;e.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>e.classList.remove("show"),2200)}
 
 // 1マス100単位の固定座標。枠も筆跡も同じ変換で描き、回転・正解表示でずらさない。
-function writingLayout(answer,mode=save.practiceMode){if(!isSentencePractice(mode)){const rows=[...answer].length;return {rows,width:100,height:rows*100}}const rows=Math.max(6,Math.ceil([...answer].length/2));return {rows,width:212,height:rows*100}}
-function cellPosition(index,rows,mode=save.practiceMode){return isSentencePractice(mode)?{x:index<rows?112:0,y:(index%rows)*100}:{x:0,y:index*100}}
+// 書くマスの左どなりに、同じ大きさの正解マスを常に置く（答えを見ても枠・筆跡が動かない）。上の帯は見出し。
+const HEAD=16,PAIR=236;
+function writingLayout(answer,mode=save.practiceMode){if(!isSentencePractice(mode)){const rows=[...answer].length;return {rows,cols:1,width:212,height:HEAD+rows*100}}const rows=Math.max(6,Math.ceil([...answer].length/2));return {rows,cols:2,width:PAIR+212,height:HEAD+rows*100}}
+function cellPosition(index,rows,mode=save.practiceMode){const col=isSentencePractice(mode)&&index>=rows?1:0,base=isSentencePractice(mode)&&!col?PAIR:0;return {x:base+112,y:HEAD+(index%rows)*100,mx:base,col}}
+function onWritingCell(p,mode=session.practiceMode){const m=6;return p.y>=HEAD-m&&p.y<=inkHeight+m&&[0,...(isSentencePractice(mode)?[PAIR]:[])].some(b=>p.x>=b+112-m&&p.x<=b+212+m)}
 function inkTransform(){
  const r=canvas.getBoundingClientRect(),scale=Math.max(.001,Math.min((r.width-8)/inkWidth,(r.height-8)/inkHeight));
  return{scale,x:(r.width-inkWidth*scale)/2,y:(r.height-inkHeight*scale)/2};
@@ -888,7 +892,7 @@ function pt(e){const r=canvas.getBoundingClientRect(),t=inkTransform();return{x:
 function begin(e){
  if(!current||activePointerId!==null||e.isPrimary===false||e.button!==0)return;
  if(trace)return traceBegin(e);if(locked)return;
- e.preventDefault();resize();const p=pt(e);if(p.x<0||p.y<0||p.x>inkWidth||p.y>inkHeight)return;
+ e.preventDefault();resize();const p=pt(e);if(!onWritingCell(p))return;
  activePointerId=e.pointerId;drawing=true;stroke=[p];redraw();try{canvas.setPointerCapture(e.pointerId)}catch{}
 }
 // 1マス100単位。弱い平滑化にとどめ、角・はねがペンから離れないよう補正量を制限する。
@@ -922,10 +926,15 @@ function setInkStyle(){const d=Math.max(devicePixelRatio||1,1),t=inkTransform();
 function seg(a,b){ctx.save();setInkStyle();ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();ctx.restore()}
 function redraw(){
  if(!inkWidth||!inkHeight)return;ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,canvas.width,canvas.height);ctx.save();setInkStyle();
- const rows=inkHeight/100,letters=[...(current?.a||"")];
- const step=trace&&trace.steps[trace.pos];
- for(let i=0;i<rows*(isSentencePractice(session.practiceMode)?2:1);i++){
-  const {x,y}=cellPosition(i,rows,session.practiceMode);if(step&&step.cell===i){ctx.fillStyle="#fff3c4";ctx.fillRect(x,y,100,100)}ctx.lineWidth=.8;ctx.strokeStyle="#97baca";ctx.setLineDash([]);ctx.strokeRect(x,y,100,100);
+ const {rows,cols}=writingLayout(current.a,session.practiceMode),letters=[...(current?.a||"")];
+ const step=trace&&trace.steps[trace.pos],shown=$("answerPanel").classList.contains("show"),targets=new Set(traceCells());
+ ctx.font="bold 9px sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillStyle="#3a6a80";
+ for(let c=0;c<cols;c++){const b=cols===2&&!c?PAIR:0;ctx.fillText(cols===2&&c?"つづき ↓":"ここから ↓",b+162,HEAD/2);ctx.fillStyle="#3d8a5e";ctx.fillText("正解",b+50,HEAD/2);ctx.fillStyle="#3a6a80"}
+ for(let i=0;i<rows*cols;i++){
+  const {x,y,mx}=cellPosition(i,rows,session.practiceMode);
+  ctx.fillStyle="#f1f8ef";ctx.fillRect(mx,y,100,100);ctx.lineWidth=.8;ctx.strokeStyle="#b7d2bd";ctx.setLineDash([]);ctx.strokeRect(mx,y,100,100);
+  ctx.lineWidth=.45;ctx.strokeStyle="#d3e5d6";ctx.setLineDash([2,2]);ctx.beginPath();ctx.moveTo(mx+50,y);ctx.lineTo(mx+50,y+100);ctx.moveTo(mx,y+50);ctx.lineTo(mx+100,y+50);ctx.stroke();
+  if(shown&&letters[i])drawGlyph(letters[i],mx,y,targets.has(i)?"#087b83":"#3b4a45",5);if(step&&step.cell===i){ctx.fillStyle="#fff3c4";ctx.fillRect(x,y,100,100)}ctx.lineWidth=.8;ctx.strokeStyle="#97baca";ctx.setLineDash([]);ctx.strokeRect(x,y,100,100);
   ctx.lineWidth=.45;ctx.strokeStyle="#c8dbe2";ctx.setLineDash([2,2]);ctx.beginPath();ctx.moveTo(x+50,y);ctx.lineTo(x+50,y+100);ctx.moveTo(x,y+50);ctx.lineTo(x+100,y+50);ctx.stroke();
   if(trace&&letters[i])drawGlyph(letters[i],x,y,"#9fb3aa66",5.5);
  }
@@ -956,7 +965,7 @@ function drawGlyph(ch,x,y,color,width){
 }
 function traceCells(){return isSentencePractice(session.practiceMode)?current.targets:[...current.a].map((_,i)=>i)}
 function startTrace(kind,onDone){
- if(!current)return;finishStroke();resize();const letters=[...current.a],rows=inkHeight/100,steps=[];
+ if(!current)return;finishStroke();resize();const letters=[...current.a],rows=writingLayout(current.a,session.practiceMode).rows,steps=[];
  for(const cell of traceCells()){const g=glyph(letters[cell]);if(!g)continue;const o=cellPosition(cell,rows,session.practiceMode);g.pts.forEach((pts,k)=>steps.push({cell,k,pts,x:o.x,y:o.y}))}
  trace={kind,steps,pos:0,miss:0,cur:null,demo:null,saved:strokes.slice(),onDone};strokes=[];updateTools();
  msg(kind==="review"?"正解を、書き順どおりになぞろう。緑の丸から！":kind==="hint"?"ヒント魔法！ 緑の丸から、書き順どおりになぞろう。":"緑の丸から、書き順どおりになぞろう。",kind==="review"?"warn":"");
