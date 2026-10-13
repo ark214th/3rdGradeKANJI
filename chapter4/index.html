@@ -105,7 +105,7 @@ html.battle-active .topbar,html.battle-active .hud{display:none}
 #battle canvas{position:absolute;inset:0;display:block;width:100%;height:100%}
 @media(orientation:landscape){
  #battle .arena{grid-template-columns:minmax(100px,15fr) minmax(0,65fr) minmax(95px,20fr)}
- #battle .monsterzone{display:none}#battle .action-rail{gap:6px}
+ #battle .monsterzone{padding:3px 4px}#battle .monstername{font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#battle .sprite{width:52px;height:52px;font-size:38px;margin:2px auto}#battle .combo{margin-top:2px}#battle .action-rail{gap:6px}
  #battle .tools{display:grid;grid-template-columns:1fr 1fr;gap:6px}#battle .tool{font-size:11px}
  #battle .judges{gap:5px}#battle .judge{min-height:40px;font-size:12px}
 }
@@ -786,7 +786,7 @@ function renderMonster(){
 
 function resetQuestion(){
  $("answerPanel").classList.remove("show");$("answerBig").setAttribute("aria-hidden","true");$("questPanel").classList.remove("answering");$("judges").setAttribute("inert","");
- $("hint").disabled=false;$("good").disabled=false;$("showAnswer").disabled=false;questionStartAt=Date.now();revealedAt=0;revealInk=null;revealCount=0;
+ $("hint").disabled=false;$("good").disabled=false;$("showAnswer").disabled=false;questionStartAt=Date.now();revealedAt=0;revealInk=null;revealCount=0;revealQuality=null;
  msg(isSentencePractice(session.practiceMode)?"右から縦に、一マス一文字。文をぜんぶ書こう。":"出題された漢字を書こう。送り仮名もいっしょにね。");clearCanvas();updateTools();requestAnimationFrame(resize);
  if(isTracePractice(session.practiceMode)){$("answerPanel").classList.add("show");$("answerBig").setAttribute("aria-hidden","false");startTrace("mode")}
 }
@@ -796,7 +796,7 @@ function updateHp(){$("hpText").textContent=`${Math.max(0,hp)} / ${maxHp}`;$("hp
 function updateJudge(){$("good").disabled=false;$("good").textContent="⚔️ できた"}
 
 function reveal(){
- if(!current||locked||(trace&&trace.kind!=="hint"))return;if(trace)stopTrace(true);finishStroke();revealedAt=Date.now();revealInk=packInk(strokes);revealCount=strokes.length;$("answerPanel").classList.add("show");$("answerBig").setAttribute("aria-hidden","false");$("questPanel").classList.add("answering");$("judges").removeAttribute("inert");
+ if(!current||locked||(trace&&trace.kind!=="hint"))return;if(trace)stopTrace(true);finishStroke();revealedAt=Date.now();revealInk=packInk(strokes);revealCount=strokes.length;revealQuality=inkQuality(strokes);$("answerPanel").classList.add("show");$("answerBig").setAttribute("aria-hidden","false");$("questPanel").classList.add("answering");$("judges").removeAttribute("inert");
  $("showAnswer").disabled=true;updateJudge();redraw();msg("自分の字のとなりに出た正解と、一文字ずつ見くらべよう。","warn");
 }
 
@@ -807,7 +807,15 @@ function useHint(){
 }
 
 function requeue(id,far=false){const pos=Math.min(far?5:3,session.queue.length);session.queue.splice(pos,0,id)}
-function judge(kind){if(!current||locked||!session||!$("answerPanel").classList.contains("show"))return;locked=true;logInk(kind);save.battles++;const id=current.id,records=isSentencePractice(session.practiceMode)?save.sentenceRecords:save.records,r=records[id]||{good:0,close:0,retry:0};r[kind]=(r[kind]||0)+1;r.last=kind;records[id]=r;const old=lvInfo(save.xp).l,w=weap();if(kind==="good"){session.combo++;session.maxCombo=Math.max(session.maxCombo,session.combo);const comboBonus=Math.min(50,session.combo*6),dmg=(session.mode==="elite"?100+w.atk*14:100+w.atk*12)+comboBonus;hp=Math.max(0,hp-dmg);session.hps[id]=hp;const dead=hp<=0;attack(dmg,dead);showCombo(session.combo);if(dead){session.done.add(id);const mult=session.mode==="elite"?1+Math.floor((session.rank||1)/2):1,xp=(10+w.xp+2)*mult*questionIds(current).length,g=(6+w.g+(session.mode==="elite"?(session.rank||1)*3:2))*questionIds(current).length;save.xp+=xp;save.gold+=g;save.totalDefeats+=questionIds(current).length;session.reward.xp+=xp;session.reward.g+=g;for(const charId of questionIds(current))if(!save.defeated.includes(charId))save.defeated.push(charId);msg(session.combo>=5?`フィーバー${session.combo}コンボ！ ${xp} EXP と ${g} G！`:`${session.combo}コンボ！ ${xp} EXP と ${g} G を手に入れた！`,"good")}else{const hitXp=3+(session.rank||1);save.xp+=hitXp;session.reward.xp+=hitXp;requeue(id);msg(`${session.combo}コンボ！ ${dmg}ダメージ。HPはあと${hp}！`,"warn")}}else if(kind==="close"){session.combo=0;const dmg=Math.max(5,8+Math.floor(w.atk*1.5));hp=Math.max(1,hp-dmg);session.hps[id]=hp;const xp=1+Math.floor(w.xp/12);save.xp+=xp;session.reward.xp+=xp;attack(dmg,false);requeue(id,true);msg(`おしい！ ${dmg}ダメージと ${xp} EXP。数問あとにもう一度！`,"warn")}else{session.combo=0;requeue(id);msg("今回はやり直し。数問あとに同じ魔物がもう一度現れるよ。","bad")}persist();updateHp();battleHead();const now=lvInfo(save.xp).l;const judgedSession=session;const advance=()=>{if(session!==judgedSession)return;now>old?levelUp(now,()=>{if(session===judgedSession)next()}):next()};
+// 白紙や、字のマス・画数が明らかに足りないときは「できた」にしない（答えを見た時点の手書きで判定）。
+function inkQuality(list){
+ const letters=[...current.a],{rows}=writingLayout(current.a,session.practiceMode),need=letters.reduce((n,ch)=>n+(glyph(ch)?.paths.length||1),0),cells=new Set();
+ for(const st of list)for(const p of st)for(let i=0;i<letters.length;i++){if(cells.has(i))continue;const c=cellPosition(i,rows,session.practiceMode);if(p.x>=c.x&&p.x<=c.x+100&&p.y>=c.y&&p.y<=c.y+100){cells.add(i);break}}
+ return {ok:list.length>0&&cells.size>=Math.ceil(letters.length*.7)&&list.length>=Math.max(1,Math.round(need*.4)),blank:!list.length,warned:false};
+}
+function judge(kind){if(!current||locked||!session||!$("answerPanel").classList.contains("show"))return;
+ if(kind==="good"&&revealQuality&&!revealQuality.ok){revealQuality.warned=true;return msg(revealQuality.blank?"何も書いていないよ！ 白紙では「できた」にできないよ。":"字が足りないみたい。ちゃんと書けていないときは「できた」にできないよ。","bad")}
+ locked=true;logInk(kind);save.battles++;const id=current.id,records=isSentencePractice(session.practiceMode)?save.sentenceRecords:save.records,r=records[id]||{good:0,close:0,retry:0};r[kind]=(r[kind]||0)+1;r.last=kind;records[id]=r;const old=lvInfo(save.xp).l,w=weap();if(kind==="good"){session.combo++;session.maxCombo=Math.max(session.maxCombo,session.combo);const comboBonus=Math.min(50,session.combo*6),dmg=(session.mode==="elite"?100+w.atk*14:100+w.atk*12)+comboBonus;hp=Math.max(hintUsed?1:0,hp-dmg);session.hps[id]=hp;const dead=hp<=0;attack(dmg,dead);showCombo(session.combo);if(dead){session.done.add(id);const mult=session.mode==="elite"?1+Math.floor((session.rank||1)/2):1,xp=(10+w.xp+2)*mult*questionIds(current).length,g=(6+w.g+(session.mode==="elite"?(session.rank||1)*3:2))*questionIds(current).length;save.xp+=xp;save.gold+=g;save.totalDefeats+=questionIds(current).length;session.reward.xp+=xp;session.reward.g+=g;for(const charId of questionIds(current))if(!save.defeated.includes(charId))save.defeated.push(charId);msg(session.combo>=5?`フィーバー${session.combo}コンボ！ ${xp} EXP と ${g} G！`:`${session.combo}コンボ！ ${xp} EXP と ${g} G を手に入れた！`,"good")}else{const hitXp=3+(session.rank||1);save.xp+=hitXp;session.reward.xp+=hitXp;requeue(id,hintUsed);msg(hintUsed?"ヒントを使ったので、魔物がふんばった！ あとでもう一度出るよ。次はヒントなしで倒そう！":`${session.combo}コンボ！ ${dmg}ダメージ。HPはあと${hp}！`,"warn")}}else if(kind==="close"){session.combo=0;const dmg=Math.max(5,8+Math.floor(w.atk*1.5));hp=Math.max(1,hp-dmg);session.hps[id]=hp;const xp=1+Math.floor(w.xp/12);save.xp+=xp;session.reward.xp+=xp;attack(dmg,false);requeue(id,true);msg(`おしい！ ${dmg}ダメージと ${xp} EXP。数問あとにもう一度！`,"warn")}else{session.combo=0;requeue(id);msg("今回はやり直し。数問あとに同じ魔物がもう一度現れるよ。","bad")}persist();updateHp();battleHead();const now=lvInfo(save.xp).l;const judgedSession=session;const advance=()=>{if(session!==judgedSession)return;now>old?levelUp(now,()=>{if(session===judgedSession)next()}):next()};
  // 「おしい」「もう一回」は、正解を書き順どおりになぞってから次へ進む。
  setTimeout(()=>{if(session!==judgedSession)return;kind==="good"?advance():startTrace("review",advance)},kind==="good"?1050:1200)}
 // なぞり練習：最後の画までなぞると、その魔物を倒す。図鑑登録はせず、報酬は一文字練習の半分。
@@ -871,7 +879,7 @@ function reset(){if(!confirm("第4章の図鑑・戦績・苦手な漢字の選�
 /* ---------- 保護者用：自己判定したときの手書きの記録 ----------
  * 「答えを見る」時点の筆跡（整数座標）を別キーへ保存。kanjiQuest で始まらないため、セーブデータ移行の対象外。 */
 const INK_LOG_KEY="kq4ParentInkLog_v1",INK_LOG_MAX=120,INK_LOG_CHARS=1500000;
-let questionStartAt=0,revealedAt=0,revealInk=null,revealCount=0,parentFilter="good",parentShown=30;
+let questionStartAt=0,revealedAt=0,revealInk=null,revealCount=0,revealQuality=null,parentFilter="good",parentShown=30;
 function packInk(list){return list.map(st=>{const out=[];let lx=null,ly=null;for(const p of st){const x=Math.round(p.x),y=Math.round(p.y);if(x===lx&&y===ly)continue;out.push(x,y);lx=x;ly=y}return out}).filter(st=>st.length)}
 function readInkLog(){try{const v=JSON.parse(localStorage.getItem(INK_LOG_KEY));return Array.isArray(v)?v:[]}catch{return[]}}
 function writeInkLog(log){
@@ -880,7 +888,7 @@ function writeInkLog(log){
 }
 function logInk(kind){
  if(!current||!session||isTracePractice(session.practiceMode))return;const log=readInkLog();
- log.push({t:Date.now(),id:current.id,mode:session.practiceMode,test:current.test,s:current.s,a:current.a,kind,hint:hintUsed,ms:Math.max(0,(revealedAt||Date.now())-questionStartAt),ink:revealInk||[],after:Math.max(0,strokes.length-revealCount)});
+ log.push({t:Date.now(),id:current.id,mode:session.practiceMode,test:current.test,s:current.s,a:current.a,kind,hint:hintUsed,ms:Math.max(0,(revealedAt||Date.now())-questionStartAt),ink:revealInk||[],after:Math.max(0,strokes.length-revealCount),warned:Boolean(revealQuality&&revealQuality.warned)});
  writeInkLog(log);
 }
 function openParent(){
@@ -889,10 +897,10 @@ function openParent(){
 }
 function inkSvg(e){
  const {rows,cols,width,height}=writingLayout(e.a,e.mode),letters=[...e.a],sentence=e.mode==="sentence",targets=new Set(sentence?(SENTENCES.find(q=>q.id===e.id)?.targets||[]):letters.map((_,i)=>i));let out="";
- for(let i=0;i<rows*cols;i++){const {x,y,mx}=cellPosition(i,rows,e.mode);
-  out+=`<rect x="${x}" y="${y}" width="100" height="100" fill="none" stroke="#97baca" stroke-width=".8"/><rect x="${mx}" y="${y}" width="100" height="100" fill="#f1f8ef" stroke="#b7d2bd" stroke-width=".8"/>`;
+ for(let i=0;i<rows*cols;i++){const {x,y,mx,my,ms}=cellPosition(i,rows,e.mode);
+  out+=`<rect x="${x}" y="${y}" width="100" height="100" fill="none" stroke="#97baca" stroke-width=".8"/><rect x="${mx}" y="${my}" width="${ms}" height="${ms}" fill="#f1f8ef" stroke="#b7d2bd" stroke-width=".8"/>`;
   const ch=letters[i],g=ch&&glyph(ch);if(!ch)continue;
-  out+=g?`<g transform="translate(${mx} ${y}) scale(${KV}) translate(${g.dx} ${g.dy})" fill="none" stroke="${targets.has(i)?"#087b83":"#3b4a45"}" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round">${g.paths.map(d=>`<path d="${d}"/>`).join("")}</g>`:`<text x="${mx+50}" y="${y+60}" font-size="60" text-anchor="middle" fill="#3b4a45">${escapeHtml(ch)}</text>`;
+  out+=g?`<g transform="translate(${mx} ${my}) scale(${ms/109}) translate(${g.dx} ${g.dy})" fill="none" stroke="${targets.has(i)?"#087b83":"#3b4a45"}" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round">${g.paths.map(d=>`<path d="${d}"/>`).join("")}</g>`:`<text x="${mx+ms/2}" y="${my+ms*.6}" font-size="${ms*.6}" text-anchor="middle" fill="#3b4a45">${escapeHtml(ch)}</text>`;
  }
  out+=`<g fill="none" stroke="#201c18" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${e.ink.map(st=>st.length>2?`<polyline points="${st.join(" ")}"/>`:`<circle cx="${st[0]}" cy="${st[1]}" r="1.1" fill="#201c18"/>`).join("")}</g>`;
  return `<svg class="ink-svg" viewBox="0 ${HEAD} ${width} ${height-HEAD}" style="width:min(100%,${Math.round(width*(sentence?.9:1.1))}px)" role="img" aria-label="${escapeHtml(e.a)}の手書き">${out}</svg>`;
@@ -900,7 +908,7 @@ function inkSvg(e){
 function renderParent(){
  for(const [id,f] of [["parentFilterGood","good"],["parentFilterAll","all"]])$(id).setAttribute("aria-pressed",String(parentFilter===f));
  const all=readInkLog().map((e,i)=>({...e,i})).reverse(),list=all.filter(e=>parentFilter==="all"||e.kind==="good"),kinds={good:"できた",close:"おしい",retry:"もう一回"};
- $("parentList").innerHTML=list.length?list.slice(0,parentShown).map(e=>{const d=new Date(e.t),when=`${d.getMonth()+1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2,"0")}`,flags=[e.ink.length?"":"何も書いていない",e.hint?"ヒント使用":"",e.after?`答えを見た後に${e.after}画`:""].filter(Boolean);
+ $("parentList").innerHTML=list.length?list.slice(0,parentShown).map(e=>{const d=new Date(e.t),when=`${d.getMonth()+1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2,"0")}`,flags=[e.ink.length?"":"何も書いていない",e.hint?"ヒント使用":"",e.after?`答えを見た後に${e.after}画`:"",e.warned?"書き不足で「できた」を押して警告":""].filter(Boolean);
   return `<div class="ink-card k-${e.kind}"><div class="ink-meta"><strong>${when}　${e.test}回目・${e.s}番（${e.mode==="sentence"?"全文":"一文字"}）</strong><span class="ink-badge ${e.kind}">${kinds[e.kind]||e.kind}</span>書いた時間 ${Math.round(e.ms/1000)}秒・${e.ink.length}画${flags.length?`　<span class="ink-flag">${flags.join("・")}</span>`:""}</div>${inkSvg(e)}<button class="secondary" data-ink="${e.i}">苦手特訓に入れる</button></div>`}).join(""):`<p class="lead">まだ記録がありません。</p>`;
  $("parentMore").hidden=list.length<=parentShown;
  $("parentList").querySelectorAll("button[data-ink]").forEach(b=>b.onclick=()=>{const e=readInkLog()[Number(b.dataset.ink)];if(!e)return;const ids=e.mode==="sentence"?(SENTENCE_BY_CHAR.get(e.id)?.ids||[]):[e.id];save.customIds=cleanIds([...save.customIds,...ids]);persist();b.disabled=true;b.textContent="苦手特訓に入れました";});
@@ -910,17 +918,19 @@ function toast(t){const e=$("toast");e.textContent=t;e.classList.add("show");cle
 
 // 1マス100単位の固定座標。枠も筆跡も同じ変換で描き、回転・正解表示でずらさない。
 // 書くマスの左どなりに、同じ大きさの正解マスを常に置く（答えを見ても枠・筆跡が動かない）。上の帯は見出し。
-const HEAD=16,PAIR=236;
-function writingLayout(answer,mode=save.practiceMode){if(!isSentencePractice(mode)){const rows=[...answer].length;return {rows,cols:1,width:212,height:HEAD+rows*100}}const rows=Math.max(6,Math.ceil([...answer].length/2));return {rows,cols:2,width:PAIR+212,height:HEAD+rows*100}}
-function cellPosition(index,rows,mode=save.practiceMode){const col=isSentencePractice(mode)&&index>=rows?1:0,base=isSentencePractice(mode)&&!col?PAIR:0;return {x:base+112,y:HEAD+(index%rows)*100,mx:base,col}}
-function onWritingCell(p,mode=session.practiceMode){const m=6;return p.y>=HEAD-m&&p.y<=inkHeight+m&&[0,...(isSentencePractice(mode)?[PAIR]:[])].some(b=>p.x>=b+112-m&&p.x<=b+212+m)}
+// 全文は正解マスを小さめ（62）にして、書くマスを大きく取る。行数は文の長さに合わせる（最少3行）。
+const HEAD=16;
+function layoutDims(mode){return isSentencePractice(mode)?{ms:62,gap:8,off:186}:{ms:100,gap:12,off:0}}
+function writingLayout(answer,mode=save.practiceMode){const n=[...answer].length;if(!isSentencePractice(mode))return {rows:n,cols:1,width:212,height:HEAD+n*100};const rows=Math.max(3,Math.ceil(n/2));return {rows,cols:2,width:356,height:HEAD+rows*100}}
+function cellPosition(index,rows,mode=save.practiceMode){const d=layoutDims(mode),col=isSentencePractice(mode)&&index>=rows?1:0,base=isSentencePractice(mode)&&!col?d.off:0,y=HEAD+(index%rows)*100;return {x:base+d.ms+d.gap,y,mx:base,my:y+(100-d.ms)/2,ms:d.ms,col}}
+function onWritingCell(p,mode=session.practiceMode){const m=6,d=layoutDims(mode);return p.y>=HEAD-m&&p.y<=inkHeight+m&&[0,...(isSentencePractice(mode)?[d.off]:[])].some(b=>p.x>=b+d.ms+d.gap-m&&p.x<=b+d.ms+d.gap+100+m)}
 function inkTransform(){
  const r=canvas.getBoundingClientRect(),scale=Math.max(.001,Math.min((r.width-8)/inkWidth,(r.height-8)/inkHeight));
  return{scale,x:(r.width-inkWidth*scale)/2,y:(r.height-inkHeight*scale)/2};
 }
 function resize(){
  if(!current||!screens.battle.classList.contains("active"))return;
- finishStroke();const layout=writingLayout(current.a,session.practiceMode);inkWidth=layout.width;inkHeight=layout.height;
+ finishStroke();const layout=trace?{width:100,height:100}:writingLayout(current.a,session.practiceMode);inkWidth=layout.width;inkHeight=layout.height;
  const r=canvas.getBoundingClientRect(),dpr=Math.max(devicePixelRatio||1,1);if(!r.width||!r.height)return;
  const width=Math.max(1,Math.round(r.width*dpr)),height=Math.max(1,Math.round(r.height*dpr));
  if(canvas.width!==width)canvas.width=width;if(canvas.height!==height)canvas.height=height;
@@ -971,18 +981,19 @@ function seg(a,b){ctx.save();setInkStyle();ctx.beginPath();ctx.moveTo(a.x,a.y);c
 function redraw(){
  if(!inkWidth||!inkHeight)return;ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,canvas.width,canvas.height);ctx.save();setInkStyle();
  const {rows,cols}=writingLayout(current.a,session.practiceMode),letters=[...(current?.a||"")];
- const step=trace&&trace.steps[trace.pos],shown=$("answerPanel").classList.contains("show"),targets=new Set(traceCells());
- ctx.font="bold 9px sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillStyle="#3a6a80";
- for(let c=0;c<cols;c++){const b=cols===2&&!c?PAIR:0;ctx.fillText(cols===2&&c?"つづき ↓":"ここから ↓",b+162,HEAD/2);ctx.fillStyle="#3d8a5e";ctx.fillText("正解",b+50,HEAD/2);ctx.fillStyle="#3a6a80"}
+ const grid=(x,y,size,frame,dash)=>{ctx.lineWidth=.8;ctx.strokeStyle=frame;ctx.setLineDash([]);ctx.strokeRect(x,y,size,size);ctx.lineWidth=.45;ctx.strokeStyle=dash;ctx.setLineDash([2,2]);ctx.beginPath();ctx.moveTo(x+size/2,y);ctx.lineTo(x+size/2,y+size);ctx.moveTo(x,y+size/2);ctx.lineTo(x+size,y+size/2);ctx.stroke();ctx.setLineDash([])};
+ // なぞり中は、なぞる漢字1字だけを大きな1マスに出す。
+ if(trace){ctx.fillStyle="#fffbe8";ctx.fillRect(0,0,100,100);grid(0,0,100,"#97baca","#c8dbe2");if(trace.ch)drawGlyph(trace.ch,0,0,"#9fb3aa66",5.5);drawTrace();return ctx.restore()}
+ const shown=$("answerPanel").classList.contains("show"),targets=new Set(isSentencePractice(session.practiceMode)?current.targets:letters.map((_,i)=>i)),d=layoutDims(session.practiceMode);
+ ctx.font="bold 9px sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";
+ for(let c=0;c<cols;c++){const b=cols===2&&!c?d.off:0;ctx.fillStyle="#3a6a80";ctx.fillText(cols===2&&c?"つづき ↓":"ここから ↓",b+d.ms+d.gap+50,HEAD/2);ctx.fillStyle="#3d8a5e";ctx.fillText("正解",b+d.ms/2,HEAD/2)}
  for(let i=0;i<rows*cols;i++){
-  const {x,y,mx}=cellPosition(i,rows,session.practiceMode);
-  ctx.fillStyle="#f1f8ef";ctx.fillRect(mx,y,100,100);ctx.lineWidth=.8;ctx.strokeStyle="#b7d2bd";ctx.setLineDash([]);ctx.strokeRect(mx,y,100,100);
-  ctx.lineWidth=.45;ctx.strokeStyle="#d3e5d6";ctx.setLineDash([2,2]);ctx.beginPath();ctx.moveTo(mx+50,y);ctx.lineTo(mx+50,y+100);ctx.moveTo(mx,y+50);ctx.lineTo(mx+100,y+50);ctx.stroke();
-  if(shown&&letters[i])drawGlyph(letters[i],mx,y,targets.has(i)?"#087b83":"#3b4a45",5);if(step&&step.cell===i){ctx.fillStyle="#fff3c4";ctx.fillRect(x,y,100,100)}ctx.lineWidth=.8;ctx.strokeStyle="#97baca";ctx.setLineDash([]);ctx.strokeRect(x,y,100,100);
-  ctx.lineWidth=.45;ctx.strokeStyle="#c8dbe2";ctx.setLineDash([2,2]);ctx.beginPath();ctx.moveTo(x+50,y);ctx.lineTo(x+50,y+100);ctx.moveTo(x,y+50);ctx.lineTo(x+100,y+50);ctx.stroke();
-  if(trace&&letters[i])drawGlyph(letters[i],x,y,"#9fb3aa66",5.5);
+  const {x,y,mx,my,ms}=cellPosition(i,rows,session.practiceMode);
+  ctx.fillStyle="#f1f8ef";ctx.fillRect(mx,my,ms,ms);grid(mx,my,ms,"#b7d2bd","#d3e5d6");
+  if(shown&&letters[i])drawGlyph(letters[i],mx,my,targets.has(i)?"#087b83":"#3b4a45",5,ms);
+  grid(x,y,100,"#97baca","#c8dbe2");
  }
- ctx.setLineDash([]);if(trace)drawTrace();setInkStyle();
+ ctx.setLineDash([]);setInkStyle();
  for(const s of stroke?[...strokes,stroke]:strokes){if(s.length===1){ctx.beginPath();ctx.arc(s[0].x,s[0].y,INK_WIDTH/2,0,Math.PI*2);ctx.fill();continue}ctx.beginPath();ctx.moveTo(s[0].x,s[0].y);for(let i=1;i<s.length;i++)ctx.lineTo(s[i].x,s[i].y);ctx.stroke()}
  ctx.restore();
 }
@@ -1000,23 +1011,29 @@ function glyph(ch){
 }
 function escapeHtml(t){return t.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[c])}
 function glyphHtml(html){return html.replace(/(<[^>]*>)|([^<]+)/g,(m,tag,text)=>tag||[...text].map(ch=>{const g=glyph(ch);return g?`<svg class="kv" viewBox="0 0 109 109" aria-hidden="true"><g transform="translate(${g.dx} ${g.dy})">${g.paths.map(d=>`<path d="${d}"/>`).join("")}</g></svg>`:escapeHtml(ch)}).join(""))}
-function polyline(pts,x,y,upto=Infinity){ctx.beginPath();pts.forEach((p,k)=>{if(k>upto)return;const px=x+p[0]*KV,py=y+p[1]*KV;k?ctx.lineTo(px,py):ctx.moveTo(px,py)});ctx.stroke()}
-function drawGlyph(ch,x,y,color,width){
- const g=glyph(ch);ctx.save();ctx.setLineDash([]);ctx.strokeStyle=color;ctx.fillStyle=color;ctx.lineWidth=width;ctx.lineCap="round";ctx.lineJoin="round";
- if(g)for(const pts of g.pts)polyline(pts,x,y);
- else{ctx.font='72px "Hiragino Mincho ProN", serif';ctx.textAlign="center";ctx.textBaseline="middle";const punct="。、".includes(ch);ctx.fillText(ch,x+(punct?74:50),y+(punct?25:52))}
+function polyline(pts,x,y,upto=Infinity,size=100){const k0=size/109;ctx.beginPath();pts.forEach((p,k)=>{if(k>upto)return;const px=x+p[0]*k0,py=y+p[1]*k0;k?ctx.lineTo(px,py):ctx.moveTo(px,py)});ctx.stroke()}
+function drawGlyph(ch,x,y,color,width,size=100){
+ const g=glyph(ch),f=size/100;ctx.save();ctx.setLineDash([]);ctx.strokeStyle=color;ctx.fillStyle=color;ctx.lineWidth=width*f;ctx.lineCap="round";ctx.lineJoin="round";
+ if(g)for(const pts of g.pts)polyline(pts,x,y,Infinity,size);
+ else{ctx.font=`${72*f}px "Hiragino Mincho ProN", serif`;ctx.textAlign="center";ctx.textBaseline="middle";const punct="。、".includes(ch);ctx.fillText(ch,x+(punct?74:50)*f,y+(punct?25:52)*f)}
  ctx.restore();
 }
-function traceCells(){return isSentencePractice(session.practiceMode)?current.targets:[...current.a].map((_,i)=>i)}
+// なぞるのは漢字だけ（ひらがな・句読点はなぞらない）。全文では赤線・波線の漢字。
+const isKanji=ch=>/\p{Script=Han}|々/u.test(ch);
+function traceCells(){const letters=[...current.a],cells=isSentencePractice(session.practiceMode)?current.targets:letters.map((_,i)=>i);return cells.filter(i=>isKanji(letters[i])&&glyph(letters[i]))}
+function loadTraceChar(ci){const cell=trace.cells[ci],ch=[...current.a][cell],g=glyph(ch);trace.ci=ci;trace.ch=ch;trace.steps=g.pts.map((pts,k)=>({cell,k,pts,x:0,y:0}));trace.pos=0;trace.miss=0;trace.demo=null}
+function traceLabel(){return trace.cells.length>1?`「${trace.ch}」（${trace.ci+1}/${trace.cells.length}字目）`:`「${trace.ch}」`}
 function startTrace(kind,onDone){
- if(!current)return;finishStroke();resize();const letters=[...current.a],rows=writingLayout(current.a,session.practiceMode).rows,steps=[];
- for(const cell of traceCells()){const g=glyph(letters[cell]);if(!g)continue;const o=cellPosition(cell,rows,session.practiceMode);g.pts.forEach((pts,k)=>steps.push({cell,k,pts,x:o.x,y:o.y}))}
- trace={kind,steps,pos:0,miss:0,cur:null,demo:null,saved:strokes.slice(),onDone};strokes=[];updateTools();
- msg(kind==="review"?"正解を、書き順どおりになぞろう。緑の丸から！":kind==="hint"?"ヒント魔法！ 緑の丸から、書き順どおりになぞろう。":"緑の丸から、書き順どおりになぞろう。",kind==="review"?"warn":"");
- redraw();if(!steps.length)completeTrace();
+ if(!current)return;finishStroke();
+ trace={kind,cells:traceCells(),ci:0,ch:"",steps:[],pos:0,miss:0,cur:null,demo:null,saved:strokes.slice(),onDone};strokes=[];
+ if(!trace.cells.length)return completeTrace();loadTraceChar(0);updateTools();
+ msg(kind==="review"?`正解の${traceLabel()}を、書き順どおりになぞろう。緑の丸から！`:kind==="hint"?`ヒント魔法！ ${traceLabel()}を、緑の丸から書き順どおりになぞろう。`:`${traceLabel()}を、緑の丸から書き順どおりになぞろう。`,kind==="review"?"warn":"");
+ resize();
 }
-function stopTrace(restore){if(!trace)return;const saved=trace.saved;finishStroke();trace=null;strokes=restore?saved:[];updateTools();redraw()}
-function restartTrace(){if(!trace||trace.pos>=trace.steps.length)return;finishStroke();trace.pos=0;trace.miss=0;trace.demo=null;msg("はじめから。緑の丸からなぞろう。");redraw()}
+function stopTrace(restore){if(!trace)return;const saved=trace.saved;finishStroke();trace=null;strokes=restore?saved:[];updateTools();resize()}
+function restartTrace(){if(!trace||trace.pos>=trace.steps.length)return;finishStroke();loadTraceChar(trace.ci);msg(`はじめから。${traceLabel()}を緑の丸からなぞろう。`);redraw()}
+function traceStepDone(text,type){trace.pos++;trace.miss=0;trace.demo=null;if(trace.pos<trace.steps.length){msg(text||"いいね！ 次の画へ。",type||"good");return redraw()}
+ if(trace.ci+1<trace.cells.length){loadTraceChar(trace.ci+1);msg(`いいね！ 次は${traceLabel()}。`,"good");return redraw()}completeTrace()}
 function updateTools(){
  const k=trace&&trace.kind;$("undo").disabled=Boolean(k);$("clear").textContent=k?"↺ はじめから":"消す";
  $("hint").textContent=k==="hint"?"なぞりをやめる":k?"▶ 書き順を見る":"✨ ヒント";$("showAnswer").disabled=k==="review"||k==="mode"||$("answerPanel").classList.contains("show");
@@ -1030,9 +1047,9 @@ function traceEnd(e){
  const pts=trace.cur,id=activePointerId;trace.cur=null;activePointerId=null;try{canvas.releasePointerCapture(id)}catch{}
  const step=trace.steps[trace.pos];if(!step)return redraw();
  const r=ST.judgeStroke(pts.map(p=>[(p.x-step.x)/KV,(p.y-step.y)/KV]),step.pts);
- if(r.ok){trace.pos++;trace.miss=0;trace.demo=null;if(trace.pos>=trace.steps.length)return completeTrace();msg(trace.steps[trace.pos].cell!==step.cell?"いいね！ 次の字へ。":"いいね！ 次の画へ。","good");return redraw()}
+ if(r.ok)return traceStepDone();
  trace.miss++;
- if(trace.miss>=3){trace.pos++;trace.miss=0;trace.demo=null;msg("いっしょに書いたよ。次へ進もう。","warn");if(trace.pos>=trace.steps.length)return completeTrace();return redraw()}
+ if(trace.miss>=3)return traceStepDone("いっしょに書いたよ。次へ進もう。","warn");
  msg(r.reason==="reverse"?"緑の丸から書き始めよう。":r.reason==="start"?`${step.k+1}画目は、緑の丸から書くよ。`:"おしい！ お手本の線にそって、もう一回。","warn");playDemo();
 }
 function completeTrace(){

@@ -32,6 +32,8 @@ function boot(chapter={},term={},shared={}){
  vm.createContext(sandbox);for(const asset of assets)vm.runInContext(asset,sandbox);vm.runInContext(script,sandbox);
  return {run:code=>vm.runInContext(code,sandbox),nodes,storage,timers};
 }
+// Plausible writing: as many strokes as the model, inside each writing cell.
+const FILL='strokes=[...current.a].flatMap((ch,i)=>{const c=cellPosition(i,writingLayout(current.a,session.practiceMode).rows,session.practiceMode);return Array.from({length:glyph(ch)?.paths.length||1},()=>[{x:c.x+20,y:c.y+20},{x:c.x+80,y:c.y+80}])})';
 const legacy={areaLayout:2,selectedTest:6,practiceMode:'sentence',defeated:[1,53,114],records:{114:{retry:3,last:'retry'}},customIds:[115,160],clears:[0,6,13],stageClears:{0:8,6:4,13:5},displayMode:'clue'};
 const b=boot(legacy,{treasures:['test1','test2'],fragments:{test1:[0,1,2,3,4,5],test2:[6,7,8,9,10,11,12]},areaLayouts:{test1:2,test2:2}},{xp:5000,gold:4321,owned:['wood','treasure_staff'],weapon:'treasure_staff'});
 assert.equal(b.run('SENTENCES.length'),80);
@@ -59,13 +61,16 @@ b.run('resize();strokes=[[{x:150,y:20},{x:160,y:35}]]');
 const ink=b.run('JSON.stringify(strokes)');const bounds=b.run('JSON.stringify([inkWidth,inkHeight])');
 b.run('reveal();resize()');assert.equal(b.run('JSON.stringify(strokes)'),ink);assert.equal(b.run('JSON.stringify([inkWidth,inkHeight])'),bounds);
 b.nodes.get('canvas').getBoundingClientRect=()=>({width:600,height:400,left:0,top:0});
-b.run('resize()');assert.equal(b.run('JSON.stringify(strokes)'),ink);assert.equal(b.run('inkTransform().scale'),(400-8)/616);
+b.run('resize()');assert.equal(b.run('JSON.stringify(strokes)'),ink);assert.equal(b.run('inkTransform().scale'),(400-8)/416);
 b.run('useHint();begin({pointerId:1,button:0,isPrimary:true,clientX:320,clientY:30,preventDefault(){}});move({pointerId:1,clientX:322,clientY:34,preventDefault(){}});end({pointerId:1,cancelable:false})');
 assert.equal(b.run('trace&&trace.kind'),'hint','writing must not hide tracing hint');
 // Sentence hints trace only the rewritten characters (本・感想・書く), in stroke order.
 assert.equal(b.run('JSON.stringify(current.targets)'),'[0,2,3,5,6]');
 assert(b.run('trace.steps.every(s=>current.targets.includes(s.cell))'));
 b.run('useHint()');assert.equal(b.run('trace'),null);assert.equal(b.run('JSON.stringify(strokes)'),ink,'stopping the hint restores earlier writing');
+// One short stroke is not enough writing for "できた".
+const blocked=b.run('save.gold');b.run('judge("good")');assert.equal(b.run('save.gold'),blocked);assert(b.nodes.get('message').classList.contains('bad'));
+b.run('hintUsed=false;'+FILL+';revealQuality=inkQuality(strokes)');assert(b.run('revealQuality.ok'));
 b.run('judge("good")');
 assert.equal(b.run('save.gold')-before,4*(6+25+2));
 assert(b.run('current.ids.every(id=>save.defeated.includes(id))'));
@@ -110,9 +115,9 @@ assert(b.run(`(()=>{
 b.run('startArea(13);resize()');
 b.run(`(()=>{
  const t=inkTransform();const event=(type,x,y)=>({type,pointerId:9,button:0,isPrimary:true,clientX:x*t.scale+t.x,clientY:y*t.scale+t.y,preventDefault(){}});
- begin(event('pointerdown',366,40));move(event('pointermove',368,42));end(event('pointerup',369,43));
+ begin(event('pointerdown',276,40));move(event('pointermove',278,42));end(event('pointerup',279,43));
 })()`);
-assert(b.run('Math.abs(strokes[0].at(-1).x-369)<1e-8&&Math.abs(strokes[0].at(-1).y-43)<1e-8'));
+assert(b.run('Math.abs(strokes[0].at(-1).x-279)<1e-8&&Math.abs(strokes[0].at(-1).y-43)<1e-8'));
 const smoothed=b.run('JSON.stringify(strokes)');b.run('redraw();resize()');assert.equal(b.run('JSON.stringify(strokes)'),smoothed);
 b.run('undo()');assert.equal(b.run('strokes.length'),0);
 console.log('PASS: bounded smoothing, exact pen-up endpoint, redraw stability and undo.');
@@ -135,7 +140,7 @@ assert.equal(c.run('inkWidth'),212);
 assert.equal(c.run('inkHeight'),16+[...c.run('current.a')].length*100);
 assert.equal(c.run('JSON.stringify(save.sentenceRecords)'),'{}');
 const charId=c.run('current.id');const charGold=c.run('save.gold');
-c.run('reveal();judge("good")');
+c.run(FILL+';reveal();judge("good")');
 assert.equal(c.run(`save.records[${charId}].good`),1);
 assert.equal(c.run('JSON.stringify(save.sentenceRecords)'),'{}');
 assert.equal(c.run('save.gold')-charGold,8);
@@ -143,7 +148,7 @@ assert.equal(c.run('save.stageClears[9]'),4,'stage clear only on completion');
 c.run('session=null;current=null;selectPracticeMode("sentence")');
 assert.equal(c.run('save.practiceMode'),'sentence');
 assert.equal(c.nodes.get('practiceSentence').attrs['aria-pressed'],'true');
-assert.equal(c.run('writingLayout("勝負に勝つ。").width'),448);
+assert.equal(c.run('writingLayout("勝負に勝つ。").width'),356);
 assert.equal(c.run('customForTest().length'),1);
 c.run('startRandomTest()');assert.equal(c.run('session.original.length'),10);
 assert(c.run('session.original.every(id=>SENTENCE_BY_CHAR.get(id).test===4)'));
@@ -191,12 +196,13 @@ assert.equal(t.nodes.get('practiceTrace').attrs['aria-pressed'],'true');
 assert(t.nodes.get('eliteStart').disabled,'elite trial is closed in trace practice');
 t.run('startArea(6)');
 assert.equal(t.run('trace.kind'),'mode');assert(t.nodes.get('answerPanel').classList.contains('show'));
-const traceAll=`(()=>{const tr=inkTransform();for(const s of [...trace.steps]){const pts=s.pts.map(([x,y])=>({clientX:(s.x+x*KV)*tr.scale+tr.x,clientY:(s.y+y*KV)*tr.scale+tr.y}));
+const traceAll=`(()=>{for(let guard=0;trace&&trace.pos<trace.steps.length&&guard<200;guard++){const tr=inkTransform(),s=trace.steps[trace.pos],pts=s.pts.map(([x,y])=>({clientX:(s.x+x*KV)*tr.scale+tr.x,clientY:(s.y+y*KV)*tr.scale+tr.y}));
  begin({pointerId:5,button:0,isPrimary:true,...pts[0],preventDefault(){}});for(const p of pts.slice(1))move({pointerId:5,...p,preventDefault(){}});end({type:'pointerup',pointerId:5,...pts.at(-1),preventDefault(){}})}})()`;
-const tGold=t.run('save.gold'),tId=t.run('current.id'),tSteps=t.run('trace.steps.length');
-assert.equal(tSteps,t.run('[...current.a].reduce((n,ch)=>n+KANJI_STROKES[ch].length,0)'));
+const tGold=t.run('save.gold'),tId=t.run('current.id');
+// Only kanji are traced, one large cell at a time (no okurigana).
+assert.equal(t.run('JSON.stringify(trace.cells.map(i=>[...current.a][i]))'),JSON.stringify([...t.run('current.a')].filter(ch=>/\p{Script=Han}/u.test(ch))));
+assert.equal(t.run('JSON.stringify([inkWidth,inkHeight])'),'[100,100]');
 t.run(traceAll);
-assert.equal(t.run('trace.pos'),tSteps);
 assert.equal(t.run(`save.traceRecords[${tId}].done`),1);
 assert.equal(t.run('save.gold')-tGold,Math.ceil((6+0+2)/2));
 assert(!t.run(`save.defeated.includes(${tId})`),'tracing does not register the monster book');
@@ -224,22 +230,28 @@ assert.equal(t.run('trace.pos'),pos0+1);
 console.log('PASS: KanjiVG coverage, stroke judging, trace practice rewards/records, hint tracing and review tracing after close/retry.');
 
 // The answer is drawn in the same-size cell right beside each written cell; the writing cells never move.
-assert.equal(b.run('JSON.stringify(cellPosition(0,6,"sentence"))'),JSON.stringify({x:348,y:16,mx:236,col:0}));
-assert.equal(b.run('JSON.stringify(cellPosition(6,6,"sentence"))'),JSON.stringify({x:112,y:16,mx:0,col:1}));
-assert.equal(b.run('JSON.stringify(cellPosition(1,2,"character"))'),JSON.stringify({x:112,y:116,mx:0,col:0}));
+assert.equal(b.run('JSON.stringify(cellPosition(0,6,"sentence"))'),JSON.stringify({x:256,y:16,mx:186,my:35,ms:62,col:0}));
+assert.equal(b.run('JSON.stringify(cellPosition(6,6,"sentence"))'),JSON.stringify({x:70,y:16,mx:0,my:35,ms:62,col:1}));
+assert.equal(b.run('JSON.stringify(cellPosition(1,2,"character"))'),JSON.stringify({x:112,y:116,mx:0,my:116,ms:100,col:0}));
+assert.equal(b.run('writingLayout("問いをもつ。","sentence").rows'),3,'short sentences get fewer, larger rows');
 assert(b.run('onWritingCell({x:160,y:60},"character")')&&!b.run('onWritingCell({x:50,y:60},"character")'),'answer cells are not for writing');
 console.log('PASS: answers beside each handwritten cell.');
 
 // Parent-only ink log: the writing at "答えを見る" is kept with the self-judgement, outside the transferable kanjiQuest* keys.
 const p=boot({areaLayout:2,selectedTest:3});
 p.run('startArea(6);resize();strokes=[[{x:150.4,y:40.2},{x:160,y:80}],[{x:170,y:30}]];reveal();strokes.push([{x:120,y:50},{x:121,y:90}]);judge("good")');
+assert.equal(p.storage.get('kq4ParentInkLog_v1'),undefined,'too little writing: "できた" is refused');
+p.run('judge("close")');
 const log=JSON.parse(p.storage.get('kq4ParentInkLog_v1'));
-assert.equal(log.length,1);assert.equal(log[0].kind,'good');assert.equal(log[0].a,p.run('current.a'));
+assert.equal(log.length,1);assert.equal(log[0].kind,'close');assert.equal(log[0].warned,true);assert.equal(log[0].a,p.run('current.a'));
 assert.deepEqual(log[0].ink,[[150,40,160,80],[170,30]],'ink is the writing at reveal time');
 assert.equal(log[0].after,1,'strokes added after seeing the answer are counted');
 assert(!'kq4ParentInkLog_v1'.startsWith('kanjiQuest'),'not part of save transfer');
-p.timers.splice(0).forEach(f=>f());p.run('useHint();useHint();reveal();judge("close")');
+p.timers.splice(0).forEach(f=>f());p.run(traceAll);p.timers.splice(0).forEach(f=>f());
+// Hint, then "できた": the monster survives and comes back later.
+const hid=p.run('current.id');p.run('useHint();useHint();'+FILL+';reveal();judge("good")');
 assert.equal(JSON.parse(p.storage.get('kq4ParentInkLog_v1'))[1].hint,true);
+assert(!p.run(`session.done.has(${hid})`),'hinted answer is asked again');assert(p.run(`session.queue.includes(${hid})`));assert.equal(p.run(`session.hps[${hid}]`),1);
 p.run('session=null;current=null;selectPracticeMode("trace");startArea(6)');p.run(traceAll);
 assert.equal(JSON.parse(p.storage.get('kq4ParentInkLog_v1')).length,2,'trace practice is not logged');
 p.run('prompt=()=>"0";openParent()');assert(!p.nodes.get('parent').classList.contains('active'),'gate blocks a wrong answer');
