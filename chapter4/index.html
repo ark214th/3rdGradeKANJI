@@ -120,6 +120,8 @@ html.battle-active .topbar,html.battle-active .hud{display:none}
 .practice-choice{margin:0 0 16px;padding:10px;border:2px solid #8fd2df;border-radius:18px;background:#ecfaff}.practice-choice legend{padding:0 7px;color:#135c73;font-weight:950}.practice-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.practice-options button{min-height:66px;border:2px solid #b9d9e2;border-radius:13px;background:#fff;color:#17465a;font:inherit;font-weight:950;cursor:pointer}.practice-options button[aria-pressed="true"]{border-color:#1488ae;background:#d9f4fc;box-shadow:inset 0 0 0 2px #fff}.practice-options small{display:block;margin-top:3px;color:#526c76;font-size:12px;font-weight:750}@media(max-width:450px){.practice-options button{font-size:13px}}
 .kv{display:inline-block;width:1em;height:1em;margin:.04em 0;vertical-align:middle;fill:none;stroke:currentColor;stroke-width:5;stroke-linecap:round;stroke-linejoin:round}
 .credit{margin:18px 0 0;color:var(--muted);font-size:11px;font-weight:700;line-height:1.6;text-align:center}.credit a{color:inherit}
+.parent-link{display:block;margin:10px auto 0;padding:4px 8px;border:0;background:none;color:#a9b6b0;font-size:10px;font-weight:700;cursor:pointer}
+.parent-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}.ink-card{display:flex;flex-direction:column;gap:7px;padding:11px;border:2px solid #dfe7dd;border-radius:16px;background:#fff}.ink-card.k-good{border-color:#b5dcc4}.ink-meta{color:var(--muted);font-size:12px;font-weight:800;line-height:1.5}.ink-meta strong{display:block;color:var(--ink);font-size:14px}.ink-badge{display:inline-block;margin-right:5px;padding:1px 8px;border-radius:999px;color:#155b35;background:#d8f4e4}.ink-badge.close{color:#75510e;background:#fff0b7}.ink-badge.retry{color:#14587a;background:#d8efff}.ink-flag{color:#b2452f}.ink-svg{display:block;align-self:center;max-width:100%;height:auto;border-radius:8px;background:#fffdf8}.ink-card button{min-height:38px;font-size:13px}
 #battle.character-practice .writing-label{justify-content:center}#battle.character-practice .answerbig{color:#206b69}
 </style>
 </head>
@@ -175,7 +177,11 @@ html.battle-active .topbar,html.battle-active .hud{display:none}
 
 <section class="screen" id="shop"><div class="panel"><div class="body"><h2>王都の武器屋</h2><p class="lead">武器は答えを代わりに出してはくれません。でも、倒したときの攻撃と経験値ボーナスが強くなります。</p><div class="shophero"><div><strong>🪙 所持金 <span id="shopGold">0</span> G</strong><div class="herosub">買った武器はいつでも持ちかえられます。</div></div><button class="secondary" id="shopBack">地図へ</button></div><div class="shopgrid" id="shopGrid"></div></div></div></section>
 
-<section class="screen" id="book"><div class="panel"><div class="body"><h2>海の漢字図鑑</h2><p class="lead">第4章で「できた！」になった漢字を、まとめて確認できます。</p><div class="stats"><div class="stat"><strong id="bookLv">1</strong><span>勇者レベル</span></div><div class="stat"><strong id="bookCount">0</strong><span>図鑑登録</span></div><div class="stat"><strong id="bookBattles">0</strong><span>第4章の戦闘</span></div><div class="stat"><strong id="bookClears">0</strong><span>航路クリア</span></div></div><div class="bookgrid" id="bookGrid"></div><div style="margin-top:18px;text-align:center"><button class="secondary" id="bookBack">海図へもどる</button><button class="danger" id="reset" style="margin-left:8px">第4章の記録を消す</button></div><p class="credit">書き順・お手本の字形：<a href="https://kanjivg.tagaini.net/" target="_blank" rel="noopener">KanjiVG</a>（© Ulrich Apel and contributors、<a href="https://creativecommons.org/licenses/by-sa/3.0/deed.ja" target="_blank" rel="noopener">CC BY-SA 3.0</a>、<a href="vendor/README.md" target="_blank" rel="noopener">くわしく</a>）</p></div></div></section>
+<section class="screen" id="book"><div class="panel"><div class="body"><h2>海の漢字図鑑</h2><p class="lead">第4章で「できた！」になった漢字を、まとめて確認できます。</p><div class="stats"><div class="stat"><strong id="bookLv">1</strong><span>勇者レベル</span></div><div class="stat"><strong id="bookCount">0</strong><span>図鑑登録</span></div><div class="stat"><strong id="bookBattles">0</strong><span>第4章の戦闘</span></div><div class="stat"><strong id="bookClears">0</strong><span>航路クリア</span></div></div><div class="bookgrid" id="bookGrid"></div><div style="margin-top:18px;text-align:center"><button class="secondary" id="bookBack">海図へもどる</button><button class="danger" id="reset" style="margin-left:8px">第4章の記録を消す</button></div><button type="button" class="parent-link" id="openParent">保護者用</button><p class="credit">書き順・お手本の字形：<a href="https://kanjivg.tagaini.net/" target="_blank" rel="noopener">KanjiVG</a>（© Ulrich Apel and contributors、<a href="https://creativecommons.org/licenses/by-sa/3.0/deed.ja" target="_blank" rel="noopener">CC BY-SA 3.0</a>、<a href="vendor/README.md" target="_blank" rel="noopener">くわしく</a>）</p></div></div></section>
+
+<section class="screen" id="parent"><div class="panel"><div class="body"><h2>保護者用：書いた字の記録</h2><p class="lead">「答えを見る」を押した時点の手書きを、正解と並べて表示します。新しい順・最大120件。この端末だけに保存し、セーブデータの移行には含めません。</p>
+<div class="picktools"><button class="secondary" id="parentFilterGood">「できた」だけ</button><button class="secondary" id="parentFilterAll">すべて</button><button class="secondary" id="parentBack">図鑑へもどる</button><button class="danger" id="parentClear">記録を消す</button></div>
+<div class="parent-list" id="parentList"></div><div style="margin-top:14px;text-align:center"><button class="secondary" id="parentMore">もっと見る</button></div></div></div></section>
 
 <section class="screen" id="result"><div class="panel"><div class="result"><div class="crown">🏆</div><h2 id="resultTitle">航路クリア！</h2><p id="resultText">海の漢字モンスターを倒しました。</p><div class="rewards"><div class="reward"><strong id="resultDefeated">10</strong><span>倒した魔物</span></div><div class="reward"><strong id="resultXp">+100</strong><span>獲得EXP</span></div><div class="reward"><strong id="resultGold">+60</strong><span>獲得G</span></div></div><div id="weaponChest" class="weapon-chest" hidden><div class="chest-icon" id="chestIcon" aria-hidden="true">🎁</div><div><h3 id="chestTitle">宝箱を発見！</h3><p id="chestText" aria-live="polite"></p><button class="primary" id="openWeaponChest">宝箱をあける</button></div></div><div class="resultactions"><button class="primary" id="again">もう一度冒険</button><button class="secondary" id="resultMap">海図へもどる</button><button class="primary" id="resultShop">武器屋へ</button></div></div></div></section>
 </div>
@@ -721,7 +727,7 @@ const SHARED_KEY="kanjiQuestRpg_v1",CHAPTER_KEY="kanjiQuestRpg_chapter4_v1",TERM
 const DEF=()=>({xp:0,gold:0,owned:["wood"],weapon:"wood",defeated:[],records:{},sentenceRecords:{},battles:0,clears:[],stageClears:{},totalDefeats:0,eliteRank:1,eliteClears:0,customIds:[],bestCombo:0,displayMode:"kana",practiceMode:"character",selectedTest:3,traceRecords:{}});
 let save=load(),term=loadTerm(),session=null,current=null,hp=100,maxHp=100,hintUsed=false,trace=null,locked=false,toastTimer=null,strokes=[],stroke=null,drawing=false,tempCustomIds=[];
 let activePointerId=null,inkWidth=0,inkHeight=0;
-const $=id=>document.getElementById(id),screens={world:$("world"),battle:$("battle"),picker:$("picker"),shop:$("shop"),book:$("book"),result:$("result")},canvas=$("canvas"),ctx=canvas.getContext("2d");
+const $=id=>document.getElementById(id),screens={world:$("world"),battle:$("battle"),picker:$("picker"),shop:$("shop"),book:$("book"),result:$("result"),parent:$("parent")},canvas=$("canvas"),ctx=canvas.getContext("2d");
 
 function cleanIds(v,min=1,max=Q.length){return [...new Set((Array.isArray(v)?v:[]).map(Number).filter(id=>id>=min&&id<=max))].sort((a,b)=>a-b)}
 function cleanAreas(v){return [...new Set((Array.isArray(v)?v:[]).map(Number).filter(id=>id>=0&&id<AREAS.length))].sort((a,b)=>a-b)}
@@ -746,7 +752,7 @@ function lvInfo(xp){let l=1,c=xp,n=60;while(c>=n){c-=n;l++;n=60+(l-1)*25}return{
 function titleFor(l){return (TITLES.find(t=>l>=t.min)||TITLES[TITLES.length-1]).n}
 function weap(){return W.find(x=>x.id===save.weapon)||W[0]}
 function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
-function screen(name){finishStroke();if(name!=="battle")trace=null;document.documentElement.classList.toggle("battle-active",name==="battle");Object.entries(screens).forEach(([k,e])=>e.classList.toggle("active",k===name));if(name==="world")renderWorld();if(name==="shop")renderShop();if(name==="book")renderBook();if(name==="picker")renderPicker();scrollTo({top:0,behavior:"instant"})}
+function screen(name){finishStroke();if(name!=="battle")trace=null;document.documentElement.classList.toggle("battle-active",name==="battle");Object.entries(screens).forEach(([k,e])=>e.classList.toggle("active",k===name));if(name==="world")renderWorld();if(name==="shop")renderShop();if(name==="book")renderBook();if(name==="picker")renderPicker();if(name==="parent")renderParent();scrollTo({top:0,behavior:"instant"})}
 function hud(){const l=lvInfo(save.xp),w=weap();$("hudLv").textContent=`LV ${l.l}`;$("hudGold").textContent=`${save.gold} G`;$("hudWeapon").textContent=w.n;$("hudBook").textContent=`${new Set(save.defeated).size} / ${Q.length}`;$("xpFill").style.width=`${Math.round(l.c/l.n*100)}%`;$("xpText").textContent=`EXP ${l.c} / ${l.n}`}
 function stageMedal(count){return count>=3?"🥇":count===2?"🥈":count===1?"🥉":""}
 function renderTerm(){const v=selectedVolume(),ids=volumeAreas(v),parts=term.fragments[v.key]||[],stage=Math.min(COMPANIONS.length-1,term.treasures.length),c=COMPANIONS[stage];$("companionIcon").textContent=c.i;$("companionName").textContent=c.n;$("companionText").textContent=term.treasures.includes(v.key)?`${v.name}の秘宝を発見！`:`${v.blocks.join("・")}回目を進もう！ ${v.name}の秘宝まで ${parts.length} / ${ids.length}`;$("fragmentRow").innerHTML=ids.map(i=>`<span class="fragment${parts.includes(i)?" got":""}" title="${AREAS[i].n}">${parts.includes(i)?"◆":"・"}</span>`).join("");$("treasureShelf").innerHTML=Array.from({length:7},(_,i)=>`<span class="treasure${term.treasures.includes(`test${i+1}`)?" got":""}" title="第${i+1}の秘宝">${term.treasures.includes(`test${i+1}`)?VOLUMES[i]?.icon||"💎":"🔒"}</span>`).join("")}
@@ -780,7 +786,7 @@ function renderMonster(){
 
 function resetQuestion(){
  $("answerPanel").classList.remove("show");$("answerBig").setAttribute("aria-hidden","true");$("questPanel").classList.remove("answering");$("judges").setAttribute("inert","");
- $("hint").disabled=false;$("good").disabled=false;$("showAnswer").disabled=false;
+ $("hint").disabled=false;$("good").disabled=false;$("showAnswer").disabled=false;questionStartAt=Date.now();revealedAt=0;revealInk=null;revealCount=0;
  msg(isSentencePractice(session.practiceMode)?"右から縦に、一マス一文字。文をぜんぶ書こう。":"出題された漢字を書こう。送り仮名もいっしょにね。");clearCanvas();updateTools();requestAnimationFrame(resize);
  if(isTracePractice(session.practiceMode)){$("answerPanel").classList.add("show");$("answerBig").setAttribute("aria-hidden","false");startTrace("mode")}
 }
@@ -790,18 +796,18 @@ function updateHp(){$("hpText").textContent=`${Math.max(0,hp)} / ${maxHp}`;$("hp
 function updateJudge(){$("good").disabled=false;$("good").textContent="⚔️ できた"}
 
 function reveal(){
- if(!current||locked||(trace&&trace.kind!=="hint"))return;if(trace)stopTrace(true);finishStroke();$("answerPanel").classList.add("show");$("answerBig").setAttribute("aria-hidden","false");$("questPanel").classList.add("answering");$("judges").removeAttribute("inert");
+ if(!current||locked||(trace&&trace.kind!=="hint"))return;if(trace)stopTrace(true);finishStroke();revealedAt=Date.now();revealInk=packInk(strokes);revealCount=strokes.length;$("answerPanel").classList.add("show");$("answerBig").setAttribute("aria-hidden","false");$("questPanel").classList.add("answering");$("judges").removeAttribute("inert");
  $("showAnswer").disabled=true;updateJudge();redraw();msg("自分の字のとなりに出た正解と、一文字ずつ見くらべよう。","warn");
 }
 
 // ヒント魔法：お手本を書き順どおりになぞる。やめると、それまでの手書きにもどる。
 function useHint(){
  if(trace)return trace.kind==="hint"?(stopTrace(true),msg("なぞりをやめたよ。続きを書こう。")):playDemo();
- if(!current||locked)return;hintUsed=false;startTrace("hint");
+ if(!current||locked)return;hintUsed=true;startTrace("hint");
 }
 
 function requeue(id,far=false){const pos=Math.min(far?5:3,session.queue.length);session.queue.splice(pos,0,id)}
-function judge(kind){if(!current||locked||!session||!$("answerPanel").classList.contains("show"))return;locked=true;save.battles++;const id=current.id,records=isSentencePractice(session.practiceMode)?save.sentenceRecords:save.records,r=records[id]||{good:0,close:0,retry:0};r[kind]=(r[kind]||0)+1;r.last=kind;records[id]=r;const old=lvInfo(save.xp).l,w=weap();if(kind==="good"){session.combo++;session.maxCombo=Math.max(session.maxCombo,session.combo);const comboBonus=Math.min(50,session.combo*6),dmg=(session.mode==="elite"?100+w.atk*14:100+w.atk*12)+comboBonus;hp=Math.max(0,hp-dmg);session.hps[id]=hp;const dead=hp<=0;attack(dmg,dead);showCombo(session.combo);if(dead){session.done.add(id);const mult=session.mode==="elite"?1+Math.floor((session.rank||1)/2):1,xp=(10+w.xp+2)*mult*questionIds(current).length,g=(6+w.g+(session.mode==="elite"?(session.rank||1)*3:2))*questionIds(current).length;save.xp+=xp;save.gold+=g;save.totalDefeats+=questionIds(current).length;session.reward.xp+=xp;session.reward.g+=g;for(const charId of questionIds(current))if(!save.defeated.includes(charId))save.defeated.push(charId);msg(session.combo>=5?`フィーバー${session.combo}コンボ！ ${xp} EXP と ${g} G！`:`${session.combo}コンボ！ ${xp} EXP と ${g} G を手に入れた！`,"good")}else{const hitXp=3+(session.rank||1);save.xp+=hitXp;session.reward.xp+=hitXp;requeue(id);msg(`${session.combo}コンボ！ ${dmg}ダメージ。HPはあと${hp}！`,"warn")}}else if(kind==="close"){session.combo=0;const dmg=Math.max(5,8+Math.floor(w.atk*1.5));hp=Math.max(1,hp-dmg);session.hps[id]=hp;const xp=1+Math.floor(w.xp/12);save.xp+=xp;session.reward.xp+=xp;attack(dmg,false);requeue(id,true);msg(`おしい！ ${dmg}ダメージと ${xp} EXP。数問あとにもう一度！`,"warn")}else{session.combo=0;requeue(id);msg("今回はやり直し。数問あとに同じ魔物がもう一度現れるよ。","bad")}persist();updateHp();battleHead();const now=lvInfo(save.xp).l;const judgedSession=session;const advance=()=>{if(session!==judgedSession)return;now>old?levelUp(now,()=>{if(session===judgedSession)next()}):next()};
+function judge(kind){if(!current||locked||!session||!$("answerPanel").classList.contains("show"))return;locked=true;logInk(kind);save.battles++;const id=current.id,records=isSentencePractice(session.practiceMode)?save.sentenceRecords:save.records,r=records[id]||{good:0,close:0,retry:0};r[kind]=(r[kind]||0)+1;r.last=kind;records[id]=r;const old=lvInfo(save.xp).l,w=weap();if(kind==="good"){session.combo++;session.maxCombo=Math.max(session.maxCombo,session.combo);const comboBonus=Math.min(50,session.combo*6),dmg=(session.mode==="elite"?100+w.atk*14:100+w.atk*12)+comboBonus;hp=Math.max(0,hp-dmg);session.hps[id]=hp;const dead=hp<=0;attack(dmg,dead);showCombo(session.combo);if(dead){session.done.add(id);const mult=session.mode==="elite"?1+Math.floor((session.rank||1)/2):1,xp=(10+w.xp+2)*mult*questionIds(current).length,g=(6+w.g+(session.mode==="elite"?(session.rank||1)*3:2))*questionIds(current).length;save.xp+=xp;save.gold+=g;save.totalDefeats+=questionIds(current).length;session.reward.xp+=xp;session.reward.g+=g;for(const charId of questionIds(current))if(!save.defeated.includes(charId))save.defeated.push(charId);msg(session.combo>=5?`フィーバー${session.combo}コンボ！ ${xp} EXP と ${g} G！`:`${session.combo}コンボ！ ${xp} EXP と ${g} G を手に入れた！`,"good")}else{const hitXp=3+(session.rank||1);save.xp+=hitXp;session.reward.xp+=hitXp;requeue(id);msg(`${session.combo}コンボ！ ${dmg}ダメージ。HPはあと${hp}！`,"warn")}}else if(kind==="close"){session.combo=0;const dmg=Math.max(5,8+Math.floor(w.atk*1.5));hp=Math.max(1,hp-dmg);session.hps[id]=hp;const xp=1+Math.floor(w.xp/12);save.xp+=xp;session.reward.xp+=xp;attack(dmg,false);requeue(id,true);msg(`おしい！ ${dmg}ダメージと ${xp} EXP。数問あとにもう一度！`,"warn")}else{session.combo=0;requeue(id);msg("今回はやり直し。数問あとに同じ魔物がもう一度現れるよ。","bad")}persist();updateHp();battleHead();const now=lvInfo(save.xp).l;const judgedSession=session;const advance=()=>{if(session!==judgedSession)return;now>old?levelUp(now,()=>{if(session===judgedSession)next()}):next()};
  // 「おしい」「もう一回」は、正解を書き順どおりになぞってから次へ進む。
  setTimeout(()=>{if(session!==judgedSession)return;kind==="good"?advance():startTrace("review",advance)},kind==="good"?1050:1200)}
 // なぞり練習：最後の画までなぞると、その魔物を倒す。図鑑登録はせず、報酬は一文字練習の半分。
@@ -862,6 +868,44 @@ function renderShop(){hud();$("shopGold").textContent=save.gold;const g=$("shopG
 function buy(x){if(save.owned.includes(x.id)){save.weapon=x.id;persist();toast(`${x.i} ${x.n}をそうびした！`);return renderShop()}if(save.gold<x.p)return toast("ゴールドが足りないよ。");save.gold-=x.p;save.owned.push(x.id);save.weapon=x.id;persist();toast(`${x.i} ${x.n}を手に入れた！`);renderShop()}
 function renderBook(){const l=lvInfo(save.xp),d=new Set(save.defeated);$("bookLv").textContent=l.l;$("bookCount").textContent=d.size;$("bookBattles").textContent=save.battles;$("bookClears").textContent=save.clears.length;const g=$("bookGrid");g.innerHTML="";Q.forEach(q=>{const u=d.has(q.id),t=document.createElement("div");t.className=`booktile${u?" unlocked":""}`;t.innerHTML=`<span class="bookkanji">${u?q.a:"？"}</span><span class="booknum">No.${q.id}</span>`;g.appendChild(t)})}
 function reset(){if(!confirm("第4章の図鑑・戦績・苦手な漢字の選択だけを消しますか？ レベル・ゴールド・武器、二学期の秘宝は消えません。"))return;localStorage.removeItem(CHAPTER_KEY);save=load();hud();renderBook();toast("第4章の冒険記録だけを消しました。秘宝は残っています。")}
+/* ---------- 保護者用：自己判定したときの手書きの記録 ----------
+ * 「答えを見る」時点の筆跡（整数座標）を別キーへ保存。kanjiQuest で始まらないため、セーブデータ移行の対象外。 */
+const INK_LOG_KEY="kq4ParentInkLog_v1",INK_LOG_MAX=120,INK_LOG_CHARS=1500000;
+let questionStartAt=0,revealedAt=0,revealInk=null,revealCount=0,parentFilter="good",parentShown=30;
+function packInk(list){return list.map(st=>{const out=[];let lx=null,ly=null;for(const p of st){const x=Math.round(p.x),y=Math.round(p.y);if(x===lx&&y===ly)continue;out.push(x,y);lx=x;ly=y}return out}).filter(st=>st.length)}
+function readInkLog(){try{const v=JSON.parse(localStorage.getItem(INK_LOG_KEY));return Array.isArray(v)?v:[]}catch{return[]}}
+function writeInkLog(log){
+ while(log.length>INK_LOG_MAX)log.shift();let text=JSON.stringify(log);while(text.length>INK_LOG_CHARS&&log.length>1){log.shift();text=JSON.stringify(log)}
+ try{localStorage.setItem(INK_LOG_KEY,text)}catch{try{log.splice(0,Math.ceil(log.length/2));localStorage.setItem(INK_LOG_KEY,JSON.stringify(log))}catch{}}
+}
+function logInk(kind){
+ if(!current||!session||isTracePractice(session.practiceMode))return;const log=readInkLog();
+ log.push({t:Date.now(),id:current.id,mode:session.practiceMode,test:current.test,s:current.s,a:current.a,kind,hint:hintUsed,ms:Math.max(0,(revealedAt||Date.now())-questionStartAt),ink:revealInk||[],after:Math.max(0,strokes.length-revealCount)});
+ writeInkLog(log);
+}
+function openParent(){
+ const a=12+Math.floor(Math.random()*88),b=12+Math.floor(Math.random()*88),v=prompt(`保護者の方へ：${a} × ${b} の答えを入力してください。`);if(v===null)return;
+ if(Number(String(v).normalize("NFKC").replace(/[^0-9]/g,""))!==a*b)return toast("答えがちがいます。");parentShown=30;screen("parent");
+}
+function inkSvg(e){
+ const {rows,cols,width,height}=writingLayout(e.a,e.mode),letters=[...e.a],sentence=e.mode==="sentence",targets=new Set(sentence?(SENTENCES.find(q=>q.id===e.id)?.targets||[]):letters.map((_,i)=>i));let out="";
+ for(let i=0;i<rows*cols;i++){const {x,y,mx}=cellPosition(i,rows,e.mode);
+  out+=`<rect x="${x}" y="${y}" width="100" height="100" fill="none" stroke="#97baca" stroke-width=".8"/><rect x="${mx}" y="${y}" width="100" height="100" fill="#f1f8ef" stroke="#b7d2bd" stroke-width=".8"/>`;
+  const ch=letters[i],g=ch&&glyph(ch);if(!ch)continue;
+  out+=g?`<g transform="translate(${mx} ${y}) scale(${KV}) translate(${g.dx} ${g.dy})" fill="none" stroke="${targets.has(i)?"#087b83":"#3b4a45"}" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round">${g.paths.map(d=>`<path d="${d}"/>`).join("")}</g>`:`<text x="${mx+50}" y="${y+60}" font-size="60" text-anchor="middle" fill="#3b4a45">${escapeHtml(ch)}</text>`;
+ }
+ out+=`<g fill="none" stroke="#201c18" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${e.ink.map(st=>st.length>2?`<polyline points="${st.join(" ")}"/>`:`<circle cx="${st[0]}" cy="${st[1]}" r="1.1" fill="#201c18"/>`).join("")}</g>`;
+ return `<svg class="ink-svg" viewBox="0 ${HEAD} ${width} ${height-HEAD}" style="width:min(100%,${Math.round(width*(sentence?.9:1.1))}px)" role="img" aria-label="${escapeHtml(e.a)}の手書き">${out}</svg>`;
+}
+function renderParent(){
+ for(const [id,f] of [["parentFilterGood","good"],["parentFilterAll","all"]])$(id).setAttribute("aria-pressed",String(parentFilter===f));
+ const all=readInkLog().map((e,i)=>({...e,i})).reverse(),list=all.filter(e=>parentFilter==="all"||e.kind==="good"),kinds={good:"できた",close:"おしい",retry:"もう一回"};
+ $("parentList").innerHTML=list.length?list.slice(0,parentShown).map(e=>{const d=new Date(e.t),when=`${d.getMonth()+1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2,"0")}`,flags=[e.ink.length?"":"何も書いていない",e.hint?"ヒント使用":"",e.after?`答えを見た後に${e.after}画`:""].filter(Boolean);
+  return `<div class="ink-card k-${e.kind}"><div class="ink-meta"><strong>${when}　${e.test}回目・${e.s}番（${e.mode==="sentence"?"全文":"一文字"}）</strong><span class="ink-badge ${e.kind}">${kinds[e.kind]||e.kind}</span>書いた時間 ${Math.round(e.ms/1000)}秒・${e.ink.length}画${flags.length?`　<span class="ink-flag">${flags.join("・")}</span>`:""}</div>${inkSvg(e)}<button class="secondary" data-ink="${e.i}">苦手特訓に入れる</button></div>`}).join(""):`<p class="lead">まだ記録がありません。</p>`;
+ $("parentMore").hidden=list.length<=parentShown;
+ $("parentList").querySelectorAll("button[data-ink]").forEach(b=>b.onclick=()=>{const e=readInkLog()[Number(b.dataset.ink)];if(!e)return;const ids=e.mode==="sentence"?(SENTENCE_BY_CHAR.get(e.id)?.ids||[]):[e.id];save.customIds=cleanIds([...save.customIds,...ids]);persist();b.disabled=true;b.textContent="苦手特訓に入れました";});
+}
+function clearInkLog(){if(!confirm("保護者用の手書き記録だけを消しますか？ 図鑑や戦績は消えません。"))return;try{localStorage.removeItem(INK_LOG_KEY)}catch{}renderParent()}
 function toast(t){const e=$("toast");e.textContent=t;e.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>e.classList.remove("show"),2200)}
 
 // 1マス100単位の固定座標。枠も筆跡も同じ変換で描き、回転・正解表示でずらさない。
@@ -1026,6 +1070,7 @@ function guardBattleTouch(e){
 $("practiceChar").onclick=()=>selectPracticeMode("character");$("practiceSentence").onclick=()=>selectPracticeMode("sentence");$("practiceTrace").onclick=()=>selectPracticeMode("trace");$("testSelect").onchange=e=>selectTest(e.target.value);$("randomSelected").onclick=startRandomTest;$("randomSelectedAlt").onclick=startRandomTest;$("randomAll").onclick=startRandomAll;$("eliteStart").onclick=startElite;$("openPicker").onclick=()=>screen("picker");$("startCustom").onclick=startCustom;$("openBook").onclick=()=>screen("book");$("openShop").onclick=()=>screen("shop");$("topShop").onclick=()=>screen("shop");$("topMap").onclick=()=>screen("world");$("retreat").onclick=()=>{session=null;current=null;screen("world")};
 $("selectFromHistory").onclick=selectHistory;$("selectAll").onclick=()=>setPicker(practiceQuestions().map(q=>q.id));$("clearSelection").onclick=()=>setPicker([]);$("pickerBack").onclick=()=>screen("world");$("saveSelection").onclick=saveCustom;
 $("openWeaponChest").onclick=openWeaponChest;
+$("openParent").onclick=openParent;$("parentBack").onclick=()=>screen("book");$("parentClear").onclick=clearInkLog;$("parentMore").onclick=()=>{parentShown+=30;renderParent()};$("parentFilterGood").onclick=()=>{parentFilter="good";renderParent()};$("parentFilterAll").onclick=()=>{parentFilter="all";renderParent()};
 $("shopBack").onclick=()=>screen("world");$("bookBack").onclick=()=>screen("world");$("reset").onclick=reset;$("termRewardClose").onclick=()=>$("termRewardModal").classList.remove("show");$("undo").onclick=undo;$("clear").onclick=()=>trace?restartTrace():clearCanvas();$("hint").onclick=useHint;$("showAnswer").onclick=reveal;$("good").onclick=()=>judge("good");$("close").onclick=()=>judge("close");$("retry").onclick=()=>judge("retry");$("again").onclick=repeat;$("resultMap").onclick=()=>{session=null;screen("world")};$("resultShop").onclick=()=>screen("shop");
 canvas.addEventListener("pointerdown",begin);canvas.addEventListener("pointermove",move);canvas.addEventListener("pointerup",end);canvas.addEventListener("pointercancel",end);canvas.addEventListener("lostpointercapture",end);
 canvas.addEventListener("touchstart",preventBattleGesture,{passive:false});canvas.addEventListener("touchmove",preventBattleGesture,{passive:false});

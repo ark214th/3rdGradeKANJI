@@ -229,3 +229,23 @@ assert.equal(b.run('JSON.stringify(cellPosition(6,6,"sentence"))'),JSON.stringif
 assert.equal(b.run('JSON.stringify(cellPosition(1,2,"character"))'),JSON.stringify({x:112,y:116,mx:0,col:0}));
 assert(b.run('onWritingCell({x:160,y:60},"character")')&&!b.run('onWritingCell({x:50,y:60},"character")'),'answer cells are not for writing');
 console.log('PASS: answers beside each handwritten cell.');
+
+// Parent-only ink log: the writing at "答えを見る" is kept with the self-judgement, outside the transferable kanjiQuest* keys.
+const p=boot({areaLayout:2,selectedTest:3});
+p.run('startArea(6);resize();strokes=[[{x:150.4,y:40.2},{x:160,y:80}],[{x:170,y:30}]];reveal();strokes.push([{x:120,y:50},{x:121,y:90}]);judge("good")');
+const log=JSON.parse(p.storage.get('kq4ParentInkLog_v1'));
+assert.equal(log.length,1);assert.equal(log[0].kind,'good');assert.equal(log[0].a,p.run('current.a'));
+assert.deepEqual(log[0].ink,[[150,40,160,80],[170,30]],'ink is the writing at reveal time');
+assert.equal(log[0].after,1,'strokes added after seeing the answer are counted');
+assert(!'kq4ParentInkLog_v1'.startsWith('kanjiQuest'),'not part of save transfer');
+p.timers.splice(0).forEach(f=>f());p.run('useHint();useHint();reveal();judge("close")');
+assert.equal(JSON.parse(p.storage.get('kq4ParentInkLog_v1'))[1].hint,true);
+p.run('session=null;current=null;selectPracticeMode("trace");startArea(6)');p.run(traceAll);
+assert.equal(JSON.parse(p.storage.get('kq4ParentInkLog_v1')).length,2,'trace practice is not logged');
+p.run('prompt=()=>"0";openParent()');assert(!p.nodes.get('parent').classList.contains('active'),'gate blocks a wrong answer');
+p.run('Math.random=()=>0;prompt=()=>"１４４";openParent()');assert(p.nodes.get('parent').classList.contains('active'));
+assert.equal((p.nodes.get('parentList').innerHTML.match(/<svg/g)||[]).length,1,'only "できた" by default');
+p.run('parentFilter="all";renderParent()');assert.equal((p.nodes.get('parentList').innerHTML.match(/<svg/g)||[]).length,2);
+p.run('writeInkLog(Array.from({length:130},(_,i)=>({t:i,id:53,mode:"character",test:3,s:1,a:"鉄",kind:"good",ms:0,ink:[],after:0})))');
+assert.equal(JSON.parse(p.storage.get('kq4ParentInkLog_v1')).length,120);
+console.log('PASS: parent ink log (reveal-time ink, later strokes, hint flag, gate, filters, cap).');
