@@ -60,7 +60,7 @@ assert(!b.nodes.get('question').innerHTML.includes('本'),'saved clue mode must 
 const before=b.run('save.gold');b.run('judge("good")');assert.equal(b.run('save.gold'),before,'cannot judge before revealing');
 b.run('resize();strokes=[[{x:150,y:20},{x:160,y:35}]]');
 const ink=b.run('JSON.stringify(strokes)');const bounds=b.run('JSON.stringify([inkWidth,inkHeight])');
-b.run('reveal();resize()');assert.equal(b.run('JSON.stringify(strokes)'),ink);assert.equal(b.run('JSON.stringify([inkWidth,inkHeight])'),bounds);
+b.run('reveal();reveal();resize()');assert.equal(b.run('JSON.stringify(strokes)'),ink);assert.equal(b.run('JSON.stringify([inkWidth,inkHeight])'),bounds);
 b.nodes.get('canvas').getBoundingClientRect=()=>({width:600,height:400,left:0,top:0});
 b.run('resize()');assert.equal(b.run('JSON.stringify(strokes)'),ink);assert.equal(b.run('inkTransform().scale'),(400-8)/416);
 // Hint: the answer shows for a few seconds in the answer cells; writing is kept and paused meanwhile.
@@ -93,7 +93,7 @@ for(const [width,height] of [[420,900],[600,400]]){
  assert(b.run('(()=>{const t=inkTransform(),p=pt({clientX:150*t.scale+t.x,clientY:250*t.scale+t.y});return Math.abs(p.x-150)<1e-8&&Math.abs(p.y-250)<1e-8})()'));
 }
 // Per-sentence retry history, completed stage count and old five-area migration.
-b.run('startArea(13);reveal();judge("retry")');assert.equal(b.run('save.sentenceRecords[current.id].last'),'retry');assert.equal(b.run('session.done.size'),0);
+b.run('startArea(13);reveal();reveal();judge("retry")');assert.equal(b.run('save.sentenceRecords[current.id].last'),'retry');assert.equal(b.run('session.done.size'),0);
 b.run('startArea(13);session.done=new Set(session.original);finish()');assert.equal(b.run('save.stageClears[13]'),6);
 const old=boot({clears:[2],stageClears:{2:7}});assert.equal(old.run('save.stageClears[2]'),7);assert.equal(old.run('save.stageClears[3]'),7);
 const reload=boot(JSON.parse(b.storage.get('kanjiQuestRpg_chapter4_v1')),JSON.parse(b.storage.get('kanjiQuestSemester2_v1')),JSON.parse(b.storage.get('kanjiQuestRpg_v1')));
@@ -140,7 +140,7 @@ assert.equal(c.run('inkWidth'),212);
 assert.equal(c.run('inkHeight'),16+[...c.run('current.a')].length*100);
 assert.equal(c.run('JSON.stringify(save.sentenceRecords)'),'{}');
 const charId=c.run('current.id');const charGold=c.run('save.gold');
-c.run(FILL+';reveal();judge("good")');
+c.run(FILL+';reveal();reveal();judge("good")');
 assert.equal(c.run(`save.records[${charId}].good`),1);
 assert.equal(c.run('JSON.stringify(save.sentenceRecords)'),'{}');
 assert.equal(c.run('save.gold')-charGold,8);
@@ -215,13 +215,13 @@ assert.equal(boot(JSON.parse(t.storage.get('kanjiQuestRpg_chapter4_v1'))).run(`s
 t.run('session=null;current=null;selectPracticeMode("character");startArea(6)');
 // "おしい" and "もう一回" show the answer as a tracing exercise before the next problem.
 for(const kind of ['close','retry']){
- const id=t.run('current.id');t.run(`reveal();judge("${kind}")`);t.timers.splice(0).forEach(f=>f());
+ const id=t.run('current.id');t.run(`reveal();reveal();judge("${kind}")`);t.timers.splice(0).forEach(f=>f());
  assert.equal(t.run('trace&&trace.kind'),'review');assert.equal(t.run('current.id'),id);
  t.run(traceAll);t.timers.splice(0).forEach(f=>f());
  assert.equal(t.run('trace'),null);assert.notEqual(t.run('current.id'),id,'next problem after tracing');
 }
 // Three misses on a stroke draws it together and moves on.
-t.run('reveal();judge("retry")');t.timers.splice(0).forEach(f=>f());const pos0=t.run('trace.pos');
+t.run('reveal();reveal();judge("retry")');t.timers.splice(0).forEach(f=>f());const pos0=t.run('trace.pos');
 for(let i=0;i<3;i++)t.run('begin({pointerId:7,button:0,isPrimary:true,clientX:1,clientY:1,preventDefault(){}});move({pointerId:7,clientX:2,clientY:300,preventDefault(){}});end({type:"pointerup",pointerId:7,clientX:2,clientY:300,preventDefault(){}})');
 assert.equal(t.run('trace.pos'),pos0+1);
 console.log('PASS: KanjiVG coverage, stroke judging, trace practice rewards/records, hint tracing and review tracing after close/retry.');
@@ -236,7 +236,7 @@ console.log('PASS: answers beside each handwritten cell.');
 
 // Parent-only ink log: the writing at "答えを見る" is kept with the self-judgement, outside the transferable kanjiQuest* keys.
 const p=boot({areaLayout:2,selectedTest:3});
-p.run('startArea(6);resize();strokes=[[{x:150.4,y:40.2},{x:160,y:80}],[{x:170,y:30}]];reveal();strokes.push([{x:120,y:50},{x:121,y:90}]);judge("good")');
+p.run('startArea(6);resize();strokes=[[{x:150.4,y:40.2},{x:160,y:80}],[{x:170,y:30}]];reveal();reveal();strokes.push([{x:120,y:50},{x:121,y:90}]);judge("good")');
 assert.equal(p.storage.get('kq4ParentInkLog_v1'),undefined,'too little writing: "できた" is refused');
 p.run('judge("close")');
 const log=JSON.parse(p.storage.get('kq4ParentInkLog_v1'));
@@ -246,7 +246,7 @@ assert.equal(log[0].after,1,'strokes added after seeing the answer are counted')
 assert(!'kq4ParentInkLog_v1'.startsWith('kanjiQuest'),'not part of save transfer');
 p.timers.splice(0).forEach(f=>f());p.run(traceAll);p.timers.splice(0).forEach(f=>f());
 // Hint, then "できた": the monster survives and comes back later.
-const hid=p.run('current.id');p.run('useHint()');p.timers.splice(0).forEach(f=>f());p.run(FILL+';reveal();judge("good")');
+const hid=p.run('current.id');p.run('useHint()');p.timers.splice(0).forEach(f=>f());p.run(FILL+';reveal();reveal();judge("good")');
 assert.equal(JSON.parse(p.storage.get('kq4ParentInkLog_v1'))[1].hint,true);
 assert(!p.run(`session.done.has(${hid})`),'hinted answer is asked again');assert(p.run(`session.queue.includes(${hid})`));assert.equal(p.run(`session.hps[${hid}]`),1);
 p.run('session=null;current=null;selectPracticeMode("trace");startArea(6)');p.run(traceAll);
@@ -258,3 +258,16 @@ p.run('parentFilter="all";renderParent()');assert.equal((p.nodes.get('parentList
 p.run('writeInkLog(Array.from({length:130},(_,i)=>({t:i,id:53,mode:"character",test:3,s:1,a:"鉄",kind:"good",ms:0,ink:[],after:0})))');
 assert.equal(JSON.parse(p.storage.get('kq4ParentInkLog_v1')).length,120);
 console.log('PASS: parent ink log (reveal-time ink, later strokes, hint flag, gate, filters, cap).');
+
+// Too little writing: the first "答えを見る" only warns; a second press shows the answer but "できた" stays closed.
+const r=boot({areaLayout:2,selectedTest:3});
+r.run('startArea(6);resize();reveal()');
+assert(!r.nodes.get('answerPanel').classList.contains('show'),'blank writing: warn before showing the answer');
+assert(r.nodes.get('message').classList.contains('bad'));
+r.run(FILL+';reveal()');assert(r.nodes.get('answerPanel').classList.contains('show'),'written after the warning: answer shows');
+assert(r.run('revealQuality.ok'));assert(!r.nodes.get('good').classList.contains('blocked'));
+r.run('judge("good")');assert(r.run('locked'),'proper writing is accepted');
+const r2=boot({areaLayout:2,selectedTest:3});
+r2.run('startArea(6);resize();reveal();reveal()');assert(r2.nodes.get('answerPanel').classList.contains('show'));
+assert(r2.nodes.get('good').classList.contains('blocked'));r2.run(FILL+';judge("good")');assert(!r2.run('locked'),'writing after seeing the answer does not count');
+console.log('PASS: warning before revealing with too little writing.');
