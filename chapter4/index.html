@@ -120,6 +120,7 @@ html.battle-active .topbar,html.battle-active .hud{display:none}
 .practice-choice{margin:0 0 16px;padding:10px;border:2px solid #8fd2df;border-radius:18px;background:#ecfaff}.practice-choice legend{padding:0 7px;color:#135c73;font-weight:950}.practice-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.practice-options button{min-height:66px;border:2px solid #b9d9e2;border-radius:13px;background:#fff;color:#17465a;font:inherit;font-weight:950;cursor:pointer}.practice-options button[aria-pressed="true"]{border-color:#1488ae;background:#d9f4fc;box-shadow:inset 0 0 0 2px #fff}.practice-options small{display:block;margin-top:3px;color:#526c76;font-size:12px;font-weight:750}@media(max-width:450px){.practice-options button{font-size:13px}}
 .kv{display:inline-block;width:1em;height:1em;margin:.04em 0;vertical-align:middle;fill:none;stroke:currentColor;stroke-width:5;stroke-linecap:round;stroke-linejoin:round}
 .credit{margin:18px 0 0;color:var(--muted);font-size:11px;font-weight:700;line-height:1.6;text-align:center}.credit a{color:inherit}
+.grade-settings{margin:0 0 18px;padding:14px;border:2px solid #9fd3c0;border-radius:18px;background:#f1fbf6}.grade-settings h3{margin:0 0 8px;font-size:18px}.grade-settings .row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:9px}.grade-settings input,.grade-settings select{min-height:40px;padding:6px 10px;border:1px solid #b9cfc4;border-radius:10px;font:inherit;font-size:14px}.grade-settings input{flex:1;min-width:200px}.grade-settings p{margin:8px 0 0;color:var(--muted);font-size:12px;font-weight:700;line-height:1.6}.grade-switch button{min-height:44px;padding:6px 14px;border:2px solid #b9d9e2;border-radius:12px;background:#fff;color:#17465a;font:inherit;font-weight:900;cursor:pointer}.grade-switch button[aria-pressed="true"]{border-color:#1488ae;background:#d9f4fc}.ink-ai{padding:6px 8px;border-radius:10px;background:#eef6ff;color:#24476a;font-size:12px;font-weight:800;line-height:1.5}
 .parent-link{display:block;margin:10px auto 0;padding:4px 8px;border:0;background:none;color:#a9b6b0;font-size:10px;font-weight:700;cursor:pointer}
 .parent-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}.ink-card{display:flex;flex-direction:column;gap:7px;padding:11px;border:2px solid #dfe7dd;border-radius:16px;background:#fff}.ink-card.k-good{border-color:#b5dcc4}.ink-meta{color:var(--muted);font-size:12px;font-weight:800;line-height:1.5}.ink-meta strong{display:block;color:var(--ink);font-size:14px}.ink-badge{display:inline-block;margin-right:5px;padding:1px 8px;border-radius:999px;color:#155b35;background:#d8f4e4}.ink-badge.close{color:#75510e;background:#fff0b7}.ink-badge.retry{color:#14587a;background:#d8efff}.ink-flag{color:#b2452f}.ink-svg{display:block;align-self:center;max-width:100%;height:auto;border-radius:8px;background:#fffdf8}.ink-card button{min-height:38px;font-size:13px}
 #battle.character-practice .writing-label{justify-content:center}#battle.character-practice .answerbig{color:#206b69}
@@ -180,6 +181,11 @@ html.battle-active .topbar,html.battle-active .hud{display:none}
 <section class="screen" id="book"><div class="panel"><div class="body"><h2>海の漢字図鑑</h2><p class="lead">第4章で「できた！」になった漢字を、まとめて確認できます。</p><div class="stats"><div class="stat"><strong id="bookLv">1</strong><span>勇者レベル</span></div><div class="stat"><strong id="bookCount">0</strong><span>図鑑登録</span></div><div class="stat"><strong id="bookBattles">0</strong><span>第4章の戦闘</span></div><div class="stat"><strong id="bookClears">0</strong><span>航路クリア</span></div></div><div class="bookgrid" id="bookGrid"></div><div style="margin-top:18px;text-align:center"><button class="secondary" id="bookBack">海図へもどる</button><button class="danger" id="reset" style="margin-left:8px">第4章の記録を消す</button></div><button type="button" class="parent-link" id="openParent">保護者用</button><p class="credit">書き順・お手本の字形：<a href="https://kanjivg.tagaini.net/" target="_blank" rel="noopener">KanjiVG</a>（© Ulrich Apel and contributors、<a href="https://creativecommons.org/licenses/by-sa/3.0/deed.ja" target="_blank" rel="noopener">CC BY-SA 3.0</a>、<a href="vendor/README.md" target="_blank" rel="noopener">くわしく</a>）</p></div></div></section>
 
 <section class="screen" id="parent"><div class="panel"><div class="body"><h2>保護者用：書いた字の記録</h2><p class="lead">「答えを見る」を押した時点の手書きを、正解と並べて表示します。新しい順・最大120件。この端末だけに保存し、セーブデータの移行には含めません。</p>
+<div class="grade-settings"><h3>✅ 自動採点（Claude）</h3>
+<div class="row grade-switch"><button type="button" id="gradeAuto">🤖 自動採点</button><button type="button" id="gradeSelf">🙋 自己採点</button></div>
+<div class="row"><input type="password" id="apiKeyInput" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="APIキー（sk-ant-…）"><button class="secondary" id="apiKeySave" type="button">保存</button><button class="danger" id="apiKeyDelete" type="button">削除</button></div>
+<div class="row"><label for="gradeEffort">精度</label><select id="gradeEffort"><option value="high">高精度（少し待つ）</option><option value="medium">標準（速め）</option></select></div>
+<p id="gradeStatus"></p><p>APIキーはこの端末にだけ保存し、セーブデータの移行には含めません。採点のときは、答えを見る前の手書きの画像と正解の文字だけを Anthropic へ送ります。キーがない・通信できないときは自己採点になります。</p></div>
 <div class="picktools"><button class="secondary" id="parentFilterGood">「できた」だけ</button><button class="secondary" id="parentFilterAll">すべて</button><button class="secondary" id="parentBack">図鑑へもどる</button><button class="danger" id="parentClear">記録を消す</button></div>
 <div class="parent-list" id="parentList"></div><div style="margin-top:14px;text-align:center"><button class="secondary" id="parentMore">もっと見る</button></div></div></div></section>
 
@@ -787,7 +793,7 @@ function renderMonster(){
 
 function resetQuestion(){
  $("answerPanel").classList.remove("show");$("answerBig").setAttribute("aria-hidden","true");$("questPanel").classList.remove("answering");$("judges").setAttribute("inert","");
- $("hint").disabled=false;$("good").disabled=false;$("showAnswer").disabled=false;questionStartAt=Date.now();revealedAt=0;revealInk=null;revealCount=0;revealQuality=null;revealConfirm=false;
+ $("hint").disabled=false;$("good").disabled=false;$("showAnswer").disabled=false;questionStartAt=Date.now();revealedAt=0;revealInk=null;revealCount=0;revealQuality=null;revealConfirm=false;grading=null;aiResult=null;$("showAnswer").textContent=autoGrading()?"📝 採点する":"答えを見る";
  msg(isSentencePractice(session.practiceMode)?"右から縦に、一マス一文字。文をぜんぶ書こう。":"出題された漢字を書こう。送り仮名もいっしょにね。");clearCanvas();updateTools();requestAnimationFrame(resize);
  if(isTracePractice(session.practiceMode)){$("answerPanel").classList.add("show");$("answerBig").setAttribute("aria-hidden","false");startTrace("mode")}
 }
@@ -797,12 +803,92 @@ function updateHp(){$("hpText").textContent=`${Math.max(0,hp)} / ${maxHp}`;$("hp
 function updateJudge(){$("good").disabled=false;$("good").textContent="⚔️ できた";$("good").classList.toggle("blocked",Boolean(revealQuality&&!revealQuality.ok))}
 
 // 「できた」は、答えを見る前に書いた字で判断する。書き足りないまま答えを見ようとしたら、先に一度知らせる。
+// 自動採点がオンなら、答えを見る前の手書きを Claude で採点し、結果どおりに判定する。
 function reveal(){
- if(!current||locked||(trace&&trace.kind!=="hint")||$("answerPanel").classList.contains("show"))return;if(trace)stopTrace(true);finishStroke();
- const quality=inkQuality(strokes);
- if(!quality.ok&&!revealConfirm){revealConfirm=true;return msg(quality.blank?"まだ何も書いていないよ。書いてから答えを見よう。わからないときは、もう一度「答えを見る」を押してね（今回は「できた」を選べなくなるよ）。":"まだ字が足りないみたい。全部書いてから答えを見よう。わからないときは、もう一度「答えを見る」を押してね（今回は「できた」を選べなくなるよ）。","bad")}
- hintPeek=null;$("hint").disabled=false;revealedAt=Date.now();revealInk=packInk(strokes);revealCount=strokes.length;revealQuality=quality;$("answerPanel").classList.add("show");$("answerBig").setAttribute("aria-hidden","false");$("questPanel").classList.add("answering");$("judges").removeAttribute("inert");
- $("showAnswer").disabled=true;updateJudge();redraw();msg(quality.ok?"自分の字のとなりに出た正解と、一文字ずつ見くらべよう。":"正解をよく見て覚えよう。答えを見る前の字が少ないので、今回は「おしい」か「もう一回」を選んでね。","warn");
+ if(!current||locked||grading||(trace&&trace.kind!=="hint")||$("answerPanel").classList.contains("show"))return;if(trace)stopTrace(true);finishStroke();
+ const quality=inkQuality(strokes),auto=autoGrading(),label=auto?"採点する":"答えを見る";
+ if(!quality.ok&&!revealConfirm){revealConfirm=true;return msg(quality.blank?`まだ何も書いていないよ。書いてから${label}を押そう。わからないときは、もう一度「${label}」を押してね（今回は「できた」にならないよ）。`:`まだ字が足りないみたい。全部書いてから${label}を押そう。わからないときは、もう一度「${label}」を押してね（今回は「できた」にならないよ）。`,"bad")}
+ hintPeek=null;$("hint").disabled=false;revealedAt=Date.now();revealInk=packInk(strokes);revealCount=strokes.length;revealQuality=quality;
+ if(auto){if(!quality.ok){showAnswerNow(false);return autoJudge({verdict:"retry",advice:"今回は書けなかったね。正解をよく見て覚えよう。",chars:[]})}return startGrading()}
+ showAnswerNow(true);msg(quality.ok?"自分の字のとなりに出た正解と、一文字ずつ見くらべよう。":"正解をよく見て覚えよう。答えを見る前の字が少ないので、今回は「おしい」か「もう一回」を選んでね。","warn");
+}
+function showAnswerNow(selfJudge){
+ $("answerPanel").classList.add("show");$("answerBig").setAttribute("aria-hidden","false");
+ if(selfJudge){$("questPanel").classList.add("answering");$("judges").removeAttribute("inert")}
+ $("showAnswer").disabled=true;updateJudge();redraw();
+}
+
+/* ---------- 自動採点（Claude API） ----------
+ * APIキーは保護者が入力し、この端末の localStorage（kq4ClaudeApiKey）にだけ置く。kanjiQuest で始まらないので移行対象外。
+ * 字の構成（別の字・点や画の過不足・部品・送りがな）のまちがいだけを×にし、字の汚さ・とめはねはらいは助言にとどめる。 */
+const GRADE_KEY="kq4AutoGrade_v1",API_KEY_KEY="kq4ClaudeApiKey",GRADE_MODEL="claude-opus-5-5";
+let grading=null,aiResult=null,anthropicSdk=null,anthropicClient=null,anthropicKey="",loadAnthropic=()=>import("./vendor/anthropic-sdk.js").then(m=>m.default);
+function readGradeSettings(){try{const v=JSON.parse(localStorage.getItem(GRADE_KEY))||{};return {auto:v.auto!==false,effort:v.effort==="medium"?"medium":"high"}}catch{return {auto:true,effort:"high"}}}
+function writeGradeSettings(v){try{localStorage.setItem(GRADE_KEY,JSON.stringify(v))}catch{}}
+function readApiKey(){try{return localStorage.getItem(API_KEY_KEY)||""}catch{return ""}}
+function autoGrading(){return readGradeSettings().auto&&Boolean(readApiKey())&&Boolean(session)&&!isTracePractice(session.practiceMode)}
+const GRADE_SYSTEM=`あなたは小学3年生の漢字の書き取りを採点する先生です。画像には、子どもが手書きした字が左から右へ1マスに1文字ずつ並んでいます（マスの下の数字が何文字目か）。指定された正解と1文字ずつ比べて採点してください。
+
+×（ok:false）にするのは、字の組み立てがまちがっているときだけです。
+- 別の字を書いている、字が足りない・多い
+- 点や画が足りない・多い（例：「食」の屋根の下の点がない）
+- 部品の形がちがう（へん・つくり・かんむりの取りちがえなど）
+- 送りがな・ひらがなのまちがい
+- くずれすぎて、どの字か読み取れない
+
+次のことは×にせず、必要なら助言にとどめます。
+- 字が汚い、バランスが悪い、線の長さや角度、とめ・はね・はらい、マスからのはみ出し、小さな傾き
+
+verdict：すべて○なら "good"。×が1文字だけで、点や短い画が1つ足りない・多いなど小さなまちがいなら "close"。それ以外で×があれば "retry"。
+note：その文字について、×なら何がちがうかを短く。○なら空文字でよい。
+advice：子どもへの、やさしく具体的な短い日本語（40文字くらいまで）。×があれば直すところを一つ。全部○なら、ほめる言葉と、字をきれいにする助言を一つ。`;
+const GRADE_SCHEMA={type:"object",properties:{chars:{type:"array",items:{type:"object",properties:{index:{type:"integer"},ok:{type:"boolean"},note:{type:"string"}},required:["index","ok","note"],additionalProperties:false}},verdict:{type:"string",enum:["good","close","retry"]},advice:{type:"string"}},required:["chars","verdict","advice"],additionalProperties:false};
+// 答えを見る前の手書きを、1マスずつ左から並べた白地の画像にする（1行6マスまで）。
+function renderInkImage(){
+ const letters=[...current.a],{rows}=writingLayout(current.a,session.practiceMode),C=180,P=12,L=22,per=Math.min(6,letters.length),lines=Math.ceil(letters.length/per),W=P+per*(C+P),H=P+lines*(C+L+P),k=C/100;
+ const c=document.createElement("canvas");c.width=W;c.height=H;const g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,W,H);
+ letters.forEach((ch,i)=>{const ox=P+(i%per)*(C+P),oy=P+Math.floor(i/per)*(C+L+P),cell=cellPosition(i,rows,session.practiceMode);
+  g.setLineDash([]);g.strokeStyle="#9aaebb";g.lineWidth=2;g.strokeRect(ox,oy,C,C);g.strokeStyle="#dde4ea";g.lineWidth=1;g.setLineDash([6,6]);g.beginPath();g.moveTo(ox+C/2,oy);g.lineTo(ox+C/2,oy+C);g.moveTo(ox,oy+C/2);g.lineTo(ox+C,oy+C/2);g.stroke();g.setLineDash([]);
+  g.save();g.beginPath();g.rect(ox-P/2,oy-P/2,C+P,C+P);g.clip();g.strokeStyle="#111";g.fillStyle="#111";g.lineWidth=INK_WIDTH*k*1.5;g.lineCap="round";g.lineJoin="round";
+  for(const st of strokes){if(st.length===1){g.beginPath();g.arc(ox+(st[0].x-cell.x)*k,oy+(st[0].y-cell.y)*k,g.lineWidth/2,0,Math.PI*2);g.fill();continue}g.beginPath();st.forEach((p,j)=>{const x=ox+(p.x-cell.x)*k,y=oy+(p.y-cell.y)*k;j?g.lineTo(x,y):g.moveTo(x,y)});g.stroke()}
+  g.restore();g.fillStyle="#666";g.font="16px sans-serif";g.textAlign="center";g.fillText(String(i+1),ox+C/2,oy+C+17)});
+ return c.toDataURL("image/png").split(",")[1];
+}
+async function gradeWithClaude(image,q){
+ const key=readApiKey();if(!key)throw new Error("nokey");
+ if(!anthropicSdk)anthropicSdk=await loadAnthropic();
+ if(!anthropicClient||anthropicKey!==key){anthropicClient=new anthropicSdk({apiKey:key,dangerouslyAllowBrowser:true,timeout:90000,maxRetries:1});anthropicKey=key}
+ const letters=[...q.a];
+ const res=await anthropicClient.beta.messages.create({model:GRADE_MODEL,max_tokens:16000,betas:["server-side-fallback-2026-07-01"],fallbacks:"default",system:GRADE_SYSTEM,
+  output_config:{effort:readGradeSettings().effort,format:{type:"json_schema",schema:GRADE_SCHEMA}},
+  messages:[{role:"user",content:[{type:"image",source:{type:"base64",media_type:"image/png",data:image}},{type:"text",text:`正解：「${q.a}」（${letters.length}文字）\n${letters.map((ch,i)=>`${i+1}文字目：「${ch}」`).join("\n")}`}]}]});
+ if(res.stop_reason==="refusal")throw new Error("refusal");
+ const r=JSON.parse(res.content.filter(b=>b.type==="text").map(b=>b.text).join(""));
+ if(!["good","close","retry"].includes(r.verdict))throw new Error("format");
+ const chars=Array.isArray(r.chars)?r.chars:[],verdict=r.verdict==="good"&&chars.some(c=>c&&c.ok===false)?"close":r.verdict;
+ return {verdict,advice:String(r.advice||"").slice(0,120),chars:chars.filter(c=>c&&c.ok===false).map(c=>({index:Number(c.index)||0,note:String(c.note||"").slice(0,80)}))};
+}
+function gradeErrorText(err){
+ const S=anthropicSdk;if(err&&err.message==="nokey")return "APIキーがありません";
+ if(S&&err instanceof S.AuthenticationError)return "APIキーを確認してください";
+ if(S&&err instanceof S.PermissionDeniedError)return "APIキーの権限を確認してください";
+ if(S&&err instanceof S.RateLimitError)return "混み合っています";
+ if(S&&err instanceof S.APIConnectionError)return "インターネットにつながりません";
+ if(S&&err instanceof S.APIError)return "採点サービスのエラー（残高などを確認）";
+ return "採点できませんでした";
+}
+function setGradingUi(on){for(const id of ["showAnswer","hint","undo","clear"])$(id).disabled=on;if(!on){$("undo").disabled=Boolean(trace);$("showAnswer").disabled=$("answerPanel").classList.contains("show")}}
+function startGrading(){
+ const q=current,s=session,g=grading={q};let image;
+ try{image=renderInkImage()}catch{grading=null;showAnswerNow(true);return msg("自動採点できなかったので、正解と見くらべて自分で判定してね。","warn")}
+ setGradingUi(true);msg("🔍 採点中…少し待ってね。","warn");
+ gradeWithClaude(image,q).then(r=>{if(grading!==g||session!==s||current!==q)return;grading=null;setGradingUi(false);showAnswerNow(false);autoJudge(r)})
+  .catch(err=>{if(grading!==g||session!==s||current!==q)return;grading=null;setGradingUi(false);showAnswerNow(true);msg(`自動採点できなかったので、正解と見くらべて自分で判定してね。（${gradeErrorText(err)}）`,"warn")});
+}
+function autoJudge(r){
+ aiResult=r;const kind=r.verdict;judge(kind);
+ const mark={good:"⭕ 合格！",close:"🔺 おしい！",retry:"❌ もう一回！"}[kind],after=$("message").textContent;
+ msg(`${mark} ${r.advice}　${after}`,kind==="good"?"good":"warn");
 }
 
 // ヒント魔法：正解マスに数秒だけ正解が見える。見ている間は書けない。手書きはそのまま。
@@ -897,7 +983,7 @@ function writeInkLog(log){
 }
 function logInk(kind){
  if(!current||!session||isTracePractice(session.practiceMode))return;const log=readInkLog();
- log.push({t:Date.now(),id:current.id,mode:session.practiceMode,test:current.test,s:current.s,a:current.a,kind,hint:hintUsed,ms:Math.max(0,(revealedAt||Date.now())-questionStartAt),ink:revealInk||[],after:Math.max(0,strokes.length-revealCount),warned:Boolean(revealQuality&&revealQuality.warned)});
+ log.push({t:Date.now(),id:current.id,mode:session.practiceMode,test:current.test,s:current.s,a:current.a,kind,hint:hintUsed,ms:Math.max(0,(revealedAt||Date.now())-questionStartAt),ink:revealInk||[],after:Math.max(0,strokes.length-revealCount),warned:Boolean(revealQuality&&revealQuality.warned),ai:aiResult?{v:aiResult.verdict,advice:aiResult.advice,chars:aiResult.chars}:null});
  writeInkLog(log);
 }
 function openParent(){
@@ -914,11 +1000,18 @@ function inkSvg(e){
  out+=`<g fill="none" stroke="#201c18" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${e.ink.map(st=>st.length>2?`<polyline points="${st.join(" ")}"/>`:`<circle cx="${st[0]}" cy="${st[1]}" r="1.1" fill="#201c18"/>`).join("")}</g>`;
  return `<svg class="ink-svg" viewBox="0 ${HEAD} ${width} ${height-HEAD}" style="width:min(100%,${Math.round(width*(sentence?.9:1.1))}px)" role="img" aria-label="${escapeHtml(e.a)}の手書き">${out}</svg>`;
 }
-function renderParent(){
+function renderGradeSettings(){
+ const v=readGradeSettings(),key=readApiKey();$("gradeAuto").setAttribute("aria-pressed",String(v.auto));$("gradeSelf").setAttribute("aria-pressed",String(!v.auto));$("gradeEffort").value=v.effort;
+ $("gradeStatus").textContent=!v.auto?"いまは自己採点です。":key?`自動採点がオンです（キー保存済み：…${key.slice(-4)}）。モデル：Claude Opus 5.5`:"自動採点がオンですが、APIキーがないので自己採点になります。";
+}
+function saveApiKey(){const v=$("apiKeyInput").value.trim();if(!v)return toast("APIキーを入力してください。");try{localStorage.setItem(API_KEY_KEY,v)}catch{return toast("保存できませんでした。")}$("apiKeyInput").value="";anthropicClient=null;renderGradeSettings();toast("APIキーを保存しました。")}
+function deleteApiKey(){if(!confirm("この端末からAPIキーを消しますか？"))return;try{localStorage.removeItem(API_KEY_KEY)}catch{}anthropicClient=null;renderGradeSettings();toast("APIキーを消しました。")}
+function setGradeMode(auto){const v=readGradeSettings();v.auto=auto;writeGradeSettings(v);renderGradeSettings()}
+function renderParent(){renderGradeSettings();
  for(const [id,f] of [["parentFilterGood","good"],["parentFilterAll","all"]])$(id).setAttribute("aria-pressed",String(parentFilter===f));
  const all=readInkLog().map((e,i)=>({...e,i})).reverse(),list=all.filter(e=>parentFilter==="all"||e.kind==="good"),kinds={good:"できた",close:"おしい",retry:"もう一回"};
  $("parentList").innerHTML=list.length?list.slice(0,parentShown).map(e=>{const d=new Date(e.t),when=`${d.getMonth()+1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2,"0")}`,flags=[e.ink.length?"":"何も書いていない",e.hint?"ヒント使用":"",e.after?`答えを見た後に${e.after}画`:"",e.warned?"書き不足で「できた」を押して警告":""].filter(Boolean);
-  return `<div class="ink-card k-${e.kind}"><div class="ink-meta"><strong>${when}　${e.test}回目・${e.s}番（${e.mode==="sentence"?"全文":"一文字"}）</strong><span class="ink-badge ${e.kind}">${kinds[e.kind]||e.kind}</span>書いた時間 ${Math.round(e.ms/1000)}秒・${e.ink.length}画${flags.length?`　<span class="ink-flag">${flags.join("・")}</span>`:""}</div>${inkSvg(e)}<button class="secondary" data-ink="${e.i}">苦手特訓に入れる</button></div>`}).join(""):`<p class="lead">まだ記録がありません。</p>`;
+  return `<div class="ink-card k-${e.kind}"><div class="ink-meta"><strong>${when}　${e.test}回目・${e.s}番（${e.mode==="sentence"?"全文":"一文字"}）</strong><span class="ink-badge ${e.kind}">${kinds[e.kind]||e.kind}</span>書いた時間 ${Math.round(e.ms/1000)}秒・${e.ink.length}画${flags.length?`　<span class="ink-flag">${flags.join("・")}</span>`:""}</div>${e.ai?`<div class="ink-ai">🤖 自動採点 ${{good:"⭕",close:"🔺",retry:"❌"}[e.ai.v]||""} ${escapeHtml(e.ai.advice||"")}${(e.ai.chars||[]).map(c=>`<br>${c.index}文字目：${escapeHtml(c.note||"")}`).join("")}</div>`:""}${inkSvg(e)}<button class="secondary" data-ink="${e.i}">苦手特訓に入れる</button></div>`}).join(""):`<p class="lead">まだ記録がありません。</p>`;
  $("parentMore").hidden=list.length<=parentShown;
  $("parentList").querySelectorAll("button[data-ink]").forEach(b=>b.onclick=()=>{const e=readInkLog()[Number(b.dataset.ink)];if(!e)return;const ids=e.mode==="sentence"?(SENTENCE_BY_CHAR.get(e.id)?.ids||[]):[e.id];save.customIds=cleanIds([...save.customIds,...ids]);persist();b.disabled=true;b.textContent="苦手特訓に入れました";});
 }
@@ -954,7 +1047,7 @@ function fitVerticalText(){
 function pt(e){const r=canvas.getBoundingClientRect(),t=inkTransform();return{x:(e.clientX-r.left-t.x)/t.scale,y:(e.clientY-r.top-t.y)/t.scale}}
 function begin(e){
  if(!current||activePointerId!==null||e.isPrimary===false||e.button!==0)return;
- if(trace)return traceBegin(e);if(locked||hintPeek)return;
+ if(trace)return traceBegin(e);if(locked||hintPeek||grading)return;
  e.preventDefault();resize();const p=pt(e);if(!onWritingCell(p))return;
  activePointerId=e.pointerId;drawing=true;stroke=[p];redraw();try{canvas.setPointerCapture(e.pointerId)}catch{}
 }
@@ -1007,7 +1100,7 @@ function redraw(){
  ctx.restore();
 }
 function clearCanvas(){finishStroke();strokes=[];resize()}
-function undo(){if(locked||trace)return;finishStroke();strokes.pop();redraw()}
+function undo(){if(locked||trace||grading)return;finishStroke();strokes.pop();redraw()}
 
 /* ---------- お手本の字形と、書き順どおりのなぞり ----------
  * 字形・書き順は KanjiVG（kanji-strokes.js、109×109）。1マス100単位へ縮めて描く。
@@ -1036,7 +1129,7 @@ function startTrace(kind,onDone){
  if(!current)return;finishStroke();
  trace={kind,cells:traceCells(),ci:0,ch:"",steps:[],pos:0,miss:0,cur:null,demo:null,saved:strokes.slice(),onDone};strokes=[];
  if(!trace.cells.length)return completeTrace();loadTraceChar(0);updateTools();
- msg(kind==="review"?`正解の${traceLabel()}を、書き順どおりになぞろう。緑の丸から！`:kind==="hint"?`ヒント魔法！ ${traceLabel()}を、緑の丸から書き順どおりになぞろう。`:`${traceLabel()}を、緑の丸から書き順どおりになぞろう。`,kind==="review"?"warn":"");
+ msg(kind==="review"?`${aiResult&&aiResult.advice?aiResult.advice+" ":""}正解の${traceLabel()}を、書き順どおりになぞろう。緑の丸から！`:kind==="hint"?`ヒント魔法！ ${traceLabel()}を、緑の丸から書き順どおりになぞろう。`:`${traceLabel()}を、緑の丸から書き順どおりになぞろう。`,kind==="review"?"warn":"");
  resize();
 }
 function stopTrace(restore){if(!trace)return;const saved=trace.saved;finishStroke();trace=null;strokes=restore?saved:[];updateTools();resize()}
@@ -1096,8 +1189,8 @@ function guardBattleTouch(e){
 $("practiceChar").onclick=()=>selectPracticeMode("character");$("practiceSentence").onclick=()=>selectPracticeMode("sentence");$("practiceTrace").onclick=()=>selectPracticeMode("trace");$("testSelect").onchange=e=>selectTest(e.target.value);$("randomSelected").onclick=startRandomTest;$("randomSelectedAlt").onclick=startRandomTest;$("randomAll").onclick=startRandomAll;$("eliteStart").onclick=startElite;$("openPicker").onclick=()=>screen("picker");$("startCustom").onclick=startCustom;$("openBook").onclick=()=>screen("book");$("openShop").onclick=()=>screen("shop");$("topShop").onclick=()=>screen("shop");$("topMap").onclick=()=>screen("world");$("retreat").onclick=()=>{session=null;current=null;screen("world")};
 $("selectFromHistory").onclick=selectHistory;$("selectAll").onclick=()=>setPicker(practiceQuestions().map(q=>q.id));$("clearSelection").onclick=()=>setPicker([]);$("pickerBack").onclick=()=>screen("world");$("saveSelection").onclick=saveCustom;
 $("openWeaponChest").onclick=openWeaponChest;
-$("openParent").onclick=openParent;$("parentBack").onclick=()=>screen("book");$("parentClear").onclick=clearInkLog;$("parentMore").onclick=()=>{parentShown+=30;renderParent()};$("parentFilterGood").onclick=()=>{parentFilter="good";renderParent()};$("parentFilterAll").onclick=()=>{parentFilter="all";renderParent()};
-$("shopBack").onclick=()=>screen("world");$("bookBack").onclick=()=>screen("world");$("reset").onclick=reset;$("termRewardClose").onclick=()=>$("termRewardModal").classList.remove("show");$("undo").onclick=undo;$("clear").onclick=()=>trace?restartTrace():clearCanvas();$("hint").onclick=useHint;$("showAnswer").onclick=reveal;$("good").onclick=()=>judge("good");$("close").onclick=()=>judge("close");$("retry").onclick=()=>judge("retry");$("again").onclick=repeat;$("resultMap").onclick=()=>{session=null;screen("world")};$("resultShop").onclick=()=>screen("shop");
+$("openParent").onclick=openParent;$("gradeAuto").onclick=()=>setGradeMode(true);$("gradeSelf").onclick=()=>setGradeMode(false);$("apiKeySave").onclick=saveApiKey;$("apiKeyDelete").onclick=deleteApiKey;$("gradeEffort").onchange=e=>{const v=readGradeSettings();v.effort=e.target.value==="medium"?"medium":"high";writeGradeSettings(v);renderGradeSettings()};$("parentBack").onclick=()=>screen("book");$("parentClear").onclick=clearInkLog;$("parentMore").onclick=()=>{parentShown+=30;renderParent()};$("parentFilterGood").onclick=()=>{parentFilter="good";renderParent()};$("parentFilterAll").onclick=()=>{parentFilter="all";renderParent()};
+$("shopBack").onclick=()=>screen("world");$("bookBack").onclick=()=>screen("world");$("reset").onclick=reset;$("termRewardClose").onclick=()=>$("termRewardModal").classList.remove("show");$("undo").onclick=undo;$("clear").onclick=()=>trace?restartTrace():grading?null:clearCanvas();$("hint").onclick=useHint;$("showAnswer").onclick=reveal;$("good").onclick=()=>judge("good");$("close").onclick=()=>judge("close");$("retry").onclick=()=>judge("retry");$("again").onclick=repeat;$("resultMap").onclick=()=>{session=null;screen("world")};$("resultShop").onclick=()=>screen("shop");
 canvas.addEventListener("pointerdown",begin);canvas.addEventListener("pointermove",move);canvas.addEventListener("pointerup",end);canvas.addEventListener("pointercancel",end);canvas.addEventListener("lostpointercapture",end);
 canvas.addEventListener("touchstart",preventBattleGesture,{passive:false});canvas.addEventListener("touchmove",preventBattleGesture,{passive:false});
 document.addEventListener("touchstart",guardBattleTouch,{passive:false,capture:true});document.addEventListener("touchmove",guardBattleTouch,{passive:false,capture:true});

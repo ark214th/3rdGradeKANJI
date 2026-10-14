@@ -13,3 +13,8 @@
 - `../stroke-trace.js`: 娘側 `ark214th/1stGradeMath` の `kanji_mahou/kanji-core.js` から、SVGパスの点列化となぞり判定だけを移植。
 
 書き順や字形には教材による違いがあります。学校のお手本と異なる場合は、学校の指導を優先してください。
+
+## Anthropic TypeScript SDK（自動採点）
+
+- `anthropic-sdk.js`: `@anthropic-ai/sdk` 0.132.1 を esbuild でブラウザ用の1ファイルにまとめたもの（`../tools/build_anthropic_sdk.sh` で再生成）。MIT License（[LICENSE-anthropic-sdk.txt](LICENSE-anthropic-sdk.txt)、Copyright 2023 Anthropic, PBC）。
+- 自動採点を使うときだけ読み込む。APIキーはソースに含めず、保護者用画面で入力した値をこの端末の localStorage に保存する。
