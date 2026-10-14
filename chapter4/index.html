@@ -703,7 +703,8 @@ function buildSentences(questions){
       prompt+=before+`<span class="reading">${raw.slice(r.start,r.end)}</span>`;
       answer+=before+r.answer;answerHtml+=before+`<span class="answer-target">${r.answer}</span>`;offset=r.end;
     }
-    prompt+=raw.slice(offset);answer+=raw.slice(offset);answerHtml+=raw.slice(offset);
+    // 全文では末尾の「。」を書かせない（マスを1つ減らして大きくする）。
+    const tail=raw.slice(offset).replace(/。$/,"");prompt+=tail;answer+=tail;answerHtml+=tail;
     return {id:members[0].id,test:members[0].test,s:members[0].s,ids:members.map(q=>q.id),p:prompt.replace(/<\/span><span class="reading">/g,""),a:answer,answerHtml,r:raw,targets};
   });
 }
@@ -752,7 +753,7 @@ function lvInfo(xp){let l=1,c=xp,n=60;while(c>=n){c-=n;l++;n=60+(l-1)*25}return{
 function titleFor(l){return (TITLES.find(t=>l>=t.min)||TITLES[TITLES.length-1]).n}
 function weap(){return W.find(x=>x.id===save.weapon)||W[0]}
 function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
-function screen(name){finishStroke();if(name!=="battle")trace=null;document.documentElement.classList.toggle("battle-active",name==="battle");Object.entries(screens).forEach(([k,e])=>e.classList.toggle("active",k===name));if(name==="world")renderWorld();if(name==="shop")renderShop();if(name==="book")renderBook();if(name==="picker")renderPicker();if(name==="parent")renderParent();scrollTo({top:0,behavior:"instant"})}
+function screen(name){finishStroke();if(name!=="battle"){trace=null;hintPeek=null}document.documentElement.classList.toggle("battle-active",name==="battle");Object.entries(screens).forEach(([k,e])=>e.classList.toggle("active",k===name));if(name==="world")renderWorld();if(name==="shop")renderShop();if(name==="book")renderBook();if(name==="picker")renderPicker();if(name==="parent")renderParent();scrollTo({top:0,behavior:"instant"})}
 function hud(){const l=lvInfo(save.xp),w=weap();$("hudLv").textContent=`LV ${l.l}`;$("hudGold").textContent=`${save.gold} G`;$("hudWeapon").textContent=w.n;$("hudBook").textContent=`${new Set(save.defeated).size} / ${Q.length}`;$("xpFill").style.width=`${Math.round(l.c/l.n*100)}%`;$("xpText").textContent=`EXP ${l.c} / ${l.n}`}
 function stageMedal(count){return count>=3?"🥇":count===2?"🥈":count===1?"🥉":""}
 function renderTerm(){const v=selectedVolume(),ids=volumeAreas(v),parts=term.fragments[v.key]||[],stage=Math.min(COMPANIONS.length-1,term.treasures.length),c=COMPANIONS[stage];$("companionIcon").textContent=c.i;$("companionName").textContent=c.n;$("companionText").textContent=term.treasures.includes(v.key)?`${v.name}の秘宝を発見！`:`${v.blocks.join("・")}回目を進もう！ ${v.name}の秘宝まで ${parts.length} / ${ids.length}`;$("fragmentRow").innerHTML=ids.map(i=>`<span class="fragment${parts.includes(i)?" got":""}" title="${AREAS[i].n}">${parts.includes(i)?"◆":"・"}</span>`).join("");$("treasureShelf").innerHTML=Array.from({length:7},(_,i)=>`<span class="treasure${term.treasures.includes(`test${i+1}`)?" got":""}" title="第${i+1}の秘宝">${term.treasures.includes(`test${i+1}`)?VOLUMES[i]?.icon||"💎":"🔒"}</span>`).join("")}
@@ -772,7 +773,7 @@ function startCustom(){const ids=customForTest();if(!ids.length)return toast("�
 function startElite(){if(isTracePractice())return toast("海竜の試練は、一文字ずつか本番練習で挑戦しよう。");const u=NEW_Q.filter(q=>save.defeated.includes(q.id)).length;if(!Q.slice(0,52).every(q=>save.defeated.includes(q.id))&&!save.owned.includes("hero"))return toast(`まずは1・2回目の52体を倒すか、勇者の聖剣を手に入れよう。`);const rank=save.eliteRank||1;startSession(`${save.selectedTest}回目・海竜の試練・ランク${rank}`,shuffle(practiceQuestions().map(q=>q.id)).slice(0,10),false,"elite",-1,rank)}
 function startSession(title,ids,ordered,mode,area,rank=0,practiceMode=save.practiceMode){ids=isSentencePractice(practiceMode)?sentenceIds(ids):cleanIds(ids);if(!ids.length)return toast("問題が選ばれていません。");session={title,original:ids.slice(),queue:ordered?ids.slice():shuffle(ids),done:new Set(),hps:{},reward:{xp:0,g:0},weaponId:weap().id,finished:false,chestGold:0,chestOpened:false,ordered,mode,area,rank,practiceMode,combo:0,maxCombo:0};$("battle").classList.remove("fever");screen("battle");battleHead();next();setTimeout(resize,40)}
 
-function next(){if(!session)return;if(session.done.size>=session.original.length)return finish();let id=session.queue.shift();while(id&&session.done.has(id))id=session.queue.shift();if(!id){const rest=session.original.filter(x=>!session.done.has(x));session.queue.push(...(session.ordered?rest:shuffle(rest)));id=session.queue.shift()}current=isSentencePractice(session.practiceMode)?SENTENCES.find(q=>q.id===id):Q[id-1];maxHp=session.mode==="elite"?180+(session.rank||1)*55:100;hp=session.hps[id]??maxHp;hintUsed=false;trace=null;locked=false;renderMonster();resetQuestion();battleHead()}
+function next(){if(!session)return;if(session.done.size>=session.original.length)return finish();let id=session.queue.shift();while(id&&session.done.has(id))id=session.queue.shift();if(!id){const rest=session.original.filter(x=>!session.done.has(x));session.queue.push(...(session.ordered?rest:shuffle(rest)));id=session.queue.shift()}current=isSentencePractice(session.practiceMode)?SENTENCES.find(q=>q.id===id):Q[id-1];maxHp=session.mode==="elite"?180+(session.rank||1)*55:100;hp=session.hps[id]??maxHp;hintUsed=false;hintPeek=null;trace=null;locked=false;renderMonster();resetQuestion();battleHead()}
 function monster(id){if(session&&session.mode==="elite"){const r=session.rank||1,em=["🐉","🦈","🧿","🐲","🔱","🌊","🦑","🐋"],pre=["海竜","古代ざめ","深海目","青竜","海王","大うず","魔王いか","白鯨"];return{emoji:em[(id+r)%em.length],name:`${pre[(r-1)%pre.length]}ランク${r}の強敵`,elite:true}}const ai=Math.max(0,AREAS.findIndex(a=>id>a.start&&id<=a.end)),a=AREAS[ai],v=(id-a.start-1)%a.m.length;return{emoji:a.m[v],name:`${a.pre[v]}海の漢字モンスター`,elite:false}}
 function renderMonster(){
  const m=monster(current.id);$("monsterName").textContent=m.name;$("monsterLevel").textContent=`ドリル${current.s}`;
@@ -796,15 +797,19 @@ function updateHp(){$("hpText").textContent=`${Math.max(0,hp)} / ${maxHp}`;$("hp
 function updateJudge(){$("good").disabled=false;$("good").textContent="⚔️ できた"}
 
 function reveal(){
- if(!current||locked||(trace&&trace.kind!=="hint"))return;if(trace)stopTrace(true);finishStroke();revealedAt=Date.now();revealInk=packInk(strokes);revealCount=strokes.length;revealQuality=inkQuality(strokes);$("answerPanel").classList.add("show");$("answerBig").setAttribute("aria-hidden","false");$("questPanel").classList.add("answering");$("judges").removeAttribute("inert");
+ if(!current||locked||(trace&&trace.kind!=="hint"))return;if(trace)stopTrace(true);hintPeek=null;$("hint").disabled=false;finishStroke();revealedAt=Date.now();revealInk=packInk(strokes);revealCount=strokes.length;revealQuality=inkQuality(strokes);$("answerPanel").classList.add("show");$("answerBig").setAttribute("aria-hidden","false");$("questPanel").classList.add("answering");$("judges").removeAttribute("inert");
  $("showAnswer").disabled=true;updateJudge();redraw();msg("自分の字のとなりに出た正解と、一文字ずつ見くらべよう。","warn");
 }
 
-// ヒント魔法：お手本を書き順どおりになぞる。やめると、それまでの手書きにもどる。
+// ヒント魔法：正解マスに数秒だけ正解が見える。見ている間は書けない。手書きはそのまま。
+const HINT_MS=3000;let hintPeek=null;
 function useHint(){
- if(trace)return trace.kind==="hint"?(stopTrace(true),msg("なぞりをやめたよ。続きを書こう。")):playDemo();
- if(!current||locked)return;hintUsed=true;startTrace("hint");
+ if(trace)return playDemo();
+ if(!current||locked||hintPeek||$("answerPanel").classList.contains("show"))return;finishStroke();hintUsed=true;
+ const peek=hintPeek={id:current.id};$("hint").disabled=true;msg("ヒント魔法！ 3秒だけ見えるよ。よく見て覚えよう！","warn");redraw();
+ setTimeout(()=>{if(hintPeek!==peek)return;endHint();msg("覚えたかな？ 続きを書こう。")},HINT_MS);
 }
+function endHint(){hintPeek=null;$("hint").disabled=false;redraw()}
 
 function requeue(id,far=false){const pos=Math.min(far?5:3,session.queue.length);session.queue.splice(pos,0,id)}
 // 白紙や、字のマス・画数が明らかに足りないときは「できた」にしない（答えを見た時点の手書きで判定）。
@@ -945,7 +950,7 @@ function fitVerticalText(){
 function pt(e){const r=canvas.getBoundingClientRect(),t=inkTransform();return{x:(e.clientX-r.left-t.x)/t.scale,y:(e.clientY-r.top-t.y)/t.scale}}
 function begin(e){
  if(!current||activePointerId!==null||e.isPrimary===false||e.button!==0)return;
- if(trace)return traceBegin(e);if(locked)return;
+ if(trace)return traceBegin(e);if(locked||hintPeek)return;
  e.preventDefault();resize();const p=pt(e);if(!onWritingCell(p))return;
  activePointerId=e.pointerId;drawing=true;stroke=[p];redraw();try{canvas.setPointerCapture(e.pointerId)}catch{}
 }
@@ -984,7 +989,7 @@ function redraw(){
  const grid=(x,y,size,frame,dash)=>{ctx.lineWidth=.8;ctx.strokeStyle=frame;ctx.setLineDash([]);ctx.strokeRect(x,y,size,size);ctx.lineWidth=.45;ctx.strokeStyle=dash;ctx.setLineDash([2,2]);ctx.beginPath();ctx.moveTo(x+size/2,y);ctx.lineTo(x+size/2,y+size);ctx.moveTo(x,y+size/2);ctx.lineTo(x+size,y+size/2);ctx.stroke();ctx.setLineDash([])};
  // なぞり中は、なぞる漢字1字だけを大きな1マスに出す。
  if(trace){ctx.fillStyle="#fffbe8";ctx.fillRect(0,0,100,100);grid(0,0,100,"#97baca","#c8dbe2");if(trace.ch)drawGlyph(trace.ch,0,0,"#9fb3aa66",5.5);drawTrace();return ctx.restore()}
- const shown=$("answerPanel").classList.contains("show"),targets=new Set(isSentencePractice(session.practiceMode)?current.targets:letters.map((_,i)=>i)),d=layoutDims(session.practiceMode);
+ const shown=$("answerPanel").classList.contains("show")||Boolean(hintPeek),targets=new Set(isSentencePractice(session.practiceMode)?current.targets:letters.map((_,i)=>i)),d=layoutDims(session.practiceMode);
  ctx.font="bold 9px sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";
  for(let c=0;c<cols;c++){const b=cols===2&&!c?d.off:0;ctx.fillStyle="#3a6a80";ctx.fillText(cols===2&&c?"つづき ↓":"ここから ↓",b+d.ms+d.gap+50,HEAD/2);ctx.fillStyle="#3d8a5e";ctx.fillText("正解",b+d.ms/2,HEAD/2)}
  for(let i=0;i<rows*cols;i++){

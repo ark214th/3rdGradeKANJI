@@ -37,8 +37,9 @@ const FILL='strokes=[...current.a].flatMap((ch,i)=>{const c=cellPosition(i,writi
 const legacy={areaLayout:2,selectedTest:6,practiceMode:'sentence',defeated:[1,53,114],records:{114:{retry:3,last:'retry'}},customIds:[115,160],clears:[0,6,13],stageClears:{0:8,6:4,13:5},displayMode:'clue'};
 const b=boot(legacy,{treasures:['test1','test2'],fragments:{test1:[0,1,2,3,4,5],test2:[6,7,8,9,10,11,12]},areaLayouts:{test1:2,test2:2}},{xp:5000,gold:4321,owned:['wood','treasure_staff'],weapon:'treasure_staff'});
 assert.equal(b.run('SENTENCES.length'),80);
-assert.equal(b.run('Math.max(...SENTENCES.map(q=>[...q.a].length))'),11);
-assert.equal(b.run('SENTENCES.find(q=>q.test===4&&q.s===14).a'),'勝負に勝つ。');
+assert.equal(b.run('Math.max(...SENTENCES.map(q=>[...q.a].length))'),10);
+assert(b.run('SENTENCES.every(q=>!q.a.endsWith("。")&&!q.answerHtml.endsWith("。"))'),'no trailing period to write');
+assert.equal(b.run('SENTENCES.find(q=>q.test===4&&q.s===14).a'),'勝負に勝つ');
 assert.equal(b.run('new Set(SENTENCES.flatMap(q=>q.ids)).size'),219);
 assert.equal(b.run('SENTENCES.reduce((n,q)=>n+q.ids.length,0)'),219);
 assert(b.run('TESTS.every(t=>SENTENCES.filter(q=>q.test===t).length===10)'));
@@ -54,7 +55,7 @@ assert.equal(JSON.parse(b.storage.get('kanjiQuestRpg_v1')).gold,4321);
 // A selection of one old character expands to exactly one sentence, without duplicate problems.
 b.run('selectTest(5);startSession("特訓",[114,115,116],true,"custom",-1)');
 assert.equal(b.run('session.original.length'),1);
-assert.equal(b.run('current.a'),'本の感想を書く。');
+assert.equal(b.run('current.a'),'本の感想を書く');
 assert(!b.nodes.get('question').innerHTML.includes('本'),'saved clue mode must not leak target answers');
 const before=b.run('save.gold');b.run('judge("good")');assert.equal(b.run('save.gold'),before,'cannot judge before revealing');
 b.run('resize();strokes=[[{x:150,y:20},{x:160,y:35}]]');
@@ -62,12 +63,11 @@ const ink=b.run('JSON.stringify(strokes)');const bounds=b.run('JSON.stringify([i
 b.run('reveal();resize()');assert.equal(b.run('JSON.stringify(strokes)'),ink);assert.equal(b.run('JSON.stringify([inkWidth,inkHeight])'),bounds);
 b.nodes.get('canvas').getBoundingClientRect=()=>({width:600,height:400,left:0,top:0});
 b.run('resize()');assert.equal(b.run('JSON.stringify(strokes)'),ink);assert.equal(b.run('inkTransform().scale'),(400-8)/416);
-b.run('useHint();begin({pointerId:1,button:0,isPrimary:true,clientX:320,clientY:30,preventDefault(){}});move({pointerId:1,clientX:322,clientY:34,preventDefault(){}});end({pointerId:1,cancelable:false})');
-assert.equal(b.run('trace&&trace.kind'),'hint','writing must not hide tracing hint');
-// Sentence hints trace only the rewritten characters (本・感想・書く), in stroke order.
-assert.equal(b.run('JSON.stringify(current.targets)'),'[0,2,3,5,6]');
-assert(b.run('trace.steps.every(s=>current.targets.includes(s.cell))'));
-b.run('useHint()');assert.equal(b.run('trace'),null);assert.equal(b.run('JSON.stringify(strokes)'),ink,'stopping the hint restores earlier writing');
+// Hint: the answer shows for a few seconds in the answer cells; writing is kept and paused meanwhile.
+b.run('useHint()');assert(!b.run('Boolean(hintPeek)'),'no hint after the answer is shown');
+b.run('$("answerPanel").classList.remove("show");useHint()');assert(b.run('Boolean(hintPeek)'));assert.equal(b.run('trace'),null);assert.equal(b.run('JSON.stringify(strokes)'),ink);
+b.run('begin({pointerId:1,button:0,isPrimary:true,clientX:320,clientY:30,preventDefault(){}})');assert.equal(b.run('strokes.length+(stroke?1:0)'),1,'no writing while peeking');
+b.timers.splice(0).forEach(f=>f());assert(!b.run('Boolean(hintPeek)'));assert.equal(b.run('JSON.stringify(strokes)'),ink);assert(b.run('hintUsed'));b.run('$("answerPanel").classList.add("show")');
 // One short stroke is not enough writing for "できた".
 const blocked=b.run('save.gold');b.run('judge("good")');assert.equal(b.run('save.gold'),blocked);assert(b.nodes.get('message').classList.contains('bad'));
 b.run('hintUsed=false;'+FILL+';revealQuality=inkQuality(strokes)');assert(b.run('revealQuality.ok'));
@@ -166,7 +166,7 @@ assert.equal(reloadedChar.run(`save.records[${charId}].good`),1);
 console.log('PASS: default character mode, both routes/random scopes, independent histories, persisted switch, repeat and shared progression.');
 
 // Drill 28: worksheet targets, full sentences, contiguous IDs, new scopes and treasure.
-assert.deepEqual(JSON.parse(b.run('JSON.stringify(SENTENCES.filter(q=>q.test>=7).map(q=>q.a))')),["問いをもつ。","詩を読み返す。","主語とじゅつ語。","明日の予定。","九州にいる友だち。","風船をとばす。","屋根に鳥が止まる。","おもい荷物。","やくそくを守る。","勉強にはげむ。","本は役立つ。","新米を食べる。","話し合いの進行。","返事がとどく。","持ち主をさがす。","主な人物。","屋上に上る。","大根をそだてる。","守びにつく。","る守番をする。"]);
+assert.deepEqual(JSON.parse(b.run('JSON.stringify(SENTENCES.filter(q=>q.test>=7).map(q=>q.a))')),["問いをもつ","詩を読み返す","主語とじゅつ語","明日の予定","九州にいる友だち","風船をとばす","屋根に鳥が止まる","おもい荷物","やくそくを守る","勉強にはげむ","本は役立つ","新米を食べる","話し合いの進行","返事がとどく","持ち主をさがす","主な人物","屋上に上る","大根をそだてる","守びにつく","る守番をする"]);
 assert(b.run('Q.every((q,i)=>q.id===i+1)'));
 assert.equal(b.run('CLUE_P.length'),219);
 assert.equal(b.run('Q.filter(q=>q.test===7).length'),24);
@@ -212,10 +212,7 @@ assert.equal(t.run('save.stageClears[6]||0'),0,'trace practice does not award ro
 assert(!t.run('term.fragments.test2.includes(6)'));
 assert.equal(boot(JSON.parse(t.storage.get('kanjiQuestRpg_chapter4_v1'))).run(`save.traceRecords[${tId}].done`),1);
 // Hint: tracing a character problem, then the guide disappears so the child writes from memory.
-t.run('session=null;current=null;selectPracticeMode("character");startArea(6);useHint()');
-assert.equal(t.run('trace.kind'),'hint');
-t.run(traceAll);t.timers.splice(0).forEach(f=>f());
-assert.equal(t.run('trace'),null);assert.equal(t.run('strokes.length'),0);
+t.run('session=null;current=null;selectPracticeMode("character");startArea(6)');
 // "おしい" and "もう一回" show the answer as a tracing exercise before the next problem.
 for(const kind of ['close','retry']){
  const id=t.run('current.id');t.run(`reveal();judge("${kind}")`);t.timers.splice(0).forEach(f=>f());
@@ -224,7 +221,7 @@ for(const kind of ['close','retry']){
  assert.equal(t.run('trace'),null);assert.notEqual(t.run('current.id'),id,'next problem after tracing');
 }
 // Three misses on a stroke draws it together and moves on.
-t.run('useHint()');const pos0=t.run('trace.pos');
+t.run('reveal();judge("retry")');t.timers.splice(0).forEach(f=>f());const pos0=t.run('trace.pos');
 for(let i=0;i<3;i++)t.run('begin({pointerId:7,button:0,isPrimary:true,clientX:1,clientY:1,preventDefault(){}});move({pointerId:7,clientX:2,clientY:300,preventDefault(){}});end({type:"pointerup",pointerId:7,clientX:2,clientY:300,preventDefault(){}})');
 assert.equal(t.run('trace.pos'),pos0+1);
 console.log('PASS: KanjiVG coverage, stroke judging, trace practice rewards/records, hint tracing and review tracing after close/retry.');
@@ -249,7 +246,7 @@ assert.equal(log[0].after,1,'strokes added after seeing the answer are counted')
 assert(!'kq4ParentInkLog_v1'.startsWith('kanjiQuest'),'not part of save transfer');
 p.timers.splice(0).forEach(f=>f());p.run(traceAll);p.timers.splice(0).forEach(f=>f());
 // Hint, then "できた": the monster survives and comes back later.
-const hid=p.run('current.id');p.run('useHint();useHint();'+FILL+';reveal();judge("good")');
+const hid=p.run('current.id');p.run('useHint()');p.timers.splice(0).forEach(f=>f());p.run(FILL+';reveal();judge("good")');
 assert.equal(JSON.parse(p.storage.get('kq4ParentInkLog_v1'))[1].hint,true);
 assert(!p.run(`session.done.has(${hid})`),'hinted answer is asked again');assert(p.run(`session.queue.includes(${hid})`));assert.equal(p.run(`session.hps[${hid}]`),1);
 p.run('session=null;current=null;selectPracticeMode("trace");startArea(6)');p.run(traceAll);
