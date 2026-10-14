@@ -832,49 +832,63 @@ function readGradeSettings(){try{const v=JSON.parse(localStorage.getItem(GRADE_K
 function writeGradeSettings(v){try{localStorage.setItem(GRADE_KEY,JSON.stringify(v))}catch{}}
 function readApiKey(){try{return localStorage.getItem(API_KEY_KEY)||""}catch{return ""}}
 function autoGrading(){return readGradeSettings().auto&&Boolean(readApiKey())&&Boolean(session)&&!isTracePractice(session.practiceMode)}
-const GRADE_SYSTEM=`あなたは小学3年生の漢字の書き取りを採点する先生です。画像には、子どもが手書きした字が左から右へ1マスに1文字ずつ並んでいます（マスの下の数字が何文字目か）。指定された正解と1文字ずつ比べて採点してください。
+const GRADE_SYSTEM=`あなたは小学3年生の漢字書き取りテストの採点者です。送られるのは漢字だけです（ひらがなは採点しないので送りません）。
 
-採点するのは漢字だけです。ひらがな・カタカナ・記号は採点しません（いつも ok:true、note は空文字。助言にも書かない）。
-漢字を×（ok:false）にするのは、字の組み立てがまちがっているときだけです。
-- 別の字を書いている、字が足りない・多い
-- 点や画が足りない・多い（例：「食」の屋根の下の点がない）
-- 部品の形がちがう（へん・つくり・かんむりの取りちがえなど）
-- くずれすぎて、どの字か読み取れない
+【画像の見方】
+漢字1字ごとに、左が「お手本」、右が「子どもの字」です。上の番号が何字目かを表します。お手本は正しい形です。
 
-次のことは×にせず、必要なら助言にとどめます。
-- 字が汚い、バランスが悪い、線の長さや角度、とめ・はね・はらい、マスからのはみ出し、小さな傾き
+【採点の手順】漢字1字ずつ、必ずこの順に行います。
+1. お手本を見て、部品（上・下・左・右・中のまとまり）と、点・よこぼう・たてぼう・はらいをすべて確かめる。
+2. 子どもの字を、お手本と部品ごとに見くらべ、足りない点・線、多い点・線、形のちがう部品をさがす。何の字か読めても、この確認は省かない。
+3. 見つけたことを missing（足りないもの）・extra（多いもの）・wrong_part（形のちがう部品）に書いてから、ok を決める。何もなければ空文字。
 
-verdict：すべて○なら "good"。×が1文字だけで、点や短い画が1つ足りない・多いなど小さなまちがいなら "close"。それ以外で×があれば "retry"。
-note と advice は、小学3年生が一人で読んでわかる言葉で書きます。ひらがなを多めにし、漢字は3年生までに習う字だけ。むずかしい用語（部首名など）は使わず、「上」「下」「左」「右」「まん中」「点」「よこぼう」「たてぼう」「はらい」のような言葉で、場所と直し方をはっきり言います。
-note：その文字が×なら、どこがどうちがうか、どう直せばよいかを一文で（例：「人」の下にある小さな点がないよ。点を書こう）。○なら空文字。
+【×にする基準】一つでも当てはまれば、字がきれいでも汚くても ok:false。
+- 点や線が1本でも足りない、または多い
+- 部品が足りない・多い、部品の形がちがう、別の字になっている
+- 線の数・長さ・つき方で別の字になってしまう（例：「日」と「目」、「土」と「士」、「未」と「末」）
+- どの字か読み取れない、線の数がわからないほどくずれている
+
+【○にしてよいもの】線の数と部品が合っていれば、次のことは×にしない（advice で助言してよい）。
+- 字の汚さ、バランス、大きさ
+- 字が変わらない程度の、線の長さ・角度・位置のずれ
+- とめ・はね・はらい、マスからのはみ出し、かたむき
+
+【verdict】すべて○なら "good"。×が1字だけで、点や短い線が1本足りない・多いだけなら "close"。それ以外で×があれば "retry"。
+
+【言葉づかい】note と advice は、小学3年生が一人で読んでわかる言葉で書きます。ひらがなを多めにし、漢字は3年生までに習う字だけ。部首名などのむずかしい言葉は使わず、「上」「下」「左」「右」「まん中」「点」「よこぼう」「たてぼう」「はらい」で、場所と直し方をはっきり言います。
+note：×の字は、どこがどうちがうか、どう直すかを一文で（例：「人」の下にある小さな点がないよ。点を書こう）。○なら空文字。
 advice：全体のひとこと（40文字くらいまで）。×があれば、いちばん大事な直し方を一つ。全部○なら、ほめる言葉と、字をきれいにするこつを一つ。`;
-const GRADE_SCHEMA={type:"object",properties:{chars:{type:"array",items:{type:"object",properties:{index:{type:"integer"},ok:{type:"boolean"},note:{type:"string"}},required:["index","ok","note"],additionalProperties:false}},verdict:{type:"string",enum:["good","close","retry"]},advice:{type:"string"}},required:["chars","verdict","advice"],additionalProperties:false};
-// 答えを見る前の手書きを、1マスずつ左から並べた白地の画像にする（1行6マスまで）。
+const GRADE_SCHEMA={type:"object",properties:{chars:{type:"array",items:{type:"object",properties:{index:{type:"integer"},missing:{type:"string"},extra:{type:"string"},wrong_part:{type:"string"},ok:{type:"boolean"},note:{type:"string"}},required:["index","missing","extra","wrong_part","ok","note"],additionalProperties:false}},verdict:{type:"string",enum:["good","close","retry"]},advice:{type:"string"}},required:["chars","verdict","advice"],additionalProperties:false};
+// 漢字だけを、左に「お手本」・右に「子どもの字」で並べた白地の画像にする（1行2組まで）。
+function gradeTargets(a=current.a){return [...a].map((ch,i)=>i).filter(i=>isKanji([...a][i]))}
 function renderInkImage(){
- const letters=[...current.a],{rows}=writingLayout(current.a,session.practiceMode),C=180,P=12,L=22,per=Math.min(6,letters.length),lines=Math.ceil(letters.length/per),W=P+per*(C+P),H=P+lines*(C+L+P),k=C/100;
+ const letters=[...current.a],{rows}=writingLayout(current.a,session.practiceMode),ks=gradeTargets(),C=180,G=10,P=16,L=26,per=Math.min(2,ks.length),pairW=C*2+G,lines=Math.ceil(ks.length/per),W=P+per*(pairW+P*2),H=P+lines*(L+C+P),k=C/100;
  const c=document.createElement("canvas");c.width=W;c.height=H;const g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,W,H);
- letters.forEach((ch,i)=>{const ox=P+(i%per)*(C+P),oy=P+Math.floor(i/per)*(C+L+P),cell=cellPosition(i,rows,session.practiceMode);
-  g.setLineDash([]);g.strokeStyle="#9aaebb";g.lineWidth=2;g.strokeRect(ox,oy,C,C);g.strokeStyle="#dde4ea";g.lineWidth=1;g.setLineDash([6,6]);g.beginPath();g.moveTo(ox+C/2,oy);g.lineTo(ox+C/2,oy+C);g.moveTo(ox,oy+C/2);g.lineTo(ox+C,oy+C/2);g.stroke();g.setLineDash([]);
-  g.save();g.beginPath();g.rect(ox-P/2,oy-P/2,C+P,C+P);g.clip();g.strokeStyle="#111";g.fillStyle="#111";g.lineWidth=INK_WIDTH*k*1.5;g.lineCap="round";g.lineJoin="round";
-  for(const st of strokes){if(st.length===1){g.beginPath();g.arc(ox+(st[0].x-cell.x)*k,oy+(st[0].y-cell.y)*k,g.lineWidth/2,0,Math.PI*2);g.fill();continue}g.beginPath();st.forEach((p,j)=>{const x=ox+(p.x-cell.x)*k,y=oy+(p.y-cell.y)*k;j?g.lineTo(x,y):g.moveTo(x,y)});g.stroke()}
-  g.restore();g.fillStyle="#666";g.font="16px sans-serif";g.textAlign="center";g.fillText(String(i+1),ox+C/2,oy+C+17)});
+ const frame=(ox,oy)=>{g.setLineDash([]);g.strokeStyle="#9aaebb";g.lineWidth=2;g.strokeRect(ox,oy,C,C);g.strokeStyle="#dde4ea";g.lineWidth=1;g.setLineDash([6,6]);g.beginPath();g.moveTo(ox+C/2,oy);g.lineTo(ox+C/2,oy+C);g.moveTo(ox,oy+C/2);g.lineTo(ox+C,oy+C/2);g.stroke();g.setLineDash([])};
+ ks.forEach((li,n)=>{const ox=P+(n%per)*(pairW+P*2),oy=P+Math.floor(n/per)*(L+C+P)+L,cx=ox+C+G,cell=cellPosition(li,rows,session.practiceMode),gl=glyph(letters[li]);
+  g.fillStyle="#333";g.font="bold 18px sans-serif";g.textAlign="center";g.fillText(`${n+1} お手本`,ox+C/2,oy-7);g.fillText(`${n+1} 子どもの字`,cx+C/2,oy-7);
+  frame(ox,oy);frame(cx,oy);
+  g.save();g.strokeStyle="#1d4f8a";g.lineWidth=5.5*k;g.lineCap="round";g.lineJoin="round";for(const pts of gl?gl.pts:[]){g.beginPath();pts.forEach((p,j)=>{const x=ox+p[0]*KV*k,y=oy+p[1]*KV*k;j?g.lineTo(x,y):g.moveTo(x,y)});g.stroke()}g.restore();
+  g.save();g.beginPath();g.rect(cx-G/2,oy-G/2,C+G,C+G);g.clip();g.strokeStyle="#111";g.fillStyle="#111";g.lineWidth=INK_WIDTH*k*1.5;g.lineCap="round";g.lineJoin="round";
+  for(const st of strokes){if(st.length===1){g.beginPath();g.arc(cx+(st[0].x-cell.x)*k,oy+(st[0].y-cell.y)*k,g.lineWidth/2,0,Math.PI*2);g.fill();continue}g.beginPath();st.forEach((p,j)=>{const x=cx+(p.x-cell.x)*k,y=oy+(p.y-cell.y)*k;j?g.lineTo(x,y):g.moveTo(x,y)});g.stroke()}
+  g.restore()});
  return c.toDataURL("image/png").split(",")[1];
 }
 async function gradeWithClaude(image,q){
  const key=readApiKey();if(!key)throw new Error("nokey");
  if(!anthropicSdk)anthropicSdk=await loadAnthropic();
  if(!anthropicClient||anthropicKey!==key){anthropicClient=new anthropicSdk({apiKey:key,dangerouslyAllowBrowser:true,timeout:90000,maxRetries:1});anthropicKey=key}
- const letters=[...q.a];
+ const letters=[...q.a],ks=gradeTargets(q.a);
  const set=readGradeSettings(),m=GRADE_MODELS[set.model],extra=m.fallback?{betas:["server-side-fallback-2026-07-01"],fallbacks:"default"}:{};
  const res=await anthropicClient.beta.messages.create({model:m.id,max_tokens:16000,...extra,system:GRADE_SYSTEM,
   output_config:{effort:set.effort,format:{type:"json_schema",schema:GRADE_SCHEMA}},
-  messages:[{role:"user",content:[{type:"image",source:{type:"base64",media_type:"image/png",data:image}},{type:"text",text:`正解：「${q.a}」（${letters.length}文字）\n${letters.map((ch,i)=>`${i+1}文字目：「${ch}」${isKanji(ch)?"（漢字・採点する）":"（採点しない）"}`).join("\n")}`}]}]});
+  messages:[{role:"user",content:[{type:"image",source:{type:"base64",media_type:"image/png",data:image}},{type:"text",text:`漢字${ks.length}字を採点してください。\n${ks.map((li,n)=>`${n+1}字目：「${letters[li]}」`).join("\n")}`}]}]});
  if(res.stop_reason==="refusal")throw new Error("refusal");
  const r=JSON.parse(res.content.filter(b=>b.type==="text").map(b=>b.text).join(""));
  if(!["good","close","retry"].includes(r.verdict))throw new Error("format");
- // ひらがな等への×は捨て、漢字の×だけで判定する。
- const chars=(Array.isArray(r.chars)?r.chars:[]).filter(c=>c&&c.ok===false&&isKanji(letters[(Number(c.index)||0)-1]||"")),verdict=!chars.length?"good":r.verdict==="good"?"close":r.verdict;
- return {verdict,advice:(!chars.length&&r.verdict!=="good"?"漢字はよく書けたね！":String(r.advice||"")).slice(0,120),chars:chars.filter(c=>c&&c.ok===false).map(c=>({index:Number(c.index)||0,note:String(c.note||"").slice(0,80)}))};
+ // 番号は送った漢字の順。答え全体での文字位置へ戻す。
+ const chars=(Array.isArray(r.chars)?r.chars:[]).filter(c=>c&&c.ok===false&&ks[(Number(c.index)||0)-1]!==undefined).map(c=>({...c,index:ks[c.index-1]+1})),verdict=!chars.length?"good":r.verdict==="good"?"close":r.verdict;
+ return {verdict,advice:(!chars.length&&r.verdict!=="good"?"よく書けたね！":String(r.advice||"")).slice(0,120),chars:chars.filter(c=>c&&c.ok===false).map(c=>({index:Number(c.index)||0,note:String(c.note||"").slice(0,80)}))};
 }
 function gradeErrorText(err){
  const S=anthropicSdk;if(err&&err.message==="nokey")return "APIキーがありません";
@@ -887,6 +901,7 @@ function gradeErrorText(err){
 }
 function setGradingUi(on){for(const id of ["showAnswer","hint","undo","clear"])$(id).disabled=on;if(!on){$("undo").disabled=Boolean(trace);$("showAnswer").disabled=$("answerPanel").classList.contains("show")}}
 function startGrading(){
+ if(!gradeTargets().length){showAnswerNow(false);return autoJudge({verdict:"good",advice:"よく書けたね！",chars:[]})}
  const q=current,s=session,g=grading={q};let image;
  try{image=renderInkImage()}catch{grading=null;showAnswerNow(true);return msg("自動採点できなかったので、正解と見くらべて自分で判定してね。","warn")}
  setGradingUi(true);msg("🔍 採点中…少し待ってね。","warn");
