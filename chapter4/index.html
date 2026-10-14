@@ -121,6 +121,7 @@ html.battle-active .topbar,html.battle-active .hud{display:none}
 .kv{display:inline-block;width:1em;height:1em;margin:.04em 0;vertical-align:middle;fill:none;stroke:currentColor;stroke-width:5;stroke-linecap:round;stroke-linejoin:round}
 .credit{margin:18px 0 0;color:var(--muted);font-size:11px;font-weight:700;line-height:1.6;text-align:center}.credit a{color:inherit}
 .grade-settings{margin:0 0 18px;padding:14px;border:2px solid #9fd3c0;border-radius:18px;background:#f1fbf6}.grade-settings h3{margin:0 0 8px;font-size:18px}.grade-settings .row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:9px}.grade-settings input,.grade-settings select{min-height:40px;padding:6px 10px;border:1px solid #b9cfc4;border-radius:10px;font:inherit;font-size:14px}.grade-settings input{flex:1;min-width:200px}.grade-settings p{margin:8px 0 0;color:var(--muted);font-size:12px;font-weight:700;line-height:1.6}.grade-switch button{min-height:44px;padding:6px 14px;border:2px solid #b9d9e2;border-radius:12px;background:#fff;color:#17465a;font:inherit;font-weight:900;cursor:pointer}.grade-switch button[aria-pressed="true"]{border-color:#1488ae;background:#d9f4fc}.ink-ai{padding:6px 8px;border-radius:10px;background:#eef6ff;color:#24476a;font-size:12px;font-weight:800;line-height:1.5}
+.grade-card{position:fixed;left:50%;bottom:max(14px,env(safe-area-inset-bottom));z-index:86;width:min(560px,calc(100vw - 24px));max-height:62vh;overflow:auto;padding:14px 16px;border:3px solid #f2c553;border-radius:22px;background:#fffdf3;box-shadow:0 14px 40px #0006;transform:translateX(-50%);text-align:center}.grade-card[hidden]{display:none}.grade-card.good{border-color:#5cc08a}.grade-mark{font-size:26px;font-weight:1000}.grade-advice{margin:6px 0 10px;font-size:19px;font-weight:900;line-height:1.55}.grade-fixes{display:grid;gap:8px;margin-bottom:12px}.grade-fix{display:grid;grid-template-columns:auto auto 1fr;gap:8px;align-items:center;padding:8px;border:2px solid #f0b4ae;border-radius:14px;background:#fff;text-align:left}.grade-fix figure{margin:0;text-align:center;font-size:11px;font-weight:900;color:#5c6b66}.grade-fix svg{display:block;width:76px;height:76px;border:1px solid #c9d8d2;border-radius:8px;background:#fffdf8}.grade-fix p{margin:0;font-size:16px;font-weight:900;line-height:1.5;color:#7d2626}.grade-card .primary{min-width:180px;min-height:52px;font-size:18px}
 .parent-link{display:block;margin:10px auto 0;padding:4px 8px;border:0;background:none;color:#a9b6b0;font-size:10px;font-weight:700;cursor:pointer}
 .parent-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}.ink-card{display:flex;flex-direction:column;gap:7px;padding:11px;border:2px solid #dfe7dd;border-radius:16px;background:#fff}.ink-card.k-good{border-color:#b5dcc4}.ink-meta{color:var(--muted);font-size:12px;font-weight:800;line-height:1.5}.ink-meta strong{display:block;color:var(--ink);font-size:14px}.ink-badge{display:inline-block;margin-right:5px;padding:1px 8px;border-radius:999px;color:#155b35;background:#d8f4e4}.ink-badge.close{color:#75510e;background:#fff0b7}.ink-badge.retry{color:#14587a;background:#d8efff}.ink-flag{color:#b2452f}.ink-svg{display:block;align-self:center;max-width:100%;height:auto;border-radius:8px;background:#fffdf8}.ink-card button{min-height:38px;font-size:13px}
 #battle.character-practice .writing-label{justify-content:center}#battle.character-practice .answerbig{color:#206b69}
@@ -164,6 +165,7 @@ html.battle-active .topbar,html.battle-active .hud{display:none}
     </aside>
     <aside class="answerpanel" id="answerPanel" aria-label="正解"><div class="answerlabel">正解</div><div class="answerbig vertical-text" id="answerBig" aria-hidden="true"></div></aside>
     <div class="writing-panel"><div class="writing-label" id="writingLabel">つづき ↓<span>ここから ↓</span></div><div class="canvaswrap" id="canvasWrap"><canvas id="canvas" aria-label="文字を書く場所"></canvas></div></div>
+    <div class="grade-card" id="gradeCard" hidden role="dialog" aria-live="polite"><div class="grade-mark" id="gradeMark"></div><p class="grade-advice" id="gradeAdvice"></p><div class="grade-fixes" id="gradeFixes"></div><button class="primary" id="gradeOk" type="button">わかった！</button></div>
     <aside class="question-panel"><div class="question-label">問題</div><div class="chip" id="chip"></div><div class="question vertical-text" id="question"></div></aside>
   </div>
 </div></section>
@@ -184,6 +186,7 @@ html.battle-active .topbar,html.battle-active .hud{display:none}
 <div class="grade-settings"><h3>✅ 自動採点（Claude）</h3>
 <div class="row grade-switch"><button type="button" id="gradeAuto">🤖 自動採点</button><button type="button" id="gradeSelf">🙋 自己採点</button></div>
 <div class="row"><input type="password" id="apiKeyInput" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="APIキー（sk-ant-…）"><button class="secondary" id="apiKeySave" type="button">保存</button><button class="danger" id="apiKeyDelete" type="button">削除</button></div>
+<div class="row"><label for="gradeModel">モデル</label><select id="gradeModel"><option value="opus">Opus 5.5（いちばん正確）</option><option value="sonnet">Sonnet 5.5（バランス）</option><option value="haiku">Haiku 5.5（速い・安い）</option></select></div>
 <div class="row"><label for="gradeEffort">精度</label><select id="gradeEffort"><option value="high">高精度（少し待つ）</option><option value="medium">標準（速め）</option></select></div>
 <p id="gradeStatus"></p><p>APIキーはこの端末にだけ保存し、セーブデータの移行には含めません。採点のときは、答えを見る前の手書きの画像と正解の文字だけを Anthropic へ送ります。キーがない・通信できないときは自己採点になります。</p></div>
 <div class="picktools"><button class="secondary" id="parentFilterGood">「できた」だけ</button><button class="secondary" id="parentFilterAll">すべて</button><button class="secondary" id="parentBack">図鑑へもどる</button><button class="danger" id="parentClear">記録を消す</button></div>
@@ -759,7 +762,7 @@ function lvInfo(xp){let l=1,c=xp,n=60;while(c>=n){c-=n;l++;n=60+(l-1)*25}return{
 function titleFor(l){return (TITLES.find(t=>l>=t.min)||TITLES[TITLES.length-1]).n}
 function weap(){return W.find(x=>x.id===save.weapon)||W[0]}
 function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
-function screen(name){finishStroke();if(name!=="battle"){trace=null;hintPeek=null}document.documentElement.classList.toggle("battle-active",name==="battle");Object.entries(screens).forEach(([k,e])=>e.classList.toggle("active",k===name));if(name==="world")renderWorld();if(name==="shop")renderShop();if(name==="book")renderBook();if(name==="picker")renderPicker();if(name==="parent")renderParent();scrollTo({top:0,behavior:"instant"})}
+function screen(name){finishStroke();if(name!=="battle"){trace=null;hintPeek=null;closeGradeCard()}document.documentElement.classList.toggle("battle-active",name==="battle");Object.entries(screens).forEach(([k,e])=>e.classList.toggle("active",k===name));if(name==="world")renderWorld();if(name==="shop")renderShop();if(name==="book")renderBook();if(name==="picker")renderPicker();if(name==="parent")renderParent();scrollTo({top:0,behavior:"instant"})}
 function hud(){const l=lvInfo(save.xp),w=weap();$("hudLv").textContent=`LV ${l.l}`;$("hudGold").textContent=`${save.gold} G`;$("hudWeapon").textContent=w.n;$("hudBook").textContent=`${new Set(save.defeated).size} / ${Q.length}`;$("xpFill").style.width=`${Math.round(l.c/l.n*100)}%`;$("xpText").textContent=`EXP ${l.c} / ${l.n}`}
 function stageMedal(count){return count>=3?"🥇":count===2?"🥈":count===1?"🥉":""}
 function renderTerm(){const v=selectedVolume(),ids=volumeAreas(v),parts=term.fragments[v.key]||[],stage=Math.min(COMPANIONS.length-1,term.treasures.length),c=COMPANIONS[stage];$("companionIcon").textContent=c.i;$("companionName").textContent=c.n;$("companionText").textContent=term.treasures.includes(v.key)?`${v.name}の秘宝を発見！`:`${v.blocks.join("・")}回目を進もう！ ${v.name}の秘宝まで ${parts.length} / ${ids.length}`;$("fragmentRow").innerHTML=ids.map(i=>`<span class="fragment${parts.includes(i)?" got":""}" title="${AREAS[i].n}">${parts.includes(i)?"◆":"・"}</span>`).join("");$("treasureShelf").innerHTML=Array.from({length:7},(_,i)=>`<span class="treasure${term.treasures.includes(`test${i+1}`)?" got":""}" title="第${i+1}の秘宝">${term.treasures.includes(`test${i+1}`)?VOLUMES[i]?.icon||"💎":"🔒"}</span>`).join("")}
@@ -793,7 +796,7 @@ function renderMonster(){
 
 function resetQuestion(){
  $("answerPanel").classList.remove("show");$("answerBig").setAttribute("aria-hidden","true");$("questPanel").classList.remove("answering");$("judges").setAttribute("inert","");
- $("hint").disabled=false;$("good").disabled=false;$("showAnswer").disabled=false;questionStartAt=Date.now();revealedAt=0;revealInk=null;revealCount=0;revealQuality=null;revealConfirm=false;grading=null;aiResult=null;$("showAnswer").textContent=autoGrading()?"📝 採点する":"答えを見る";
+ $("hint").disabled=false;$("good").disabled=false;$("showAnswer").disabled=false;questionStartAt=Date.now();revealedAt=0;revealInk=null;revealCount=0;revealQuality=null;revealConfirm=false;grading=null;aiResult=null;closeGradeCard();$("showAnswer").textContent=autoGrading()?"📝 採点する":"答えを見る";
  msg(isSentencePractice(session.practiceMode)?"右から縦に、一マス一文字。文をぜんぶ書こう。":"出題された漢字を書こう。送り仮名もいっしょにね。");clearCanvas();updateTools();requestAnimationFrame(resize);
  if(isTracePractice(session.practiceMode)){$("answerPanel").classList.add("show");$("answerBig").setAttribute("aria-hidden","false");startTrace("mode")}
 }
@@ -821,9 +824,11 @@ function showAnswerNow(selfJudge){
 /* ---------- 自動採点（Claude API） ----------
  * APIキーは保護者が入力し、この端末の localStorage（kq4ClaudeApiKey）にだけ置く。kanjiQuest で始まらないので移行対象外。
  * 字の構成（別の字・点や画の過不足・部品・送りがな）のまちがいだけを×にし、字の汚さ・とめはねはらいは助言にとどめる。 */
-const GRADE_KEY="kq4AutoGrade_v1",API_KEY_KEY="kq4ClaudeApiKey",GRADE_MODEL="claude-opus-5-5";
+const GRADE_KEY="kq4AutoGrade_v1",API_KEY_KEY="kq4ClaudeApiKey";
+// Haiku 5.5 にはサーバー側のフォールバックがないので付けない。
+const GRADE_MODELS={opus:{id:"claude-opus-5-5",name:"Claude Opus 5.5",fallback:true},sonnet:{id:"claude-sonnet-5-5",name:"Claude Sonnet 5.5",fallback:true},haiku:{id:"claude-haiku-5-5",name:"Claude Haiku 5.5",fallback:false}};
 let grading=null,aiResult=null,anthropicSdk=null,anthropicClient=null,anthropicKey="",loadAnthropic=()=>import("./vendor/anthropic-sdk.js").then(m=>m.default);
-function readGradeSettings(){try{const v=JSON.parse(localStorage.getItem(GRADE_KEY))||{};return {auto:v.auto!==false,effort:v.effort==="medium"?"medium":"high"}}catch{return {auto:true,effort:"high"}}}
+function readGradeSettings(){try{const v=JSON.parse(localStorage.getItem(GRADE_KEY))||{};return {auto:v.auto!==false,effort:v.effort==="medium"?"medium":"high",model:GRADE_MODELS[v.model]?v.model:"opus"}}catch{return {auto:true,effort:"high",model:"opus"}}}
 function writeGradeSettings(v){try{localStorage.setItem(GRADE_KEY,JSON.stringify(v))}catch{}}
 function readApiKey(){try{return localStorage.getItem(API_KEY_KEY)||""}catch{return ""}}
 function autoGrading(){return readGradeSettings().auto&&Boolean(readApiKey())&&Boolean(session)&&!isTracePractice(session.practiceMode)}
@@ -840,8 +845,9 @@ const GRADE_SYSTEM=`あなたは小学3年生の漢字の書き取りを採点�
 - 字が汚い、バランスが悪い、線の長さや角度、とめ・はね・はらい、マスからのはみ出し、小さな傾き
 
 verdict：すべて○なら "good"。×が1文字だけで、点や短い画が1つ足りない・多いなど小さなまちがいなら "close"。それ以外で×があれば "retry"。
-note：その文字について、×なら何がちがうかを短く。○なら空文字でよい。
-advice：子どもへの、やさしく具体的な短い日本語（40文字くらいまで）。×があれば直すところを一つ。全部○なら、ほめる言葉と、字をきれいにする助言を一つ。`;
+note と advice は、小学3年生が一人で読んでわかる言葉で書きます。ひらがなを多めにし、漢字は3年生までに習う字だけ。むずかしい用語（部首名など）は使わず、「上」「下」「左」「右」「まん中」「点」「よこぼう」「たてぼう」「はらい」のような言葉で、場所と直し方をはっきり言います。
+note：その文字が×なら、どこがどうちがうか、どう直せばよいかを一文で（例：「人」の下にある小さな点がないよ。点を書こう）。○なら空文字。
+advice：全体のひとこと（40文字くらいまで）。×があれば、いちばん大事な直し方を一つ。全部○なら、ほめる言葉と、字をきれいにするこつを一つ。`;
 const GRADE_SCHEMA={type:"object",properties:{chars:{type:"array",items:{type:"object",properties:{index:{type:"integer"},ok:{type:"boolean"},note:{type:"string"}},required:["index","ok","note"],additionalProperties:false}},verdict:{type:"string",enum:["good","close","retry"]},advice:{type:"string"}},required:["chars","verdict","advice"],additionalProperties:false};
 // 答えを見る前の手書きを、1マスずつ左から並べた白地の画像にする（1行6マスまで）。
 function renderInkImage(){
@@ -859,8 +865,9 @@ async function gradeWithClaude(image,q){
  if(!anthropicSdk)anthropicSdk=await loadAnthropic();
  if(!anthropicClient||anthropicKey!==key){anthropicClient=new anthropicSdk({apiKey:key,dangerouslyAllowBrowser:true,timeout:90000,maxRetries:1});anthropicKey=key}
  const letters=[...q.a];
- const res=await anthropicClient.beta.messages.create({model:GRADE_MODEL,max_tokens:16000,betas:["server-side-fallback-2026-07-01"],fallbacks:"default",system:GRADE_SYSTEM,
-  output_config:{effort:readGradeSettings().effort,format:{type:"json_schema",schema:GRADE_SCHEMA}},
+ const set=readGradeSettings(),m=GRADE_MODELS[set.model],extra=m.fallback?{betas:["server-side-fallback-2026-07-01"],fallbacks:"default"}:{};
+ const res=await anthropicClient.beta.messages.create({model:m.id,max_tokens:16000,...extra,system:GRADE_SYSTEM,
+  output_config:{effort:set.effort,format:{type:"json_schema",schema:GRADE_SCHEMA}},
   messages:[{role:"user",content:[{type:"image",source:{type:"base64",media_type:"image/png",data:image}},{type:"text",text:`正解：「${q.a}」（${letters.length}文字）\n${letters.map((ch,i)=>`${i+1}文字目：「${ch}」`).join("\n")}`}]}]});
  if(res.stop_reason==="refusal")throw new Error("refusal");
  const r=JSON.parse(res.content.filter(b=>b.type==="text").map(b=>b.text).join(""));
@@ -885,11 +892,26 @@ function startGrading(){
  gradeWithClaude(image,q).then(r=>{if(grading!==g||session!==s||current!==q)return;grading=null;setGradingUi(false);showAnswerNow(false);autoJudge(r)})
   .catch(err=>{if(grading!==g||session!==s||current!==q)return;grading=null;setGradingUi(false);showAnswerNow(true);msg(`自動採点できなかったので、正解と見くらべて自分で判定してね。（${gradeErrorText(err)}）`,"warn")});
 }
-function autoJudge(r){
- aiResult=r;const kind=r.verdict;judge(kind);
- const mark={good:"⭕ 合格！",close:"🔺 おしい！",retry:"❌ もう一回！"}[kind],after=$("message").textContent;
- msg(`${mark} ${r.advice}　${after}`,kind==="good"?"good":"warn");
+// 採点結果は「わかった！」を押すまで出しておく。まちがえた字は、正解と自分の字を並べて見せる。
+let gradeCardOpen=false;
+function cellCompare(i){
+ const letters=[...current.a],{rows}=writingLayout(current.a,session.practiceMode),c=cellPosition(i,rows,session.practiceMode),ch=letters[i]||"",g=glyph(ch);
+ const model=g?`<g transform="scale(${KV}) translate(${g.dx} ${g.dy})" fill="none" stroke="#087b83" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round">${g.paths.map(d=>`<path d="${d}"/>`).join("")}</g>`:`<text x="50" y="68" font-size="60" text-anchor="middle">${escapeHtml(ch)}</text>`;
+ const ink=(revealInk||[]).map(st=>st.length>2?`<polyline points="${st.join(" ")}"/>`:`<circle cx="${st[0]}" cy="${st[1]}" r="1.4" fill="#201c18"/>`).join("");
+ const frame=`<path d="M50 0V100M0 50H100" stroke="#d8e2df" stroke-width=".6" stroke-dasharray="2 2"/>`;
+ return `<figure>正解<svg viewBox="0 0 100 100" aria-label="正解 ${escapeHtml(ch)}">${frame}${model}</svg></figure><figure>きみの字<svg viewBox="${c.x} ${c.y} 100 100" aria-label="自分の字"><g transform="translate(${c.x} ${c.y})">${frame}</g><g fill="none" stroke="#201c18" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">${ink}</g></svg></figure>`;
 }
+function autoJudge(r){
+ aiResult=r;const kind=r.verdict,letters=[...current.a],q=current,s=session;
+ const fixes=(r.chars||[]).filter(c=>c.index>=1&&c.index<=letters.length).slice(0,4);
+ $("gradeMark").textContent={good:"⭕ 合格！",close:"🔺 おしい！",retry:"❌ もう一回！"}[kind];
+ $("gradeAdvice").textContent=r.advice||"";
+ $("gradeFixes").innerHTML=fixes.map(c=>`<div class="grade-fix">${cellCompare(c.index-1)}<p>${c.index}文字目「${escapeHtml(letters[c.index-1])}」<br>${escapeHtml(c.note||"")}</p></div>`).join("");
+ $("gradeCard").className=`grade-card${kind==="good"?" good":""}`;$("gradeCard").hidden=false;gradeCardOpen=true;redraw();
+ msg("採点結果を読んだら「わかった！」を押そう。",kind==="good"?"good":"warn");
+ $("gradeOk").onclick=()=>{if(!gradeCardOpen||session!==s||current!==q)return;closeGradeCard();judge(kind);const after=$("message").textContent;msg(`${r.advice}　${after}`,kind==="good"?"good":"warn")};
+}
+function closeGradeCard(){gradeCardOpen=false;$("gradeCard").hidden=true}
 
 // ヒント魔法：正解マスに数秒だけ正解が見える。見ている間は書けない。手書きはそのまま。
 const HINT_MS=3000;let hintPeek=null;
@@ -1001,8 +1023,8 @@ function inkSvg(e){
  return `<svg class="ink-svg" viewBox="0 ${HEAD} ${width} ${height-HEAD}" style="width:min(100%,${Math.round(width*(sentence?.9:1.1))}px)" role="img" aria-label="${escapeHtml(e.a)}の手書き">${out}</svg>`;
 }
 function renderGradeSettings(){
- const v=readGradeSettings(),key=readApiKey();$("gradeAuto").setAttribute("aria-pressed",String(v.auto));$("gradeSelf").setAttribute("aria-pressed",String(!v.auto));$("gradeEffort").value=v.effort;
- $("gradeStatus").textContent=!v.auto?"いまは自己採点です。":key?`自動採点がオンです（キー保存済み：…${key.slice(-4)}）。モデル：Claude Opus 5.5`:"自動採点がオンですが、APIキーがないので自己採点になります。";
+ const v=readGradeSettings(),key=readApiKey();$("gradeAuto").setAttribute("aria-pressed",String(v.auto));$("gradeSelf").setAttribute("aria-pressed",String(!v.auto));$("gradeEffort").value=v.effort;$("gradeModel").value=v.model;
+ $("gradeStatus").textContent=!v.auto?"いまは自己採点です。":key?`自動採点がオンです（キー保存済み：…${key.slice(-4)}）。モデル：${GRADE_MODELS[v.model].name}`:"自動採点がオンですが、APIキーがないので自己採点になります。";
 }
 function saveApiKey(){const v=$("apiKeyInput").value.trim();if(!v)return toast("APIキーを入力してください。");try{localStorage.setItem(API_KEY_KEY,v)}catch{return toast("保存できませんでした。")}$("apiKeyInput").value="";anthropicClient=null;renderGradeSettings();toast("APIキーを保存しました。")}
 function deleteApiKey(){if(!confirm("この端末からAPIキーを消しますか？"))return;try{localStorage.removeItem(API_KEY_KEY)}catch{}anthropicClient=null;renderGradeSettings();toast("APIキーを消しました。")}
@@ -1047,7 +1069,7 @@ function fitVerticalText(){
 function pt(e){const r=canvas.getBoundingClientRect(),t=inkTransform();return{x:(e.clientX-r.left-t.x)/t.scale,y:(e.clientY-r.top-t.y)/t.scale}}
 function begin(e){
  if(!current||activePointerId!==null||e.isPrimary===false||e.button!==0)return;
- if(trace)return traceBegin(e);if(locked||hintPeek||grading)return;
+ if(trace)return traceBegin(e);if(locked||hintPeek||grading||gradeCardOpen)return;
  e.preventDefault();resize();const p=pt(e);if(!onWritingCell(p))return;
  activePointerId=e.pointerId;drawing=true;stroke=[p];redraw();try{canvas.setPointerCapture(e.pointerId)}catch{}
 }
@@ -1094,6 +1116,7 @@ function redraw(){
   ctx.fillStyle="#f1f8ef";ctx.fillRect(mx,my,ms,ms);grid(mx,my,ms,"#b7d2bd","#d3e5d6");
   if(shown&&letters[i])drawGlyph(letters[i],mx,my,targets.has(i)?"#087b83":"#3b4a45",5,ms);
   grid(x,y,100,"#97baca","#c8dbe2");
+  if(shown&&aiResult&&(aiResult.chars||[]).some(c=>c.index===i+1)){ctx.save();ctx.setLineDash([]);ctx.strokeStyle="#e0524a";ctx.lineWidth=2.4;ctx.strokeRect(x+1.2,y+1.2,97.6,97.6);ctx.strokeRect(mx+1.2,my+1.2,ms-2.4,ms-2.4);ctx.restore()}
  }
  ctx.setLineDash([]);setInkStyle();
  for(const s of stroke?[...strokes,stroke]:strokes){if(s.length===1){ctx.beginPath();ctx.arc(s[0].x,s[0].y,INK_WIDTH/2,0,Math.PI*2);ctx.fill();continue}ctx.beginPath();ctx.moveTo(s[0].x,s[0].y);for(let i=1;i<s.length;i++)ctx.lineTo(s[i].x,s[i].y);ctx.stroke()}
@@ -1189,7 +1212,7 @@ function guardBattleTouch(e){
 $("practiceChar").onclick=()=>selectPracticeMode("character");$("practiceSentence").onclick=()=>selectPracticeMode("sentence");$("practiceTrace").onclick=()=>selectPracticeMode("trace");$("testSelect").onchange=e=>selectTest(e.target.value);$("randomSelected").onclick=startRandomTest;$("randomSelectedAlt").onclick=startRandomTest;$("randomAll").onclick=startRandomAll;$("eliteStart").onclick=startElite;$("openPicker").onclick=()=>screen("picker");$("startCustom").onclick=startCustom;$("openBook").onclick=()=>screen("book");$("openShop").onclick=()=>screen("shop");$("topShop").onclick=()=>screen("shop");$("topMap").onclick=()=>screen("world");$("retreat").onclick=()=>{session=null;current=null;screen("world")};
 $("selectFromHistory").onclick=selectHistory;$("selectAll").onclick=()=>setPicker(practiceQuestions().map(q=>q.id));$("clearSelection").onclick=()=>setPicker([]);$("pickerBack").onclick=()=>screen("world");$("saveSelection").onclick=saveCustom;
 $("openWeaponChest").onclick=openWeaponChest;
-$("openParent").onclick=openParent;$("gradeAuto").onclick=()=>setGradeMode(true);$("gradeSelf").onclick=()=>setGradeMode(false);$("apiKeySave").onclick=saveApiKey;$("apiKeyDelete").onclick=deleteApiKey;$("gradeEffort").onchange=e=>{const v=readGradeSettings();v.effort=e.target.value==="medium"?"medium":"high";writeGradeSettings(v);renderGradeSettings()};$("parentBack").onclick=()=>screen("book");$("parentClear").onclick=clearInkLog;$("parentMore").onclick=()=>{parentShown+=30;renderParent()};$("parentFilterGood").onclick=()=>{parentFilter="good";renderParent()};$("parentFilterAll").onclick=()=>{parentFilter="all";renderParent()};
+$("openParent").onclick=openParent;$("gradeAuto").onclick=()=>setGradeMode(true);$("gradeSelf").onclick=()=>setGradeMode(false);$("apiKeySave").onclick=saveApiKey;$("apiKeyDelete").onclick=deleteApiKey;$("gradeModel").onchange=e=>{const v=readGradeSettings();v.model=GRADE_MODELS[e.target.value]?e.target.value:"opus";writeGradeSettings(v);renderGradeSettings()};$("gradeEffort").onchange=e=>{const v=readGradeSettings();v.effort=e.target.value==="medium"?"medium":"high";writeGradeSettings(v);renderGradeSettings()};$("parentBack").onclick=()=>screen("book");$("parentClear").onclick=clearInkLog;$("parentMore").onclick=()=>{parentShown+=30;renderParent()};$("parentFilterGood").onclick=()=>{parentFilter="good";renderParent()};$("parentFilterAll").onclick=()=>{parentFilter="all";renderParent()};
 $("shopBack").onclick=()=>screen("world");$("bookBack").onclick=()=>screen("world");$("reset").onclick=reset;$("termRewardClose").onclick=()=>$("termRewardModal").classList.remove("show");$("undo").onclick=undo;$("clear").onclick=()=>trace?restartTrace():grading?null:clearCanvas();$("hint").onclick=useHint;$("showAnswer").onclick=reveal;$("good").onclick=()=>judge("good");$("close").onclick=()=>judge("close");$("retry").onclick=()=>judge("retry");$("again").onclick=repeat;$("resultMap").onclick=()=>{session=null;screen("world")};$("resultShop").onclick=()=>screen("shop");
 canvas.addEventListener("pointerdown",begin);canvas.addEventListener("pointermove",move);canvas.addEventListener("pointerup",end);canvas.addEventListener("pointercancel",end);canvas.addEventListener("lostpointercapture",end);
 canvas.addEventListener("touchstart",preventBattleGesture,{passive:false});canvas.addEventListener("touchmove",preventBattleGesture,{passive:false});

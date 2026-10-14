@@ -280,33 +280,43 @@ console.log('PASS: warning before revealing with too little writing.');
  a.run('var calls,reply;'+setup);
  const flush=()=>new Promise(r=>setTimeout(r,0));
  assert(!'kq4ClaudeApiKey'.startsWith('kanjiQuest'),'API key is not exported in save codes');
- a.run('startArea(22)');assert.equal(a.nodes.get('showAnswer').textContent,'📝 採点する');
+ a.run('startArea(22)');assert.equal(a.nodes.get('showAnswer').textContent,'📝 採点する');a.timers.splice(0);
  // Correct writing → "good" applied automatically, no self-judge buttons.
  a.run(`reply={chars:[{index:1,ok:true,note:""}],verdict:"good",advice:"すばらしい！"};`+FILL+';reveal()');
  assert(a.run('Boolean(grading)'));a.run('begin({pointerId:3,button:0,isPrimary:true,clientX:200,clientY:200,preventDefault(){}})');assert.equal(a.run('stroke'),null,'no writing while grading');
  await flush();await flush();
  const call=a.run('calls[0]');assert.equal(call.p.model,'claude-opus-5-5');assert.equal(call.p.output_config.effort,'high');assert.equal(call.p.output_config.format.type,'json_schema');
  assert.equal(call.p.messages[0].content[0].source.data,'AAAA');assert(call.p.messages[0].content[1].text.includes(a.run('current.a')));assert.equal(call.o.dangerouslyAllowBrowser,true);assert.equal(call.o.apiKey,'sk-ant-test');
- assert(a.run('locked'),'judged automatically');assert(!a.nodes.get('questPanel').classList.contains('answering'));
- assert(a.nodes.get('message').textContent.startsWith('⭕ 合格！ すばらしい！'));
+ // The result stays until "わかった！"; nothing advances on a timer meanwhile.
+ assert(!a.nodes.get('gradeCard').hidden);assert.equal(a.nodes.get('gradeMark').textContent,'⭕ 合格！');assert.equal(a.nodes.get('gradeAdvice').textContent,'すばらしい！');
+ assert(!a.run('locked'));assert.equal(a.timers.length,0,'no timer while the result is shown');assert(!a.nodes.get('questPanel').classList.contains('answering'));
+ a.run('$("gradeOk").onclick()');assert(a.nodes.get('gradeCard').hidden);
+ assert(a.run('locked'),'judged after reading');assert(a.nodes.get('message').textContent.startsWith('すばらしい！'));
  assert.equal(JSON.parse(a.storage.get('kq4ParentInkLog_v1')).at(-1).ai.v,'good');
  a.timers.splice(0).forEach(f=>f());
  // A missing dot → "close": monster survives, review tracing keeps the advice visible.
  const cid=a.run('current.id');a.run(`reply={chars:[{index:1,ok:false,note:"屋根の下の点がない"}],verdict:"close",advice:"屋根の下に点をわすれずに！"};`+FILL+';reveal()');await flush();await flush();
+ assert((a.nodes.get('gradeFixes').innerHTML.match(/<svg/g)||[]).length===2,'wrong character: answer and own writing side by side');assert(a.nodes.get('gradeFixes').innerHTML.includes('1文字目'));
+ a.run('$("gradeOk").onclick()');
  assert.equal(a.run(`save.records[${cid}].last`),'close');a.timers.splice(0).forEach(f=>f());
  assert.equal(a.run('trace&&trace.kind'),'review');assert(a.nodes.get('message').textContent.startsWith('屋根の下に点をわすれずに！'));
  assert.equal(JSON.parse(a.storage.get('kq4ParentInkLog_v1')).at(-1).ai.chars[0].note,'屋根の下の点がない');
  a.run(traceAll);a.timers.splice(0).forEach(f=>f());
  // "good" with a wrong character is downgraded.
- a.run(`reply={chars:[{index:1,ok:false,note:"別の字"}],verdict:"good",advice:"x"};`+FILL+';reveal()');await flush();await flush();
+ a.run(`reply={chars:[{index:1,ok:false,note:"別の字"}],verdict:"good",advice:"x"};`+FILL+';reveal()');await flush();await flush();a.run('$("gradeOk").onclick()');
  assert.equal(JSON.parse(a.storage.get('kq4ParentInkLog_v1')).at(-1).kind,'close');a.timers.splice(0).forEach(f=>f());a.run(traceAll);a.timers.splice(0).forEach(f=>f());
  // API failure → falls back to self-judging for this problem.
  a.run('reply=new (anthropicSdk.AuthenticationError)("bad key");'+FILL+';reveal()');await flush();await flush();
  assert(a.nodes.get('questPanel').classList.contains('answering'),'self-judge buttons appear');assert(a.nodes.get('message').textContent.includes('APIキーを確認'));assert(!a.run('locked'));
  a.run('judge("retry")');a.timers.splice(0).forEach(f=>f());a.run(traceAll);a.timers.splice(0).forEach(f=>f());
  // Blank → second press counts as "もう一回" without calling the API.
- const n=a.run('calls.length');a.run('reveal();reveal()');assert.equal(a.run('calls.length'),n);assert(a.run('locked'));a.timers.splice(0).forEach(f=>f());a.run(traceAll);a.timers.splice(0).forEach(f=>f());
+ const n=a.run('calls.length');a.run('reveal();reveal();$("gradeOk").onclick()');assert.equal(a.run('calls.length'),n);assert(a.run('locked'));a.timers.splice(0).forEach(f=>f());a.run(traceAll);a.timers.splice(0).forEach(f=>f());
  // Switch to self-judging and settings UI.
+ // Model switch: Haiku sends no server-side fallback.
+ a.run('const v=readGradeSettings();v.model="haiku";writeGradeSettings(v);'+FILL+';reveal()');await flush();await flush();
+ assert.equal(a.run('calls.at(-1).p.model'),'claude-haiku-5-5');assert.equal(a.run('calls.at(-1).p.fallbacks'),undefined);
+ a.run('$("gradeOk").onclick()');a.timers.splice(0).forEach(f=>f());a.run(traceAll);a.timers.splice(0).forEach(f=>f());
+ a.run('const w=readGradeSettings();w.model="sonnet";writeGradeSettings(w);renderGradeSettings()');assert(a.nodes.get('gradeStatus').textContent.includes('Sonnet 5.5'));
  a.run('setGradeMode(false);session=null;current=null;startArea(22)');assert.equal(a.nodes.get('showAnswer').textContent,'答えを見る');
  a.run(FILL+';reveal()');assert(a.nodes.get('questPanel').classList.contains('answering'));
  a.run('renderGradeSettings()');assert(a.nodes.get('gradeStatus').textContent.includes('自己採点'));
