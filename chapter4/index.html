@@ -834,11 +834,11 @@ function readApiKey(){try{return localStorage.getItem(API_KEY_KEY)||""}catch{ret
 function autoGrading(){return readGradeSettings().auto&&Boolean(readApiKey())&&Boolean(session)&&!isTracePractice(session.practiceMode)}
 const GRADE_SYSTEM=`あなたは小学3年生の漢字の書き取りを採点する先生です。画像には、子どもが手書きした字が左から右へ1マスに1文字ずつ並んでいます（マスの下の数字が何文字目か）。指定された正解と1文字ずつ比べて採点してください。
 
-×（ok:false）にするのは、字の組み立てがまちがっているときだけです。
+採点するのは漢字だけです。ひらがな・カタカナ・記号は採点しません（いつも ok:true、note は空文字。助言にも書かない）。
+漢字を×（ok:false）にするのは、字の組み立てがまちがっているときだけです。
 - 別の字を書いている、字が足りない・多い
 - 点や画が足りない・多い（例：「食」の屋根の下の点がない）
 - 部品の形がちがう（へん・つくり・かんむりの取りちがえなど）
-- 送りがな・ひらがなのまちがい
 - くずれすぎて、どの字か読み取れない
 
 次のことは×にせず、必要なら助言にとどめます。
@@ -868,12 +868,13 @@ async function gradeWithClaude(image,q){
  const set=readGradeSettings(),m=GRADE_MODELS[set.model],extra=m.fallback?{betas:["server-side-fallback-2026-07-01"],fallbacks:"default"}:{};
  const res=await anthropicClient.beta.messages.create({model:m.id,max_tokens:16000,...extra,system:GRADE_SYSTEM,
   output_config:{effort:set.effort,format:{type:"json_schema",schema:GRADE_SCHEMA}},
-  messages:[{role:"user",content:[{type:"image",source:{type:"base64",media_type:"image/png",data:image}},{type:"text",text:`正解：「${q.a}」（${letters.length}文字）\n${letters.map((ch,i)=>`${i+1}文字目：「${ch}」`).join("\n")}`}]}]});
+  messages:[{role:"user",content:[{type:"image",source:{type:"base64",media_type:"image/png",data:image}},{type:"text",text:`正解：「${q.a}」（${letters.length}文字）\n${letters.map((ch,i)=>`${i+1}文字目：「${ch}」${isKanji(ch)?"（漢字・採点する）":"（採点しない）"}`).join("\n")}`}]}]});
  if(res.stop_reason==="refusal")throw new Error("refusal");
  const r=JSON.parse(res.content.filter(b=>b.type==="text").map(b=>b.text).join(""));
  if(!["good","close","retry"].includes(r.verdict))throw new Error("format");
- const chars=Array.isArray(r.chars)?r.chars:[],verdict=r.verdict==="good"&&chars.some(c=>c&&c.ok===false)?"close":r.verdict;
- return {verdict,advice:String(r.advice||"").slice(0,120),chars:chars.filter(c=>c&&c.ok===false).map(c=>({index:Number(c.index)||0,note:String(c.note||"").slice(0,80)}))};
+ // ひらがな等への×は捨て、漢字の×だけで判定する。
+ const chars=(Array.isArray(r.chars)?r.chars:[]).filter(c=>c&&c.ok===false&&isKanji(letters[(Number(c.index)||0)-1]||"")),verdict=!chars.length?"good":r.verdict==="good"?"close":r.verdict;
+ return {verdict,advice:(!chars.length&&r.verdict!=="good"?"漢字はよく書けたね！":String(r.advice||"")).slice(0,120),chars:chars.filter(c=>c&&c.ok===false).map(c=>({index:Number(c.index)||0,note:String(c.note||"").slice(0,80)}))};
 }
 function gradeErrorText(err){
  const S=anthropicSdk;if(err&&err.message==="nokey")return "APIキーがありません";

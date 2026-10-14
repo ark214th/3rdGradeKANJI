@@ -312,7 +312,13 @@ console.log('PASS: warning before revealing with too little writing.');
  // Blank → second press counts as "もう一回" without calling the API.
  const n=a.run('calls.length');a.run('reveal();reveal();$("gradeOk").onclick()');assert.equal(a.run('calls.length'),n);assert(a.run('locked'));a.timers.splice(0).forEach(f=>f());a.run(traceAll);a.timers.splice(0).forEach(f=>f());
  // Switch to self-judging and settings UI.
- // Model switch: Haiku sends no server-side fallback.
+ // Only kanji are graded: a mark on a hiragana cell is ignored, and the prompt says which cells are graded.
+ a.run('reply={chars:[{index:1,ok:true,note:""},{index:2,ok:false,note:"べの点"}],verdict:"close",advice:"べの点に注意"};gradeWithClaude("AAAA",{a:"食べる"}).then(r=>{kanaResult=r});var kanaResult');await flush();await flush();
+ assert.equal(a.run('kanaResult.verdict'),'good');assert.equal(a.run('kanaResult.chars.length'),0);assert.equal(a.run('kanaResult.advice'),'漢字はよく書けたね！');
+ assert(a.run('calls.at(-1).p.messages[0].content[1].text').includes('1文字目：「食」（漢字・採点する）'));assert(a.run('calls.at(-1).p.messages[0].content[1].text').includes('2文字目：「べ」（採点しない）'));
+ a.run('reply={chars:[{index:1,ok:false,note:"点がない"},{index:3,ok:false,note:"る"}],verdict:"retry",advice:"点を書こう"};gradeWithClaude("AAAA",{a:"食べる"}).then(r=>{kanaResult=r})');await flush();await flush();
+ assert.equal(a.run('kanaResult.verdict'),'retry');assert.equal(a.run('JSON.stringify(kanaResult.chars.map(c=>c.index))'),'[1]');
+// Model switch: Haiku sends no server-side fallback.
  a.run('const v=readGradeSettings();v.model="haiku";writeGradeSettings(v);'+FILL+';reveal()');await flush();await flush();
  assert.equal(a.run('calls.at(-1).p.model'),'claude-haiku-5-5');assert.equal(a.run('calls.at(-1).p.fallbacks'),undefined);
  a.run('$("gradeOk").onclick()');a.timers.splice(0).forEach(f=>f());a.run(traceAll);a.timers.splice(0).forEach(f=>f());
