@@ -36,15 +36,15 @@ function boot(chapter={},term={},shared={}){
 const FILL='strokes=[...current.a].flatMap((ch,i)=>{const c=cellPosition(i,writingLayout(current.a,session.practiceMode).rows,session.practiceMode);return Array.from({length:glyph(ch)?.paths.length||1},()=>[{x:c.x+20,y:c.y+20},{x:c.x+80,y:c.y+80}])})';
 const legacy={areaLayout:2,selectedTest:6,practiceMode:'sentence',defeated:[1,53,114],records:{114:{retry:3,last:'retry'}},customIds:[115,160],clears:[0,6,13],stageClears:{0:8,6:4,13:5},displayMode:'clue'};
 const b=boot(legacy,{treasures:['test1','test2'],fragments:{test1:[0,1,2,3,4,5],test2:[6,7,8,9,10,11,12]},areaLayouts:{test1:2,test2:2}},{xp:5000,gold:4321,owned:['wood','treasure_staff'],weapon:'treasure_staff'});
-assert.equal(b.run('SENTENCES.length'),80);
+assert.equal(b.run('SENTENCES.length'),100);
 assert.equal(b.run('Math.max(...SENTENCES.map(q=>[...q.a].length))'),10);
 assert(b.run('SENTENCES.every(q=>!q.a.endsWith("。")&&!q.answerHtml.endsWith("。"))'),'no trailing period to write');
 assert.equal(b.run('SENTENCES.find(q=>q.test===4&&q.s===14).a'),'勝負に勝つ');
-assert.equal(b.run('new Set(SENTENCES.flatMap(q=>q.ids)).size'),219);
-assert.equal(b.run('SENTENCES.reduce((n,q)=>n+q.ids.length,0)'),219);
+assert.equal(b.run('new Set(SENTENCES.flatMap(q=>q.ids)).size'),264);
+assert.equal(b.run('SENTENCES.reduce((n,q)=>n+q.ids.length,0)'),264);
 assert(b.run('TESTS.every(t=>SENTENCES.filter(q=>q.test===t).length===10)'));
 assert(b.run('AREAS.every((a,i)=>sentencesForArea(i).every(q=>q.test===a.block&&q.ids.every(id=>id>a.start&&id<=a.end)))'));
-assert.equal(b.run('AREAS.flatMap((a,i)=>sentencesForArea(i)).length'),80);
+assert.equal(b.run('AREAS.flatMap((a,i)=>sentencesForArea(i)).length'),100);
 assert.equal(b.run('JSON.stringify(save.records)'),JSON.stringify(legacy.records));
 assert.equal(b.run('save.stageClears[0]'),8);
 assert.equal(b.run('save.selectedTest'),6);
@@ -79,7 +79,7 @@ assert.equal(b.run('save.records[114].retry'),3,'old character history preserved
 const paid=b.run('save.gold');b.run('judge("good")');assert.equal(b.run('save.gold'),paid,'double judging cannot pay twice');
 b.run('finish()');const completed=b.run('save.gold');b.run('finish()');assert.equal(b.run('save.gold'),completed,'chest cannot pay twice');
 // Every launch path keeps the test boundary and uses ten sentences at most.
-for(const test of [1,2,3,4,5,6,7,8]){
+for(const test of [1,2,3,4,5,6,7,8,9,10]){
  b.run(`selectTest(${test});startRandomTest()`);assert.equal(b.run('session.original.length'),10);assert(b.run(`session.original.every(id=>SENTENCE_BY_CHAR.get(id).test===${test})`));
  b.run('startRandomAll()');assert.equal(b.run('session.original.length'),10);
 }
@@ -98,7 +98,7 @@ b.run('startArea(13);session.done=new Set(session.original);finish()');assert.eq
 const old=boot({clears:[2],stageClears:{2:7}});assert.equal(old.run('save.stageClears[2]'),7);assert.equal(old.run('save.stageClears[3]'),7);
 const reload=boot(JSON.parse(b.storage.get('kanjiQuestRpg_chapter4_v1')),JSON.parse(b.storage.get('kanjiQuestSemester2_v1')),JSON.parse(b.storage.get('kanjiQuestRpg_v1')));
 assert.equal(reload.run('save.sentenceRecords[114].last'),'retry');
-console.log('PASS: 80 sentences/219 IDs (170 legacy IDs preserved), grouping, all test scopes, old saves, rewards/retries/chest, DOM IDs, and ink preservation.');
+console.log('PASS: 100 sentences/264 IDs, grouping, all test scopes, old saves, rewards/retries/chest, DOM IDs, and ink preservation.');
 
 // Light smoothing must reduce tiny jitter without pulling corners/flicks far from the pen.
 assert(b.run(`(()=>{
@@ -166,9 +166,9 @@ assert.equal(reloadedChar.run(`save.records[${charId}].good`),1);
 console.log('PASS: default character mode, both routes/random scopes, independent histories, persisted switch, repeat and shared progression.');
 
 // Drill 28: worksheet targets, full sentences, contiguous IDs, new scopes and treasure.
-assert.deepEqual(JSON.parse(b.run('JSON.stringify(SENTENCES.filter(q=>q.test>=7).map(q=>q.a))')),["問いをもつ","詩を読み返す","主語とじゅつ語","明日の予定","九州にいる友だち","風船をとばす","屋根に鳥が止まる","おもい荷物","やくそくを守る","勉強にはげむ","本は役立つ","新米を食べる","話し合いの進行","返事がとどく","持ち主をさがす","主な人物","屋上に上る","大根をそだてる","守びにつく","る守番をする"]);
+assert.deepEqual(JSON.parse(b.run('JSON.stringify(SENTENCES.filter(q=>q.test>=7&&q.test<=8).map(q=>q.a))')),["問いをもつ","詩を読み返す","主語とじゅつ語","明日の予定","九州にいる友だち","風船をとばす","屋根に鳥が止まる","おもい荷物","やくそくを守る","勉強にはげむ","本は役立つ","新米を食べる","話し合いの進行","返事がとどく","持ち主をさがす","主な人物","屋上に上る","大根をそだてる","守びにつく","る守番をする"]);
 assert(b.run('Q.every((q,i)=>q.id===i+1)'));
-assert.equal(b.run('CLUE_P.length'),219);
+assert.equal(b.run('CLUE_P.length'),264);
 assert.equal(b.run('Q.filter(q=>q.test===7).length'),24);
 assert.equal(b.run('Q.filter(q=>q.test===8).length'),25);
 for(const test of [7,8]){
@@ -184,8 +184,43 @@ for(let area=19;area<25;area++)complete.run(`startArea(${area});session.done=new
 assert(complete.run('term.treasures.includes("test4")'));
 console.log('PASS: drill 28 transcription, IDs, both test selections and fourth treasure.');
 
+// Drill 36: preserve kana outside the worksheet's lines, including unlearned kanji.
+assert.deepEqual(JSON.parse(b.run('JSON.stringify(SENTENCES.filter(q=>q.test>=9).map(q=>q.a))')),[
+ '大豆を食べる','植物が育つ','消化のよい食べ物','豆まきをする','えいようを取り出す',
+ 'しゅうかくの時期','畑の肉とよばれる','物語が終わる','福をよびこむ','家へ急ぐ',
+ '早起きをする','苦ろうがむくわれる','多少ちがいがある','待ち合わせの場所','先生に相談する',
+ '風で火が消える','取ざいをうける','いきが苦しい','苦い薬をのむ','期待でむねがふくらむ'
+]);
+assert.equal(b.run('Q.filter(q=>q.test===9).length'),23);
+assert.equal(b.run('Q.filter(q=>q.test===10).length'),22);
+assert.equal(b.run('AREAS.length'),31);
+for(const test of [9,10])for(const mode of ['character','sentence','trace']){
+ const n=boot({areaLayout:2,selectedTest:test,practiceMode:mode});
+ assert(n.nodes.get('selectedTestRange').textContent.includes('ドリル36'));
+ assert(n.nodes.get('selectedTestRange').textContent.includes(test===9?'1〜10':'11〜20'));
+ n.run('startRandomTest()');assert.equal(n.run('session.original.length'),10);
+ assert(n.run(`session.original.every(id=>Q[id-1].test===${test})`));
+ n.run('startRandomAll()');assert.equal(n.run('session.original.length'),mode==='sentence'?10:test===9?23:22);
+ assert(n.run(`session.original.every(id=>Q[id-1].test===${test})`));
+ for(const area of test===9?[25,26,27]:[28,29,30]){
+  n.run(`startArea(${area})`);assert(n.run(`session.original.every(id=>Q[id-1].test===${test})`));
+ }
+ n.run('persist()');const reload=boot(JSON.parse(n.storage.get('kanjiQuestRpg_chapter4_v1')));
+ assert.equal(reload.run('save.selectedTest'),test);assert.equal(reload.run('save.practiceMode'),mode);
+}
+const fifth=boot({areaLayout:2,selectedTest:9,clears:Array.from({length:25},(_,i)=>i),stageClears:{24:9}},
+ {treasures:['test1','test2','test3','test4'],areaLayouts:{test1:2,test2:2,test3:2,test4:2}});
+assert.equal(fifth.run('term.treasures.length'),4);
+assert.equal(fifth.run('save.stageClears[24]'),9);
+assert.equal(fifth.run('volumeAreas(selectedVolume()).length'),6);
+for(let area=25;area<30;area++)fifth.run(`startArea(${area});session.done=new Set(session.original);finish()`);
+assert(!fifth.run('term.treasures.includes("test5")'),'all six new routes required');
+fifth.run('startArea(30);session.done=new Set(session.original);finish()');
+assert.equal(fifth.run('JSON.stringify(term.treasures)'),JSON.stringify(['test1','test2','test3','test4','test5']));
+console.log('PASS: drill 36 transcription, all three modes, test boundaries, selection persistence and fifth treasure.');
+
 // Tracing: KanjiVG glyphs, stroke judging, trace practice mode, hint and review flows.
-assert.equal(b.run('Object.keys(KANJI_STROKES).length'),234);
+assert.equal(b.run('Object.keys(KANJI_STROKES).length'),254);
 assert(b.run('Q.every(q=>[...q.a].every(ch=>KANJI_STROKES[ch]))'),'every answer character has stroke data');
 assert(b.run('SENTENCES.every(q=>[...q.a].every(ch=>KANJI_STROKES[ch]))'),'every sentence character has stroke data');
 assert(b.run('StrokeTrace.judgeStroke(StrokeTrace.flatten(KANJI_STROKES["一"][0]),KANJI_STROKES["一"][0]).ok'));
@@ -333,3 +368,4 @@ console.log('PASS: warning before revealing with too little writing.');
  a.run('confirm=()=>true;deleteApiKey();session=null;current=null;startArea(22)');assert.equal(a.nodes.get('showAnswer').textContent,'答えを見る','no key → self-judging');
  console.log('PASS: automatic grading (request shape, verdicts, advice, failures, blank, switch).');
 })().catch(e=>{console.error(e);process.exit(1)});
+
