@@ -969,6 +969,7 @@ const TITLES=[{min:50,n:"無限の漢字王"},{min:40,n:"漢字界の英雄"},{m
 const COMPANIONS=[{i:"🥚",n:"ふしぎなタマゴ"},{i:"🐣",n:"生まれたばかりの相棒"},{i:"🐥",n:"元気な相棒"},{i:"🦎",n:"かけだし竜"},{i:"🐲",n:"若きドラゴン"},{i:"🐉",n:"大空のドラゴン"},{i:"🐉",n:"輝く守護竜"},{i:"🌟",n:"伝説の相棒"}];
 const SHARED_KEY="kanjiQuestRpg_v1",CHAPTER_KEY="kanjiQuestRpg_chapter4_v1",TERM_KEY="kanjiQuestSemester2_v1",AREA_LAYOUT=2,OLD_AREA_MAP=[[0],[1],[2,3],[4],[5]];
 const DEF=()=>({xp:0,gold:0,owned:["wood"],weapon:"wood",defeated:[],records:{},sentenceRecords:{},battles:0,clears:[],stageClears:{},totalDefeats:0,eliteRank:1,eliteClears:0,customIds:[],bestCombo:0,displayMode:"kana",practiceMode:"character",selectedTest:3,traceRecords:{}});
+const TEST_REVISION=1,REVISED_FIRST_ID=265,REVISED_TESTS=[11,12];
 let save=load(),term=loadTerm(),session=null,current=null,hp=100,maxHp=100,hintUsed=false,trace=null,locked=false,toastTimer=null,strokes=[],stroke=null,drawing=false,tempCustomIds=[];
 let activePointerId=null,inkWidth=0,inkHeight=0;
 const $=id=>document.getElementById(id),screens={world:$("world"),battle:$("battle"),picker:$("picker"),shop:$("shop"),book:$("book"),result:$("result"),parent:$("parent")},canvas=$("canvas"),ctx=canvas.getContext("2d");
@@ -980,7 +981,6 @@ function migrateOldAreas(v){const old=[...new Set((Array.isArray(v)?v:[]).map(Nu
 function migrateStageClears(v,clears,current){if(current)return cleanStageClears(v,clears);const mapped={};for(let old=0;old<OLD_AREA_MAP.length;old++){const n=Math.max(0,Math.floor(Number(v&&v[old])||0));if(n)for(const id of OLD_AREA_MAP[old])mapped[id]=Math.max(mapped[id]||0,n)}return cleanStageClears(mapped,clears)}
 // 2026-11-10：11・12回目の問題範囲をドリル44へ差し替えた。旧問題（ID265〜305）の章別記録を一度だけ消す。
 // レベル・ゴールド・武器（共有キー）と、秘宝のかけら・秘宝（2学期キー）は消さない。
-const TEST_REVISION=1,REVISED_FIRST_ID=265,REVISED_TESTS=[11,12];
 function resetRevisedTests(chapter){
  if(chapter.testRevision===TEST_REVISION||!Object.keys(chapter).length)return chapter;
  const keep=id=>Number(id)<REVISED_FIRST_ID,areas=AREAS.map((a,i)=>i).filter(i=>REVISED_TESTS.includes(AREAS[i].block));
