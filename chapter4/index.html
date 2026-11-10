@@ -130,7 +130,7 @@ html.battle-active .topbar,html.battle-active .hud{display:none}
 <body>
 <div class="app">
 <header class="topbar"><div class="brand"><div class="crest">🌊</div><div><h1>漢字クエスト 第4章</h1><small>～海の秘宝をめぐる冒険～</small></div></div><div class="top-actions"><a class="home-link" href="../index.html">章選択</a><button class="topbtn" id="topShop">🛒 武器屋</button><button class="topbtn" id="topMap">🗺️ 海図</button></div></header>
-<div class="hud"><div class="huditem">⭐ <strong id="hudLv">LV 1</strong></div><div class="huditem">🪙 <strong id="hudGold">0 G</strong></div><div class="huditem">⚔️ <strong id="hudWeapon">木のつるぎ</strong></div><div class="huditem">🐠 <strong id="hudBook">0 / 305</strong></div><div class="xptrack"><div class="xpfill" id="xpFill"></div></div><div class="huditem"><strong id="xpText">EXP 0 / 60</strong></div></div>
+<div class="hud"><div class="huditem">⭐ <strong id="hudLv">LV 1</strong></div><div class="huditem">🪙 <strong id="hudGold">0 G</strong></div><div class="huditem">⚔️ <strong id="hudWeapon">木のつるぎ</strong></div><div class="huditem">🐠 <strong id="hudBook">0 / 323</strong></div><div class="xptrack"><div class="xpfill" id="xpFill"></div></div><div class="huditem"><strong id="xpText">EXP 0 / 60</strong></div></div>
 
 <section class="screen active" id="world"><div class="panel"><div class="body">
 <h2>海の秘宝をめぐる冒険</h2><p class="lead">練習するテストを選ぼう。次も同じテストから始められます。最初は一文字ずつ。テスト前には本番練習へ切り替えられます。iPadは縦向きがおすすめ。</p>
@@ -758,92 +758,128 @@ CLUE_P.push(
 "<span class='reading'>き</span>待でむねがふくらむ。",
 "期<span class='reading'>たい</span>でむねがふくらむ。"
 );
-// ドリル30「言葉をふやそう」：赤線・波線だけを書き換える。
+// ドリル44「かんじの意味／たんかをたのしもう」：赤線・波線だけを書き換える。点線（熟字訓）は2文字で1問。
 Q.push(
-{"id":265,"s":1,"test":11,"p":"にほんいちという<span class='reading'>じ</span>ふ。","a":"自","r":"じ"},
-{"id":266,"s":1,"test":11,"p":"にほんいちというじ<span class='reading'>ふ</span>。","a":"負","r":"ふ"},
-{"id":267,"s":2,"test":11,"p":"<span class='reading'>がく</span>ぎょうにちからをいれる。","a":"学","r":"がく"},
-{"id":268,"s":2,"test":11,"p":"がく<span class='reading'>ぎょう</span>にちからをいれる。","a":"業","r":"ぎょう"},
-{"id":269,"s":3,"test":11,"p":"<span class='reading'>こく</span>ばんにじをかく。","a":"黒","r":"こく"},
-{"id":270,"s":3,"test":11,"p":"こく<span class='reading'>ばん</span>にじをかく。","a":"板","r":"ばん"},
-{"id":271,"s":4,"test":11,"p":"<span class='reading'>は</span>ごいたであそぶ。","a":"羽","r":"は"},
-{"id":272,"s":4,"test":11,"p":"は<span class='reading'>ご</span>いたであそぶ。","a":"子","r":"ご"},
-{"id":273,"s":4,"test":11,"p":"はご<span class='reading'>いた</span>であそぶ。","a":"板","r":"いた"},
-{"id":274,"s":5,"test":11,"p":"チームの<span class='reading'>だい</span>こくばしら。","a":"大","r":"だい"},
-{"id":275,"s":5,"test":11,"p":"チームのだい<span class='reading'>こく</span>ばしら。","a":"黒","r":"こく"},
-{"id":276,"s":5,"test":11,"p":"チームのだいこく<span class='reading'>ばしら</span>。","a":"柱","r":"ばしら"},
-{"id":277,"s":6,"test":11,"p":"<span class='reading'>あぶら</span>えをならう。","a":"油","r":"あぶら"},
-{"id":278,"s":6,"test":11,"p":"あぶら<span class='reading'>え</span>をならう。","a":"絵","r":"え"},
-{"id":279,"s":7,"test":11,"p":"<span class='reading'>みなと</span>まちでそだつ。","a":"港","r":"みなと"},
-{"id":280,"s":7,"test":11,"p":"みなと<span class='reading'>まち</span>でそだつ。","a":"町","r":"まち"},
-{"id":281,"s":8,"test":11,"p":"りかしつにある<span class='reading'>やく</span>ひん。","a":"薬","r":"やく"},
-{"id":282,"s":8,"test":11,"p":"りかしつにあるやく<span class='reading'>ひん</span>。","a":"品","r":"ひん"},
-{"id":283,"s":9,"test":11,"p":"とおくで<span class='reading'>き</span>てきがなる。","a":"汽","r":"き"},
-{"id":284,"s":9,"test":11,"p":"とおくでき<span class='reading'>てき</span>がなる。","a":"笛","r":"てき"},
-{"id":285,"s":10,"test":11,"p":"ひがふり<span class='reading'>そそぐ</span>。","a":"注ぐ","r":"そそぐ"},
-{"id":286,"s":11,"test":12,"p":"<span class='reading'>あく</span>じをはたらかない。","a":"悪","r":"あく"},
-{"id":287,"s":11,"test":12,"p":"あく<span class='reading'>じ</span>をはたらかない。","a":"事","r":"じ"},
-{"id":288,"s":12,"test":12,"p":"<span class='reading'>ひっ</span>しゃのおもい。","a":"筆","r":"ひっ"},
-{"id":289,"s":12,"test":12,"p":"ひっ<span class='reading'>しゃ</span>のおもい。","a":"者","r":"しゃ"},
-{"id":290,"s":13,"test":12,"p":"<span class='reading'>なみ</span>かぜがつよまる。","a":"波","r":"なみ"},
-{"id":291,"s":13,"test":12,"p":"なみ<span class='reading'>かぜ</span>がつよまる。","a":"風","r":"かぜ"},
-{"id":292,"s":14,"test":12,"p":"とりを<span class='reading'>はなす</span>。","a":"放す","r":"はなす"},
-{"id":293,"s":15,"test":12,"p":"ボールを<span class='reading'>ほうる</span>。","a":"放る","r":"ほうる"},
-{"id":294,"s":16,"test":12,"p":"<span class='reading'>けっ</span>しょくのよいかお。","a":"血","r":"けっ"},
-{"id":295,"s":16,"test":12,"p":"けっ<span class='reading'>しょく</span>のよいかお。","a":"色","r":"しょく"},
-{"id":296,"s":17,"test":12,"p":"<span class='reading'>かん</span>きがながれこむ。","a":"寒","r":"かん"},
-{"id":297,"s":17,"test":12,"p":"かん<span class='reading'>き</span>がながれこむ。","a":"気","r":"き"},
-{"id":298,"s":18,"test":12,"p":"<span class='reading'>けい</span>しょくですます。","a":"軽","r":"けい"},
-{"id":299,"s":18,"test":12,"p":"けい<span class='reading'>しょく</span>ですます。","a":"食","r":"しょく"},
-{"id":300,"s":19,"test":12,"p":"<span class='reading'>たい</span>せつなしめい。","a":"大","r":"たい"},
-{"id":301,"s":19,"test":12,"p":"たい<span class='reading'>せつ</span>なしめい。","a":"切","r":"せつ"},
-{"id":302,"s":19,"test":12,"p":"たいせつな<span class='reading'>し</span>めい。","a":"使","r":"し"},
-{"id":303,"s":19,"test":12,"p":"たいせつなし<span class='reading'>めい</span>。","a":"命","r":"めい"},
-{"id":304,"s":20,"test":12,"p":"<span class='reading'>こん</span>きよくつくる。","a":"根","r":"こん"},
-{"id":305,"s":20,"test":12,"p":"こん<span class='reading'>き</span>よくつくる。","a":"気","r":"き"}
+{"id":265,"s":1,"test":11,"p":"<span class='reading'>にん</span>ぎょうのめとはな。","a":"人","r":"にん"},
+{"id":266,"s":1,"test":11,"p":"にん<span class='reading'>ぎょう</span>のめとはな。","a":"形","r":"ぎょう"},
+{"id":267,"s":1,"test":11,"p":"にんぎょうの<span class='reading'>め</span>とはな。","a":"目","r":"め"},
+{"id":268,"s":1,"test":11,"p":"にんぎょうのめと<span class='reading'>はな</span>。","a":"鼻","r":"はな"},
+{"id":269,"s":2,"test":11,"p":"<span class='reading'>は</span>をみがく。","a":"歯","r":"は"},
+{"id":270,"s":3,"test":11,"p":"<span class='reading'>かん</span>じとかなをまぜる。","a":"漢","r":"かん"},
+{"id":271,"s":3,"test":11,"p":"かん<span class='reading'>じ</span>とかなをまぜる。","a":"字","r":"じ"},
+{"id":272,"s":3,"test":11,"p":"かんじとかなを<span class='reading'>まぜる</span>。","a":"交ぜる","r":"まぜる"},
+{"id":273,"s":4,"test":11,"p":"<span class='reading'>ちゅう</span>おうのたてもの。","a":"中","r":"ちゅう"},
+{"id":274,"s":4,"test":11,"p":"ちゅう<span class='reading'>おう</span>のたてもの。","a":"央","r":"おう"},
+{"id":275,"s":5,"test":11,"p":"ビルの<span class='reading'>に</span>かいにすむ。","a":"二","r":"に"},
+{"id":276,"s":5,"test":11,"p":"ビルのに<span class='reading'>かい</span>にすむ。","a":"階","r":"かい"},
+{"id":277,"s":5,"test":11,"p":"ビルのにかいに<span class='reading'>すむ</span>。","a":"住む","r":"すむ"},
+{"id":278,"s":6,"test":11,"p":"<span class='reading'>へや</span>をそうじする。","a":"部屋","r":"へや"},
+{"id":279,"s":7,"test":11,"p":"<span class='reading'>けさ</span>、しゅっぱつした。","a":"今朝","r":"けさ"},
+{"id":280,"s":7,"test":11,"p":"けさ、<span class='reading'>しゅっ</span>ぱつした。","a":"出","r":"しゅっ"},
+{"id":281,"s":7,"test":11,"p":"けさ、しゅっ<span class='reading'>ぱつ</span>した。","a":"発","r":"ぱつ"},
+{"id":282,"s":8,"test":11,"p":"<span class='reading'>りょ</span>こうからかえる。","a":"旅","r":"りょ"},
+{"id":283,"s":8,"test":11,"p":"りょ<span class='reading'>こう</span>からかえる。","a":"行","r":"こう"},
+{"id":284,"s":8,"test":11,"p":"りょこうから<span class='reading'>かえる</span>。","a":"帰る","r":"かえる"},
+{"id":285,"s":9,"test":11,"p":"<span class='reading'>い</span>いんかいのしごと。","a":"委","r":"い"},
+{"id":286,"s":9,"test":11,"p":"い<span class='reading'>いん</span>かいのしごと。","a":"員","r":"いん"},
+{"id":287,"s":9,"test":11,"p":"いいん<span class='reading'>かい</span>のしごと。","a":"会","r":"かい"},
+{"id":288,"s":9,"test":11,"p":"いいんかいの<span class='reading'>し</span>ごと。","a":"仕","r":"し"},
+{"id":289,"s":9,"test":11,"p":"いいんかいのし<span class='reading'>ごと</span>。","a":"事","r":"ごと"},
+{"id":290,"s":10,"test":11,"p":"<span class='reading'>がっ</span>きゅうしんぶんをつくる。","a":"学","r":"がっ"},
+{"id":291,"s":10,"test":11,"p":"がっ<span class='reading'>きゅう</span>しんぶんをつくる。","a":"級","r":"きゅう"},
+{"id":292,"s":10,"test":11,"p":"がっきゅう<span class='reading'>しん</span>ぶんをつくる。","a":"新","r":"しん"},
+{"id":293,"s":10,"test":11,"p":"がっきゅうしん<span class='reading'>ぶん</span>をつくる。","a":"聞","r":"ぶん"},
+{"id":294,"s":10,"test":11,"p":"がっきゅうしんぶんを<span class='reading'>つくる</span>。","a":"作る","r":"つくる"},
+{"id":295,"s":11,"test":12,"p":"<span class='reading'>しょう</span>わからつづくみせ。","a":"昭","r":"しょう"},
+{"id":296,"s":11,"test":12,"p":"しょう<span class='reading'>わ</span>からつづくみせ。","a":"和","r":"わ"},
+{"id":297,"s":11,"test":12,"p":"しょうわからつづく<span class='reading'>みせ</span>。","a":"店","r":"みせ"},
+{"id":298,"s":12,"test":12,"p":"<span class='reading'>えき</span>ででんしゃをまつ。","a":"駅","r":"えき"},
+{"id":299,"s":12,"test":12,"p":"えきで<span class='reading'>でん</span>しゃをまつ。","a":"電","r":"でん"},
+{"id":300,"s":12,"test":12,"p":"えきででん<span class='reading'>しゃ</span>をまつ。","a":"車","r":"しゃ"},
+{"id":301,"s":12,"test":12,"p":"えきででんしゃを<span class='reading'>まつ</span>。","a":"待つ","r":"まつ"},
+{"id":302,"s":13,"test":12,"p":"<span class='reading'>し</span>くみをおそわる。","a":"仕","r":"し"},
+{"id":303,"s":13,"test":12,"p":"し<span class='reading'>くみ</span>をおそわる。","a":"組み","r":"くみ"},
+{"id":304,"s":13,"test":12,"p":"しくみを<span class='reading'>おそわる</span>。","a":"教わる","r":"おそわる"},
+{"id":305,"s":14,"test":12,"p":"りんごの<span class='reading'>かわ</span>むき。","a":"皮","r":"かわ"},
+{"id":306,"s":15,"test":12,"p":"<span class='reading'>さら</span>あらいがおわる。","a":"皿","r":"さら"},
+{"id":307,"s":15,"test":12,"p":"さらあらいが<span class='reading'>おわる</span>。","a":"終わる","r":"おわる"},
+{"id":308,"s":16,"test":12,"p":"<span class='reading'>たん</span>かをたのしむ。","a":"短","r":"たん"},
+{"id":309,"s":16,"test":12,"p":"たん<span class='reading'>か</span>をたのしむ。","a":"歌","r":"か"},
+{"id":310,"s":16,"test":12,"p":"たんかを<span class='reading'>たのしむ</span>。","a":"楽しむ","r":"たのしむ"},
+{"id":311,"s":17,"test":12,"p":"<span class='reading'>みじかい</span>ことばであらわす。","a":"短い","r":"みじかい"},
+{"id":312,"s":17,"test":12,"p":"みじかい<span class='reading'>こと</span>ばであらわす。","a":"言","r":"こと"},
+{"id":313,"s":17,"test":12,"p":"みじかいこと<span class='reading'>ば</span>であらわす。","a":"葉","r":"ば"},
+{"id":314,"s":17,"test":12,"p":"みじかいことばで<span class='reading'>あらわす</span>。","a":"表す","r":"あらわす"},
+{"id":315,"s":18,"test":12,"p":"えいきゅう<span class='reading'>し</span>がはえる。","a":"歯","r":"し"},
+{"id":316,"s":18,"test":12,"p":"えいきゅうしが<span class='reading'>はえる</span>。","a":"生える","r":"はえる"},
+{"id":317,"s":19,"test":12,"p":"<span class='reading'>せん</span>せいにゆだねる。","a":"先","r":"せん"},
+{"id":318,"s":19,"test":12,"p":"せん<span class='reading'>せい</span>にゆだねる。","a":"生","r":"せい"},
+{"id":319,"s":19,"test":12,"p":"せんせいに<span class='reading'>ゆだねる</span>。","a":"委ねる","r":"ゆだねる"},
+{"id":320,"s":20,"test":12,"p":"<span class='reading'>しょく</span>ぶつのひょうひ。","a":"植","r":"しょく"},
+{"id":321,"s":20,"test":12,"p":"しょく<span class='reading'>ぶつ</span>のひょうひ。","a":"物","r":"ぶつ"},
+{"id":322,"s":20,"test":12,"p":"しょくぶつの<span class='reading'>ひょう</span>ひ。","a":"表","r":"ひょう"},
+{"id":323,"s":20,"test":12,"p":"しょくぶつのひょう<span class='reading'>ひ</span>。","a":"皮","r":"ひ"}
 );
 CLUE_P.push(
-"にほんいちという<span class='reading'>じ</span>負。",
-"にほんいちという自<span class='reading'>ふ</span>。",
-"<span class='reading'>がく</span>業にちからをいれる。",
-"学<span class='reading'>ぎょう</span>にちからをいれる。",
-"<span class='reading'>こく</span>板にじをかく。",
-"黒<span class='reading'>ばん</span>にじをかく。",
-"<span class='reading'>は</span>子板であそぶ。",
-"羽<span class='reading'>ご</span>板であそぶ。",
-"羽子<span class='reading'>いた</span>であそぶ。",
-"チームの<span class='reading'>だい</span>黒柱。",
-"チームの大<span class='reading'>こく</span>柱。",
-"チームの大黒<span class='reading'>ばしら</span>。",
-"<span class='reading'>あぶら</span>絵をならう。",
-"油<span class='reading'>え</span>をならう。",
-"<span class='reading'>みなと</span>町でそだつ。",
-"港<span class='reading'>まち</span>でそだつ。",
-"りかしつにある<span class='reading'>やく</span>品。",
-"りかしつにある薬<span class='reading'>ひん</span>。",
-"とおくで<span class='reading'>き</span>笛がなる。",
-"とおくで汽<span class='reading'>てき</span>がなる。",
-"ひがふり<span class='reading'>そそぐ</span>。",
-"<span class='reading'>あく</span>事をはたらかない。",
-"悪<span class='reading'>じ</span>をはたらかない。",
-"<span class='reading'>ひっ</span>者のおもい。",
-"筆<span class='reading'>しゃ</span>のおもい。",
-"<span class='reading'>なみ</span>風がつよまる。",
-"波<span class='reading'>かぜ</span>がつよまる。",
-"とりを<span class='reading'>はなす</span>。",
-"ボールを<span class='reading'>ほうる</span>。",
-"<span class='reading'>けっ</span>色のよいかお。",
-"血<span class='reading'>しょく</span>のよいかお。",
-"<span class='reading'>かん</span>気がながれこむ。",
-"寒<span class='reading'>き</span>がながれこむ。",
-"<span class='reading'>けい</span>食ですます。",
-"軽<span class='reading'>しょく</span>ですます。",
-"<span class='reading'>たい</span>切な使命。",
-"大<span class='reading'>せつ</span>な使命。",
-"大切な<span class='reading'>し</span>命。",
-"大切な使<span class='reading'>めい</span>。",
-"<span class='reading'>こん</span>気よくつくる。",
-"根<span class='reading'>き</span>よくつくる。"
+"<span class='reading'>にん</span>形の目と鼻。",
+"人<span class='reading'>ぎょう</span>の目と鼻。",
+"人形の<span class='reading'>め</span>と鼻。",
+"人形の目と<span class='reading'>はな</span>。",
+"<span class='reading'>は</span>をみがく。",
+"<span class='reading'>かん</span>字とかなを交ぜる。",
+"漢<span class='reading'>じ</span>とかなを交ぜる。",
+"漢字とかなを<span class='reading'>まぜる</span>。",
+"<span class='reading'>ちゅう</span>央のたてもの。",
+"中<span class='reading'>おう</span>のたてもの。",
+"ビルの<span class='reading'>に</span>階に住む。",
+"ビルの二<span class='reading'>かい</span>に住む。",
+"ビルの二階に<span class='reading'>すむ</span>。",
+"<span class='reading'>へや</span>をそうじする。",
+"<span class='reading'>けさ</span>、出発した。",
+"今朝、<span class='reading'>しゅっ</span>発した。",
+"今朝、出<span class='reading'>ぱつ</span>した。",
+"<span class='reading'>りょ</span>行から帰る。",
+"旅<span class='reading'>こう</span>から帰る。",
+"旅行から<span class='reading'>かえる</span>。",
+"<span class='reading'>い</span>員会の仕事。",
+"委<span class='reading'>いん</span>会の仕事。",
+"委員<span class='reading'>かい</span>の仕事。",
+"委員会の<span class='reading'>し</span>事。",
+"委員会の仕<span class='reading'>ごと</span>。",
+"<span class='reading'>がっ</span>級新聞を作る。",
+"学<span class='reading'>きゅう</span>新聞を作る。",
+"学級<span class='reading'>しん</span>聞を作る。",
+"学級新<span class='reading'>ぶん</span>を作る。",
+"学級新聞を<span class='reading'>つくる</span>。",
+"<span class='reading'>しょう</span>和からつづく店。",
+"昭<span class='reading'>わ</span>からつづく店。",
+"昭和からつづく<span class='reading'>みせ</span>。",
+"<span class='reading'>えき</span>で電車を待つ。",
+"駅で<span class='reading'>でん</span>車を待つ。",
+"駅で電<span class='reading'>しゃ</span>を待つ。",
+"駅で電車を<span class='reading'>まつ</span>。",
+"<span class='reading'>し</span>組みを教わる。",
+"仕<span class='reading'>くみ</span>を教わる。",
+"仕組みを<span class='reading'>おそわる</span>。",
+"りんごの<span class='reading'>かわ</span>むき。",
+"<span class='reading'>さら</span>あらいが終わる。",
+"皿あらいが<span class='reading'>おわる</span>。",
+"<span class='reading'>たん</span>歌を楽しむ。",
+"短<span class='reading'>か</span>を楽しむ。",
+"短歌を<span class='reading'>たのしむ</span>。",
+"<span class='reading'>みじかい</span>言葉で表す。",
+"短い<span class='reading'>こと</span>葉で表す。",
+"短い言<span class='reading'>ば</span>で表す。",
+"短い言葉で<span class='reading'>あらわす</span>。",
+"えいきゅう<span class='reading'>し</span>が生える。",
+"えいきゅう歯が<span class='reading'>はえる</span>。",
+"<span class='reading'>せん</span>生に委ねる。",
+"先<span class='reading'>せい</span>に委ねる。",
+"先生に<span class='reading'>ゆだねる</span>。",
+"<span class='reading'>しょく</span>物の表皮。",
+"植<span class='reading'>ぶつ</span>の表皮。",
+"植物の<span class='reading'>ひょう</span>皮。",
+"植物の表<span class='reading'>ひ</span>。"
 );
 const NEW_Q=Q;
 const AREAS=[
@@ -880,12 +916,12 @@ AREAS.push(
 {"n":"こはくの宝島","i":"💎","c":"a6","block":10,"drill":"17〜20","start":258,"end":264,"m":["🐟","🦀","🐬","🦑","🐉"],"pre":["きらきら","赤つめ","波乗り","すみはき","海竜"]}
 );
 AREAS.push(
-{"n":"黒板の浜","i":"🏝️","c":"a1","block":11,"drill":"1〜3","start":264,"end":270,"m":["🐟","🦀","🐬","🦑","🐉"],"pre":["きらきら","赤つめ","波乗り","すみはき","海竜"]},
-{"n":"油絵の港","i":"⚓","c":"a2","block":11,"drill":"4〜6","start":270,"end":278,"m":["🐟","🦀","🐬","🦑","🐉"],"pre":["きらきら","赤つめ","波乗り","すみはき","海竜"]},
-{"n":"汽笛の海峡","i":"⛵","c":"a3","block":11,"drill":"7〜10","start":278,"end":285,"m":["🐟","🦀","🐬","🦑","🐉"],"pre":["きらきら","赤つめ","波乗り","すみはき","海竜"]},
-{"n":"波風の島","i":"🌊","c":"a4","block":12,"drill":"11〜13","start":285,"end":291,"m":["🐟","🦀","🐬","🦑","🐉"],"pre":["きらきら","赤つめ","波乗り","すみはき","海竜"]},
-{"n":"白鳥の入り江","i":"🕊️","c":"a5","block":12,"drill":"14〜17","start":291,"end":297,"m":["🐟","🦀","🐬","🦑","🐉"],"pre":["きらきら","赤つめ","波乗り","すみはき","海竜"]},
-{"n":"サファイアの宝島","i":"💎","c":"a6","block":12,"drill":"18〜20","start":297,"end":305,"m":["🐟","🦀","🐬","🦑","🐉"],"pre":["きらきら","赤つめ","波乗り","すみはき","海竜"]}
+{"n":"人形の浜","i":"🏝️","c":"a1","block":11,"drill":"1〜4","start":264,"end":274,"m":["🐟","🦀","🐬","🦑","🐉"],"pre":["きらきら","赤つめ","波乗り","すみはき","海竜"]},
+{"n":"旅立ちの港","i":"⚓","c":"a2","block":11,"drill":"5〜8","start":274,"end":284,"m":["🐟","🦀","🐬","🦑","🐉"],"pre":["きらきら","赤つめ","波乗り","すみはき","海竜"]},
+{"n":"学級新聞の海峡","i":"⛵","c":"a3","block":11,"drill":"9〜10","start":284,"end":294,"m":["🐟","🦀","🐬","🦑","🐉"],"pre":["きらきら","赤つめ","波乗り","すみはき","海竜"]},
+{"n":"昭和の島","i":"🌊","c":"a4","block":12,"drill":"11〜13","start":294,"end":304,"m":["🐟","🦀","🐬","🦑","🐉"],"pre":["きらきら","赤つめ","波乗り","すみはき","海竜"]},
+{"n":"短歌の入り江","i":"🕊️","c":"a5","block":12,"drill":"14〜17","start":304,"end":314,"m":["🐟","🦀","🐬","🦑","🐉"],"pre":["きらきら","赤つめ","波乗り","すみはき","海竜"]},
+{"n":"サファイアの宝島","i":"💎","c":"a6","block":12,"drill":"18〜20","start":314,"end":323,"m":["🐟","🦀","🐬","🦑","🐉"],"pre":["きらきら","赤つめ","波乗り","すみはき","海竜"]}
 );
 const TESTS=[1,2,3,4,5,6,7,8,9,10,11,12];
 const VOLUMES=[{key:"test1",name:"珊瑚",icon:"🪸",blocks:[1,2]},{key:"test2",name:"真珠",icon:"🦪",blocks:[3,4]},{key:"test3",name:"水晶",icon:"🔮",blocks:[5,6]},{key:"test4",name:"ひすい",icon:"🟢",blocks:[7,8]},{key:"test5",name:"こはく",icon:"🟠",blocks:[9,10]},{key:"test6",name:"サファイア",icon:"🔵",blocks:[11,12]}];
@@ -942,8 +978,20 @@ function cleanAreas(v){return [...new Set((Array.isArray(v)?v:[]).map(Number).fi
 function cleanStageClears(v,clears){const out={};for(let i=0;i<AREAS.length;i++){const n=Math.max(0,Math.floor(Number(v&&v[i])||0));if(n||clears.includes(i))out[i]=Math.max(n,clears.includes(i)?1:0)}return out}
 function migrateOldAreas(v){const old=[...new Set((Array.isArray(v)?v:[]).map(Number).filter(id=>id>=0&&id<OLD_AREA_MAP.length))];return cleanAreas(old.flatMap(id=>OLD_AREA_MAP[id]))}
 function migrateStageClears(v,clears,current){if(current)return cleanStageClears(v,clears);const mapped={};for(let old=0;old<OLD_AREA_MAP.length;old++){const n=Math.max(0,Math.floor(Number(v&&v[old])||0));if(n)for(const id of OLD_AREA_MAP[old])mapped[id]=Math.max(mapped[id]||0,n)}return cleanStageClears(mapped,clears)}
+// 2026-11-10：11・12回目の問題範囲をドリル44へ差し替えた。旧問題（ID265〜305）の章別記録を一度だけ消す。
+// レベル・ゴールド・武器（共有キー）と、秘宝のかけら・秘宝（2学期キー）は消さない。
+const TEST_REVISION=1,REVISED_FIRST_ID=265,REVISED_TESTS=[11,12];
+function resetRevisedTests(chapter){
+ if(chapter.testRevision===TEST_REVISION||!Object.keys(chapter).length)return chapter;
+ const keep=id=>Number(id)<REVISED_FIRST_ID,areas=AREAS.map((a,i)=>i).filter(i=>REVISED_TESTS.includes(AREAS[i].block));
+ const list=v=>Array.isArray(v)?v.filter(keep):v,obj=v=>v&&typeof v==="object"?Object.fromEntries(Object.entries(v).filter(([id])=>keep(id))):v;
+ const c={...chapter,defeated:list(chapter.defeated),customIds:list(chapter.customIds),records:obj(chapter.records),sentenceRecords:obj(chapter.sentenceRecords),traceRecords:obj(chapter.traceRecords),testRevision:TEST_REVISION};
+ if(Array.isArray(c.clears))c.clears=c.clears.filter(i=>!areas.includes(Number(i)));
+ if(c.stageClears&&typeof c.stageClears==="object")c.stageClears=Object.fromEntries(Object.entries(c.stageClears).filter(([i])=>!areas.includes(Number(i))));
+ try{localStorage.setItem(CHAPTER_KEY,JSON.stringify(c));const log=JSON.parse(localStorage.getItem("kq4ParentInkLog_v1"));if(Array.isArray(log))localStorage.setItem("kq4ParentInkLog_v1",JSON.stringify(log.filter(e=>!(REVISED_TESTS.includes(e&&e.test)&&!keep(e.id)))))}catch{}
+ return c}
 function readJson(key){try{return JSON.parse(localStorage.getItem(key))||{}}catch{return{}}}
-function load(){const shared=readJson(SHARED_KEY),chapter=readJson(CHAPTER_KEY),d=DEF(),current=chapter.areaLayout===AREA_LAYOUT;d.owned=Array.isArray(shared.owned)?shared.owned:Array.isArray(shared.ownedWeapons)?shared.ownedWeapons:["wood"];d.weapon=shared.weapon||shared.equippedWeapon||"wood";d.xp=Math.max(0,Number(shared.xp)||0);d.gold=Math.max(0,Number(shared.gold)||0);d.totalDefeats=Math.max(0,Number(shared.totalDefeats)||0);d.defeated=cleanIds(chapter.defeated);d.records=chapter.records&&typeof chapter.records==="object"?chapter.records:{};d.sentenceRecords=chapter.sentenceRecords&&typeof chapter.sentenceRecords==="object"?chapter.sentenceRecords:{};d.clears=current?cleanAreas(chapter.clears):migrateOldAreas(chapter.clears);d.stageClears=migrateStageClears(chapter.stageClears,d.clears,current);d.battles=Math.max(0,Number(chapter.battles)||0);d.eliteRank=Math.max(1,Number(chapter.eliteRank)||1);d.eliteClears=Math.max(0,Number(chapter.eliteClears)||0);d.customIds=cleanIds(chapter.customIds);d.bestCombo=Math.max(0,Number(chapter.bestCombo)||0);d.displayMode=chapter.displayMode==="clue"?"clue":"kana";d.practiceMode=["sentence","trace"].includes(chapter.practiceMode)?chapter.practiceMode:"character";d.traceRecords=chapter.traceRecords&&typeof chapter.traceRecords==="object"?chapter.traceRecords:{};d.selectedTest=TESTS.includes(chapter.selectedTest)?chapter.selectedTest:3;return d}
+function load(){const shared=readJson(SHARED_KEY),chapter=resetRevisedTests(readJson(CHAPTER_KEY)),d=DEF(),current=chapter.areaLayout===AREA_LAYOUT;d.owned=Array.isArray(shared.owned)?shared.owned:Array.isArray(shared.ownedWeapons)?shared.ownedWeapons:["wood"];d.weapon=shared.weapon||shared.equippedWeapon||"wood";d.xp=Math.max(0,Number(shared.xp)||0);d.gold=Math.max(0,Number(shared.gold)||0);d.totalDefeats=Math.max(0,Number(shared.totalDefeats)||0);d.defeated=cleanIds(chapter.defeated);d.records=chapter.records&&typeof chapter.records==="object"?chapter.records:{};d.sentenceRecords=chapter.sentenceRecords&&typeof chapter.sentenceRecords==="object"?chapter.sentenceRecords:{};d.clears=current?cleanAreas(chapter.clears):migrateOldAreas(chapter.clears);d.stageClears=migrateStageClears(chapter.stageClears,d.clears,current);d.battles=Math.max(0,Number(chapter.battles)||0);d.eliteRank=Math.max(1,Number(chapter.eliteRank)||1);d.eliteClears=Math.max(0,Number(chapter.eliteClears)||0);d.customIds=cleanIds(chapter.customIds);d.bestCombo=Math.max(0,Number(chapter.bestCombo)||0);d.displayMode=chapter.displayMode==="clue"?"clue":"kana";d.practiceMode=["sentence","trace"].includes(chapter.practiceMode)?chapter.practiceMode:"character";d.traceRecords=chapter.traceRecords&&typeof chapter.traceRecords==="object"?chapter.traceRecords:{};d.selectedTest=TESTS.includes(chapter.selectedTest)?chapter.selectedTest:3;return d}
 function loadTerm(){
  const raw=readJson(TERM_KEY),fragments={...(raw.fragments||{})},layouts={...(raw.areaLayouts||{})};
  const treasures=[...new Set((Array.isArray(raw.treasures)?raw.treasures:[]).filter(x=>/^test[1-7]$/.test(x)))];
@@ -954,7 +1002,7 @@ function loadTerm(){
  if(ids.every(i=>fragments[v.key].includes(i))&&!treasures.includes(v.key))treasures.push(v.key);
  }return {...raw,fragments,treasures,areaLayouts:layouts}
 }
-function persist(){const shared=readJson(SHARED_KEY);shared.xp=save.xp;shared.gold=save.gold;shared.owned=save.owned.slice();shared.weapon=save.weapon;shared.totalDefeats=save.totalDefeats;localStorage.setItem(SHARED_KEY,JSON.stringify(shared));localStorage.setItem(CHAPTER_KEY,JSON.stringify({areaLayout:AREA_LAYOUT,defeated:cleanIds(save.defeated),records:save.records,sentenceRecords:save.sentenceRecords,battles:save.battles,clears:save.clears,stageClears:save.stageClears,totalDefeats:save.totalDefeats,eliteRank:save.eliteRank,eliteClears:save.eliteClears,customIds:cleanIds(save.customIds),bestCombo:save.bestCombo,displayMode:save.displayMode,practiceMode:save.practiceMode,selectedTest:save.selectedTest,traceRecords:save.traceRecords}));hud()}
+function persist(){const shared=readJson(SHARED_KEY);shared.xp=save.xp;shared.gold=save.gold;shared.owned=save.owned.slice();shared.weapon=save.weapon;shared.totalDefeats=save.totalDefeats;localStorage.setItem(SHARED_KEY,JSON.stringify(shared));localStorage.setItem(CHAPTER_KEY,JSON.stringify({areaLayout:AREA_LAYOUT,defeated:cleanIds(save.defeated),records:save.records,sentenceRecords:save.sentenceRecords,battles:save.battles,clears:save.clears,stageClears:save.stageClears,totalDefeats:save.totalDefeats,eliteRank:save.eliteRank,eliteClears:save.eliteClears,customIds:cleanIds(save.customIds),bestCombo:save.bestCombo,displayMode:save.displayMode,practiceMode:save.practiceMode,selectedTest:save.selectedTest,traceRecords:save.traceRecords,testRevision:TEST_REVISION}));hud()}
 function persistTerm(){localStorage.setItem(TERM_KEY,JSON.stringify(term))}
 function lvInfo(xp){let l=1,c=xp,n=60;while(c>=n){c-=n;l++;n=60+(l-1)*25}return{l,c,n}}
 function titleFor(l){return (TITLES.find(t=>l>=t.min)||TITLES[TITLES.length-1]).n}
@@ -970,7 +1018,7 @@ function selectTest(value){const n=Number(value);if(!TESTS.includes(n))return;sa
 
 
 function renderWorld(){hud();renderTerm();renderPracticeMode();const u=NEW_Q.filter(q=>save.defeated.includes(q.id)).length,w=weap(),l=lvInfo(save.xp).l;$("heroTitle").textContent=titleFor(l);$("heroText").textContent=u===Q.length?"航路を進み、すべての漢字を取り戻した勇者！":u>=32?"深い海にもひるまない、たのもしい勇者。":u>=11?"海の魔物との戦いにも慣れてきた勇者。":"海にかくれた漢字を探す、新しい旅が始まった。";$("heroWeaponIcon").textContent=w.i;$("heroWeaponName").textContent=`${w.n}（LV ${l}）`;const eliteUnlocked=Q.slice(0,52).every(q=>save.defeated.includes(q.id))||save.owned.includes("hero");$("eliteText").textContent=eliteUnlocked?`現在の海竜ランク：${save.eliteRank}。深海の強敵は何度でも強くなる！`:`1・2回目の図鑑52体登録、または勇者の聖剣を手に入れると解放。`;if(eliteUnlocked&&isTracePractice())$("eliteText").textContent="海竜の試練は、一文字ずつか本番練習で挑戦できます。";$("eliteStart").disabled=!eliteUnlocked||isTracePractice();$("eliteStart").textContent=!eliteUnlocked?"まだ入れない":isTracePractice()?"なぞり練習では休み":`ランク${save.eliteRank}へ挑戦`;$("customStageText").textContent=customForTest().length?`${save.selectedTest}回目のテストから${customForTest().length}問を選択中。`:`${save.selectedTest}回目のテストから、苦手な漢字を選んで練習できます。`;$("startCustom").disabled=!customForTest().length;const g=$("areaGrid");g.innerHTML="";renderTestScope();AREAS.forEach((a,i)=>{if(a.block!==save.selectedTest)return;const qs=questionsForArea(i),d=qs.filter(q=>isSentencePractice()?Boolean(save.sentenceRecords[q.id]?.good):isTracePractice()?Boolean(save.traceRecords[q.id]?.done):save.defeated.includes(q.id)).length,b=document.createElement("button"),medal=stageMedal(save.stageClears[i]||0);b.className=`area ${a.c}`;b.innerHTML=`<span class="areaicon">${a.i}</span><span class="area-medal">${medal}</span><span class="areaname">${a.n}</span><span class="range">ドリル ${a.drill}・${isSentencePractice()?"文章":"漢字"} ${qs.length}問・番号順${medal?`・${save.stageClears[i]}回クリア`:""}</span><span class="areaprog">${isSentencePractice()?"全文練習":isTracePractice()?"なぞり":"討伐"} ${d} / ${qs.length}<span class="minitrack"><span class="minifill" style="width:${d/qs.length*100}%"></span></span></span>`;b.onclick=()=>startArea(i);g.appendChild(b)})}
-function renderTestScope(){const n=save.selectedTest,qs=practiceQuestions(),unit=isSentencePractice()?"文章":"漢字";$("testSelect").innerHTML=TESTS.map(t=>`<option value="${t}"${t===n?" selected":""}>${t}回目のテスト</option>`).join("");$("selectedTestTitle").textContent=`${n}回目のテスト`;$("selectedTestRange").textContent=`ドリル${n<=2?"1枚目":n<=4?"16":n<=6?"22":n<=8?"28":n<=10?"36":"30"}・${n%2?"1〜10":"11〜20"}・${unit}${qs.length}問`;$("randomScope").textContent=`${n}回目のテストだけから、10問を練習します。`;$("allScope").textContent=`${n}回目のテストの${unit}${qs.length}問を、ランダム順で練習します。`}
+function renderTestScope(){const n=save.selectedTest,qs=practiceQuestions(),unit=isSentencePractice()?"文章":"漢字";$("testSelect").innerHTML=TESTS.map(t=>`<option value="${t}"${t===n?" selected":""}>${t}回目のテスト</option>`).join("");$("selectedTestTitle").textContent=`${n}回目のテスト`;$("selectedTestRange").textContent=`ドリル${n<=2?"1枚目":n<=4?"16":n<=6?"22":n<=8?"28":n<=10?"36":"44"}・${n%2?"1〜10":"11〜20"}・${unit}${qs.length}問`;$("randomScope").textContent=`${n}回目のテストだけから、10問を練習します。`;$("allScope").textContent=`${n}回目のテストの${unit}${qs.length}問を、ランダム順で練習します。`}
 function startArea(i){const a=AREAS[i];startSession(`${a.block}回目・${a.n}`,NEW_Q.slice(a.start,a.end).map(q=>q.id),true,"area",i,0)}
 function startRandomTest(){startSession(`${save.selectedTest}回目のテスト・ランダム10問`,shuffle(practiceQuestions().map(q=>q.id)).slice(0,10),false,"r10",-1,0)}
 function startRandomAll(){startSession(`${save.selectedTest}回目のテスト・総仕上げ`,practiceQuestions().map(q=>q.id),false,"all",-1,0)}
