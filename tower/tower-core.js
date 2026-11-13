@@ -1,5 +1,5 @@
 /*
- * 漢字の塔（試作2）— 画面に依存しない部分。
+ * 漢字の塔（試作3）— 画面に依存しない部分。
  * 「書く前に形を知る」練習：読みから字をえらぶ → 部品を正しい場所に置く → 書き順をタップ → ゆるいなぞり → 思い出して書く。
  * 字は日をあけて戻ってきて、そのたびに段（lv）が上がる。
  * 画の形の判定は chapter4/stroke-trace.js（StrokeTrace）を使う。座標は KanjiVG と同じ 109×109。
@@ -9,34 +9,15 @@
   'use strict';
   const ST = root.StrokeTrace || (typeof require !== 'undefined' ? require('../chapter4/stroke-trace.js') : null);
 
-  /*
-   * 試作の漢字。
-   * parts: 部品ごとの画の範囲（from〜to は 1 始まり）。
-   * decoys: 組み立てに混ぜる、にている別の部品（src の字の from〜to 画）。
-   * q: 問題文。[ ] の中が書く字の読み。memo: 部品でおぼえる一言。
-   */
-  const KANJI = [
-    { k: '住', enemy: '👻', name: 'すみつきゴースト', q: 'ビルの にかいに [す]む。', memo: '人（にんべん）が、主（あるじ）の いえに 住む。',
-      parts: [{ name: 'にんべん', from: 1, to: 2 }, { name: '主', from: 3, to: 7 }],
-      decoys: [{ src: '行', from: 1, to: 3 }, { src: '理', from: 1, to: 4 }, { src: '生', from: 1, to: 5 }] },
-    { k: '短', enemy: '👺', name: 'ちび矢ゴブリン', q: '[みじか]い ことばで あらわす。', memo: '矢（や）も 豆（まめ）も、どちらも 短い。',
-      parts: [{ name: 'やへん', from: 1, to: 5 }, { name: '豆', from: 6, to: 12 }],
-      decoys: [{ src: '和', from: 1, to: 5 }, { src: '立', from: 1, to: 5 }, { src: '員', from: 1, to: 10 }] },
-    { k: '委', enemy: '🌾', name: 'いなほの まじょ', q: '[い]いんかいの しごと。', memo: 'いね（禾）を、女の人に 委（ゆだ）ねる。上が 禾、下が 女。',
-      parts: [{ name: '禾（のぎ）', from: 1, to: 5 }, { name: '女', from: 6, to: 8 }],
-      decoys: [{ src: '米', from: 1, to: 6 }, { src: '字', from: 4, to: 6 }, { src: '文', from: 1, to: 4 }] },
-    { k: '級', enemy: '🕷️', name: 'いとまきグモ', q: 'がっ[きゅう]しんぶんを つくる。', memo: '糸（いと）が つぎつぎ 及（およ）んで、学級の なかまに なる。',
-      parts: [{ name: 'いとへん', from: 1, to: 6 }, { name: '及', from: 7, to: 9 }],
-      decoys: [{ src: '橋', from: 1, to: 4 }, { src: '板', from: 5, to: 8 }, { src: '友', from: 1, to: 4 }] },
-    { k: '階', enemy: '🗿', name: 'かいだんゴーレム', q: 'ビルの に[かい]に すむ。', memo: 'おか（こざとへん）を、皆（みんな）で のぼる 階だん。',
-      parts: [{ name: 'こざとへん', from: 1, to: 3 }, { name: '比', from: 4, to: 7 }, { name: '白', from: 8, to: 12 }],
-      decoys: [{ src: '持', from: 1, to: 3 }, { src: '化', from: 1, to: 4 }, { src: '目', from: 1, to: 5 }] },
-  ];
+  // 出題データ（tower/tower-data.js。tools/build_data.cjs で第4章のテスト範囲から作る）
+  const DATA = root.TOWER_DATA || (typeof require !== 'undefined' ? require('./tower-data.js') : { kanji: [] });
+  const KANJI = DATA.kanji;
 
   const MAX_LV = 3;
   const GAPS = [1, 2, 4, 7];      // lv が 1,2,3 になったあと、次に出るまでの日数（さいごは 仕上がった後の見直し）
-  const NEW_PER_DAY = 2;          // 1日に出会う新しい字
-  const PER_DAY = 4;              // 1日に出る字の上限
+  const KNOWN_LV = 2;             // 1・2年生の字は「もう知っているはず」として、確かめる段から始める
+  const BUFFER_DAYS = 3;          // テスト前のこの日数は、新しい字を入れず 見直しだけにする
+  const FLOOR_SIZE = 3;           // 1かい（ひとくぎり）で たたかう数
   const TRACE_TOL = 28;           // なぞりは ゆるく：向きと おおよその場所だけ見る
   const TRACE_AUTO = 3;           // 同じ画で これだけ外れたら、代わりに書いて進む
 
@@ -46,7 +27,10 @@
     ['pick', 'build', 'trace', 'recall'],    // lv1：思い出しながら
     ['pick', 'recall'],                      // lv2〜：テストと同じ
   ];
-  const stepsFor = lv => STEPS[Math.min(lv, STEPS.length - 1)];
+  // 部品が1つだけの字は「くみたて」をしない
+  const stepsFor = (lv, entry) => STEPS[Math.min(lv, STEPS.length - 1)].filter(s => s !== 'build' || !entry || entry.parts.length > 1);
+  const startLv = entry => (entry && entry.known ? KNOWN_LV : 0);
+  const lvOf = (rec, entry) => (rec ? rec.lv | 0 : startLv(entry));
 
   const prep = strokes => strokes.map(d => ST.flatten(d));
   const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
@@ -104,28 +88,43 @@
     const d = new Date(date.getFullYear(), date.getMonth(), date.getDate() + (offset || 0));
     return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
   }
-  function addDays(key, n) {
-    return dayKey(new Date(Math.floor(key / 10000), Math.floor(key / 100) % 100 - 1, key % 100), n);
-  }
-  // きょう出す字：先に 戻ってきた字（古い順）、あまりに 新しい字を NEW_PER_DAY まで
-  function todayList(recs, order, today) {
-    const due = order.filter(k => recs[k] && recs[k].lv > 0 && recs[k].next <= today).sort((a, b) => recs[a].next - recs[b].next).slice(0, PER_DAY);
-    const fresh = order.filter(k => !recs[k] || !recs[k].lv).slice(0, Math.min(NEW_PER_DAY, PER_DAY - due.length));
-    return due.concat(fresh);
+  function addDays(key, n) { return dayKey(toDate(key), n); }
+  const toDate = key => new Date(Math.floor(key / 10000), Math.floor(key / 100) % 100 - 1, key % 100);
+  const daysBetween = (a, b) => Math.round((toDate(b) - toDate(a)) / 86400000);
+  /*
+   * きょう出す字（テストの日から逆算する）。
+   * 1) 戻ってきた字（古い順） 2) はじめての 3年生の字 3) 知っているはずの字の確かめ
+   * 2) と 3) は、テストの BUFFER_DAYS 日前までに全部 一度は出るように、1日の数を決める。
+   * recs[k].first が きょうの字は「きょう もう始めた分」として数から引く。
+   */
+  function todayPlan(recs, entries, today, testDay) {
+    const started = e => !!recs[e.k];
+    const due = entries.filter(e => started(e) && recs[e.k].next <= today).sort((a, b) => recs[a.k].next - recs[b.k].next);
+    const learnDays = Math.max(1, daysBetween(today, testDay) - BUFFER_DAYS);
+    const pick = (known, lo, hi) => {
+      // はじめての字は、画数の少ないものから（やさしい字で はずみをつける）
+      const strokes = e => e.parts[e.parts.length - 1].to;
+      const rest = entries.filter(e => !started(e) && !!e.known === known).sort((a, b) => (known ? 0 : strokes(a) - strokes(b)));
+      const doneToday = entries.filter(e => started(e) && recs[e.k].first === today && !!e.known === known).length;
+      const rate = Math.max(lo, Math.min(hi, Math.ceil((rest.length + doneToday) / learnDays)));
+      return rest.slice(0, Math.max(0, rate - doneToday));
+    };
+    const fresh = pick(false, 2, 5), check = pick(true, 2, 6);
+    return { due: due.map(e => e.k), fresh: fresh.map(e => e.k), check: check.map(e => e.k), list: due.concat(fresh, check).map(e => e.k) };
   }
   /*
    * 1字の練習が終わったときの記録。
    * result: 'good'（おなじに書けた／思い出す場面なし）、'close'（すこし ちがった）、'forgot'（思い出せなかった）
    * good は段が上がる。close は同じ段を あした もう一度。forgot は 思い出しながらの段（lv1）へ戻る。
    */
-  function advance(rec, result, today) {
-    const lv = rec ? rec.lv | 0 : 0;
+  function advance(rec, result, today, entry) {
+    const lv = lvOf(rec, entry);
     const nlv = result === 'good' ? Math.min(MAX_LV, lv + 1) : result === 'close' ? Math.max(1, lv) : 1;
     const gap = result !== 'good' ? 1 : lv >= MAX_LV ? GAPS[MAX_LV] : GAPS[nlv - 1];
-    return { lv: nlv, next: addDays(today, gap), seen: ((rec && rec.seen) | 0) + 1 };
+    return { lv: nlv, next: addDays(today, gap), seen: ((rec && rec.seen) | 0) + 1, first: (rec && rec.first) || today };
   }
 
-  const api = { KANJI, MAX_LV, GAPS, NEW_PER_DAY, PER_DAY, TRACE_TOL, TRACE_AUTO, stepsFor, prep, boxOf, partOf, distToStroke, pickStroke, judgeTrace, dayKey, addDays, todayList, advance };
+  const api = { KANJI, DATA, MAX_LV, GAPS, KNOWN_LV, BUFFER_DAYS, FLOOR_SIZE, TRACE_TOL, TRACE_AUTO, stepsFor, startLv, lvOf, prep, boxOf, partOf, distToStroke, pickStroke, judgeTrace, dayKey, addDays, daysBetween, todayPlan, advance };
   root.TowerCore = api;
   if (typeof module !== 'undefined') module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

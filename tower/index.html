@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="robots" content="noindex">
-<title>漢字の塔（試作2）</title>
+<title>漢字の塔（試作3）</title>
 <style>
 :root{--bg:#14122b;--panel:#221f45;--panel2:#2d2960;--ink:#f4f1ff;--sub:#b3add9;--gold:#ffd166;--good:#7be495;--bad:#ff7b8a}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -26,6 +26,7 @@ button.ghost{background:transparent;border:1px solid #514b8f;color:var(--sub);pa
 .floor .num{font-size:46px;font-weight:900;color:var(--gold);line-height:1.1}
 .floor .hero{font-size:44px;animation:bob 1s ease-in-out infinite;display:inline-block}
 @keyframes bob{50%{transform:translateY(-6px)}}
+.meter{position:relative;height:10px;background:#120f2a;border-radius:99px;overflow:hidden;margin-top:8px}.meter i{position:absolute;left:0;top:0;bottom:0;background:#6ec6ff}.meter i.gold{background:var(--gold)}
 .today{width:min(460px,100%);display:flex;flex-direction:column;gap:8px}
 .trow{display:flex;align-items:center;gap:12px;background:var(--panel);border-radius:16px;padding:8px 14px}
 .trow .em{font-size:32px}.trow small{display:block;color:var(--sub)}
@@ -40,7 +41,7 @@ button.ghost{background:transparent;border:1px solid #514b8f;color:var(--sub);pa
 .overlay.on{display:flex}
 .card{background:var(--panel);border:2px solid #4c4699;border-radius:24px;padding:18px 20px;width:min(640px,100%);max-height:100%;overflow:auto;text-align:center}
 .card h2{margin:0 0 6px;font-size:22px}.card p{margin:6px 0;color:var(--sub)}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin:10px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px;margin:10px 0}
 .kcard{background:var(--panel2);border-radius:16px;padding:8px;text-align:center}
 .kcard svg{width:100%;background:#fff;border-radius:10px;display:block}
 .kcard.locked svg{background:#3b3766}
@@ -87,10 +88,11 @@ button.ghost{background:transparent;border:1px solid #514b8f;color:var(--sub);pa
 <body>
 
 <section class="screen active" id="home">
-  <h1>🗼 漢字の塔<span class="proto">試作2</span></h1>
+  <h1>🗼 漢字の塔<span class="proto">試作3</span></h1>
   <div class="floor"><div class="hero">🧙</div><div class="num" id="floorNum"></div><div id="floorText"></div></div>
+  <div id="todayHead" style="color:var(--sub);font-size:14px"></div>
   <div class="today" id="today"></div>
-  <button class="primary" id="go">きょうの ぼうけん ▲</button>
+  <button class="primary" id="go">つぎの かいへ ▲</button>
   <div class="row"><button class="ghost" id="openBook">📖 漢字ずかん</button><button class="ghost" id="openParent">📋 保護者用</button></div>
   <p class="credit">書き順・お手本の字形：<a href="https://kanjivg.tagaini.net/" target="_blank" rel="noopener">KanjiVG</a>（© Ulrich Apel and contributors、CC BY-SA 3.0）</p>
 </section>
@@ -126,12 +128,14 @@ button.ghost{background:transparent;border:1px solid #514b8f;color:var(--sub);pa
   <h2>📋 保護者用</h2>
   <p>「思い出して書く」で さいごに書いた字（黒）と、そのときの自己判定です。うすい赤は お手本。</p>
   <div class="grid" id="parentGrid"></div>
+  <p><label>テストの日 <input type="date" id="testDate" style="font:inherit;padding:4px 8px;border-radius:8px;border:0"></label></p>
   <p id="parentDay"></p>
   <div class="row"><button class="ghost" id="skipDay">試用：日を 1日 進める</button><button class="ghost" id="resetAll">記録を 消す</button><button class="primary" id="parentClose">とじる</button></div>
 </div></div>
 
 <script src="../chapter4/kanji-strokes.js"></script>
 <script src="../chapter4/stroke-trace.js"></script>
+<script src="tower-data.js"></script>
 <script src="tower-core.js"></script>
 <script>
 "use strict";
@@ -139,18 +143,22 @@ const C=TowerCore,ST=StrokeTrace,STROKES=KANJI_STROKES;
 const $=id=>document.getElementById(id);
 const COLORS=['#f08a00','#1e88e5','#43a047'],CHIP=['#ffb347','#6ec6ff','#b9f18c'];
 const ORDER=C.KANJI.map(e=>e.k);
-const MODELS={};for(const e of C.KANJI)MODELS[e.k]=C.prep(STROKES[e.k]);
-const entryOf=k=>C.KANJI.find(e=>e.k===k);
+const MODELS={},BYK={};for(const e of C.KANJI){MODELS[e.k]=C.prep(STROKES[e.k]);BYK[e.k]=e}
+const entryOf=k=>BYK[k];
 const STEP_NAME={meet:'であう',pick:'どの字？',build:'くみたて',order:'書きじゅん',trace:'なぞる',recall:'思い出して 書く'};
 
 /* ---------- 保存（試作専用のキー。第1〜4章の記録にはさわらない） ---------- */
-const SAVE_KEY='kanjiTowerProto_v2';
-const blank=()=>({recs:{},floor:0,dayOffset:0,doneDay:0,ink:{}});
+const SAVE_KEY='kanjiTowerProto_v3';
+const blank=()=>({recs:{},floor:0,dayOffset:0,testDay:0,ink:{}});
 function loadSave(){try{const s=Object.assign(blank(),JSON.parse(localStorage.getItem(SAVE_KEY)||'{}'));for(const f of['recs','ink'])if(!s[f]||typeof s[f]!=='object')s[f]={};return s}catch(e){return blank()}}
 let save=loadSave();
 function store(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(save))}catch(e){}}
 const today=()=>C.dayKey(new Date(),save.dayOffset|0);
-const lvOf=k=>save.recs[k]?save.recs[k].lv|0:0;
+const lvOf=k=>C.lvOf(save.recs[k],entryOf(k));
+const met=k=>!!save.recs[k];
+// テストの日（保護者用で変えられる。はじめは 2週間後）
+function testDay(){if(!save.testDay||C.daysBetween(today(),save.testDay)<0){save.testDay=C.addDays(today(),13);store()}return save.testDay}
+const plan=()=>C.todayPlan(save.recs,C.KANJI,today(),testDay());
 
 /* ---------- 音（Web Audio） ---------- */
 let actx=null;
@@ -175,42 +183,44 @@ function pieceSvg(src,from,to,color){const M=C.prep(STROKES[src]),b=C.boxOf(M,fr
 
 /* ---------- ホーム ---------- */
 function renderHome(){
-  const list=C.todayList(save.recs,ORDER,today()),done=!list.length;
+  const P=plan(),list=P.list.slice(0,C.FLOOR_SIZE),left=C.daysBetween(today(),testDay());
+  const solid=C.KANJI.filter(e=>met(e.k)&&lvOf(e.k)>=C.MAX_LV).length,seen=C.KANJI.filter(e=>met(e.k)).length;
   $('floorNum').textContent=`${save.floor+1} かい`;
-  $('floorText').textContent=done?(ORDER.every(k=>lvOf(k)>0)?'きょうの ぶんは おわり！ また あした のぼろう。':'きょうは ここまで！'):'きょうの まものを たおすと、1かい のぼれる。';
-  $('today').innerHTML=list.map(k=>{const e=entryOf(k),lv=lvOf(k);return `<div class="trow"><div class="em">${e.enemy}</div><div><b>${e.name}</b><small>${lv?`「${k}」 ${stars(lv)}`:'はじめての 漢字'}</small></div><span class="tag ${lv?'':'new'}">${lv?'ふっかつ':'あたらしい'}</span></div>`}).join('');
-  $('go').hidden=done;
+  $('floorText').innerHTML=`テストまで あと <b>${left}</b>日　／　なかま ${seen}/${C.KANJI.length}（★3つ ${solid}）<div class="meter"><i style="width:${100*seen/C.KANJI.length}%"></i><i class="gold" style="width:${100*solid/C.KANJI.length}%"></i></div>`;
+  $('todayHead').textContent=P.list.length?`きょうは あと ${P.list.length}体（${Math.ceil(P.list.length/C.FLOOR_SIZE)}かい ぶん）。つぎの かいの まもの：`:'きょうの ぶんは おわり！ また あした のぼろう。';
+  $('today').innerHTML=list.map(k=>{const e=entryOf(k),lv=lvOf(k),m=met(k);return `<div class="trow"><div class="em">${e.enemy}</div><div><b>${e.name}</b><small>${m?`「${k}」 ${stars(lv)}`:e.known?'知っている字か たしかめる':'はじめての 漢字'}</small></div><span class="tag ${m?'':'new'}">${m?'ふっかつ':e.known?'たしかめ':'あたらしい'}</span></div>`}).join('');
+  $('go').hidden=!list.length;
 }
-$('go').onclick=()=>{const list=C.todayList(save.recs,ORDER,today());if(list.length)startQuest(list)};
+$('go').onclick=()=>{const list=plan().list.slice(0,C.FLOOR_SIZE);if(list.length)startQuest(list)};
 
 /* ---------- れんしゅう（1字＝まもの1体。ステップを1つ終えるたびに こうげき） ---------- */
 let Q=null,S=null; // Q: きょうの流れ、S: いまのステップの状態
 function startQuest(list){Q={list,qi:0,results:[]};show('quest');startKanji()}
-function startKanji(){const k=Q.list[Q.qi];Q.k=k;Q.e=entryOf(k);Q.M=MODELS[k];Q.lv=lvOf(k);Q.steps=C.stepsFor(Q.lv).slice();Q.si=0;Q.result='good';Q.fix=false;
+function startKanji(){const k=Q.list[Q.qi];Q.k=k;Q.e=entryOf(k);Q.M=MODELS[k];Q.lv=lvOf(k);Q.first=!met(k);Q.steps=C.stepsFor(Q.lv,Q.e).slice();Q.si=0;Q.result='good';Q.fix=false;
   $('sprite').textContent=Q.e.enemy;$('sprite').className='sprite';$('ename').textContent=Q.e.name;startStep()}
 function renderBar(){$('stepLabel').textContent=`${Q.qi+1}/${Q.list.length}体目　${STEP_NAME[Q.steps[Q.si]]||'たおした！'}`;
   $('pips').innerHTML=Q.steps.map((_,i)=>`<i class="${i<Q.si?'off':''}"></i>`).join('')}
-function setQuestion(showKanji){const q=Q.e.q.replace(/\[(.+?)\]/,showKanji?`<b>${Q.k}</b>`:'<b>$1</b>');$('question').innerHTML=q}
+function setQuestion(showKanji){const q=Q.e.q.replace(/\[(.+?)\]/,showKanji&&!Q.e.note?`<b>${Q.k}</b>`:'<b>$1</b>');$('question').innerHTML=q+(Q.e.note?`<small style="font-size:15px;color:var(--sub)">　（きいろの ${Q.e.note}${showKanji?`＝「${Q.k}」`:''}）</small>`:'')}
 function buttons(list){$('actions').innerHTML='';for(const b of list){const el=document.createElement('button');el.textContent=b.text;el.className=b.cls||'';el.onclick=b.fn;if(b.id)el.dataset.id=b.id;$('actions').appendChild(el)}}
 function startStep(){S={type:Q.steps[Q.si]};$('tray').innerHTML='';buttons([]);renderBar();STEP[S.type]()}
 function stepDone(text){
   sfx.step();anim($('sprite'),'hit');Q.si++;renderBar();
   if(Q.si<Q.steps.length){banner(text||'ヒット！',800);S.lock=true;return setTimeout(startStep,850)}
   S.lock=true;anim($('sprite'),'dead');sfx.win();
-  const before=Q.lv,rec=C.advance(save.recs[Q.k],Q.result,today());save.recs[Q.k]=rec;store();
+  const before=Q.lv,rec=C.advance(save.recs[Q.k],Q.result,today(),Q.e);save.recs[Q.k]=rec;store();
   setTimeout(()=>{
     $('winTitle').textContent=`${Q.e.enemy} ${Q.e.name}を たおした！`;
     $('winStars').innerHTML=`<span class="kyo">${Q.k}</span> <span style="color:var(--gold)">${stars(rec.lv)}</span>`;
-    $('winText').textContent=!before?`「${Q.k}」が なかまに なった！ 部品も 手に入れた。`:rec.lv>before?`「${Q.k}」が レベルアップ！`:Q.result==='close'?'おしい！ あした もう一度 たたかおう。':rec.lv===before?`「${Q.k}」は もう かんぺき！`:'だいじょうぶ。あした もう一度 いっしょに おぼえよう。';
-    $('winChips').innerHTML=!before?Q.e.parts.map((p,i)=>`<span class="chip kyo" style="background:${CHIP[i]}">${p.name}</span>`).join(''):'';
+    $('winText').textContent=Q.first&&Q.result==='good'?`「${Q.k}」が なかまに なった！`+(Q.e.parts.length>1?' 部品も 手に入れた。':''):rec.lv>before?`「${Q.k}」が レベルアップ！`:Q.result==='close'?'おしい！ あした もう一度 たたかおう。':rec.lv===before?`「${Q.k}」は もう かんぺき！`:'だいじょうぶ。あした もう一度 いっしょに おぼえよう。';
+    $('winChips').innerHTML=Q.first&&Q.e.parts.length>1?Q.e.parts.map((p,i)=>`<span class="chip kyo" style="background:${CHIP[i]}">${p.name}</span>`).join(''):'';
     $('winOv').classList.add('on');
   },750);
 }
 $('winOk').onclick=()=>{$('winOv').classList.remove('on');
   if(Q.done){Q=null;renderHome();return show('home')}
   if(Q.qi<Q.list.length-1){Q.qi++;return startKanji()}
-  save.floor++;store();Q.done=true;
-  $('winTitle').textContent='🎉 1かい のぼった！';$('winStars').textContent='🗼';$('winText').textContent=`${save.floor+1}かいへ。たおした字は 日を あけて ふっかつする。また きてね。`;$('winChips').innerHTML='';$('winOv').classList.add('on')};
+  save.floor++;store();Q.done=true;const rest=plan().list.length;
+  $('winTitle').textContent='🎉 1かい のぼった！';$('winStars').textContent='🗼';$('winText').textContent=`${save.floor+1}かいへ。`+(rest?`きょうは あと ${rest}体。つづけても、ひと休みしても いいよ。`:'きょうの ぶんは ぜんぶ おわり！ たおした字は 日を あけて ふっかつする。');$('winChips').innerHTML='';$('winOv').classList.add('on')};
 $('retreat').onclick=()=>{Q=null;renderHome();show('home')};
 
 const stage=$('stage');
@@ -242,7 +252,7 @@ const STEP={
   build(){
     setQuestion(false);
     S.placed=Q.e.parts.map(()=>false);S.sel=null;S.guide=Q.lv===0;
-    S.tiles=shuffle(Q.e.parts.map((p,i)=>({part:i,src:Q.k,from:p.from,to:p.to})).concat(Q.e.decoys.map(d=>({part:-1,src:d.src,from:d.from,to:d.to}))));
+    S.tiles=shuffle(Q.e.parts.map((p,i)=>({part:i,src:Q.k,from:p.from,to:p.to})).concat((Q.e.decoys||[]).map(d=>({part:-1,src:d.src,from:d.from,to:d.to}))));
     $('tray').innerHTML=S.tiles.map((t,i)=>`<button class="tile" data-i="${i}">${pieceSvg(t.src,t.from,t.to)}</button>`).join('');
     for(const b of $('tray').children)b.onclick=()=>{if(S.lock||b.classList.contains('no'))return;S.sel=+b.dataset.i;for(const x of $('tray').children)x.classList.toggle('sel',x===b);msg('どこに 置く？ わくを タップ。');draw()};
     const draw=()=>{stage.innerHTML=GUIDE+Q.e.parts.map((p,i)=>{const b=C.boxOf(Q.M,p.from,p.to,4);
@@ -252,7 +262,7 @@ const STEP={
     S.tap=p=>{
       if(S.sel==null)return msg('先に、下の 部品を えらぼう。');
       // タップした場所が入っている わく（重なるときは 中心が近いほう）
-      let slot=-1,bd=1e9;Q.e.parts.forEach((q,i)=>{if(S.placed[i])return;const b=C.boxOf(Q.M,q.from,q.to,4);if(p[0]<b[0]||p[0]>b[2]||p[1]<b[1]||p[1]>b[3])return;const d=Math.hypot(p[0]-(b[0]+b[2])/2,p[1]-(b[1]+b[3])/2);if(d<bd){bd=d;slot=i}});
+      let slot=-1,bd=1e9;Q.e.parts.forEach((q,i)=>{if(S.placed[i])return;const b=C.boxOf(Q.M,q.from,q.to,4);if(p[0]<b[0]||p[0]>b[2]||p[1]<b[1]||p[1]>b[3])return;let d=1e9;for(let n=q.from-1;n<q.to;n++)d=Math.min(d,C.distToStroke(p,Q.M[n]));if(d<bd){bd=d;slot=i}});
       if(slot<0)return;
       const t=S.tiles[S.sel],btn=$('tray').children[S.sel];
       if(t.part===slot){sfx.ok();S.placed[slot]=true;btn.classList.add('used');btn.classList.remove('sel');S.sel=null;draw();
@@ -336,9 +346,9 @@ document.addEventListener('gesturestart',ev=>ev.preventDefault());
 
 /* ---------- ずかん ---------- */
 $('openBook').onclick=()=>{
-  $('bookGrid').innerHTML=C.KANJI.map(e=>{const lv=lvOf(e.k);return lv?`<div class="kcard"><svg viewBox="0 0 109 109">${kanjiSvg(e.k,null,5)}</svg><div class="stars">${stars(lv)}</div><small>${e.enemy} ${e.name}</small></div>`
+  $('bookGrid').innerHTML=C.KANJI.map(e=>{const lv=lvOf(e.k);return met(e.k)?`<div class="kcard"><svg viewBox="0 0 109 109">${kanjiSvg(e.k,null,5)}</svg><div class="stars">${stars(lv)}</div><small>${e.enemy} ${e.name}</small></div>`
     :`<div class="kcard locked"><svg viewBox="0 0 109 109"><text x="54.5" y="72" font-size="50" text-anchor="middle" fill="#6a63c4">？</text></svg><small>まだ 出会っていない</small></div>`}).join('');
-  const parts=C.KANJI.filter(e=>lvOf(e.k)).flatMap(e=>e.parts.map((p,i)=>`<span class="chip kyo" style="background:${CHIP[i]}">${p.name}</span>`));
+  const parts=[...new Set(C.KANJI.filter(e=>met(e.k)&&e.parts.length>1).flatMap(e=>e.parts.map(p=>p.name)).filter(n=>!n.includes('の 部品')))].map((n,i)=>`<span class="chip kyo" style="background:${CHIP[i%3]}">${n}</span>`);
   $('bookParts').innerHTML=parts.join('')||'<span style="color:var(--sub)">まだ ないよ</span>';
   $('bookOv').classList.add('on')};
 $('bookClose').onclick=()=>$('bookOv').classList.remove('on');
@@ -348,10 +358,12 @@ function renderParent(){
   const R={good:'⭕ 同じに書けた',close:'🔺 すこしちがった',forgot:'❌ 思い出せなかった'};
   $('parentGrid').innerHTML=C.KANJI.map(e=>{const k=save.ink[e.k],rec=save.recs[e.k];
     return `<div class="kcard"><svg viewBox="0 0 109 109">${kanjiSvg(e.k,()=>'#ffb3c0',4)}${k?k.s.map(s=>pathOf(polyD(s),'#1b1838',3.5)).join(''):''}</svg><small>${rec?`段 ${rec.lv}/${C.MAX_LV}　つぎは ${String(rec.next).slice(4,6)}/${String(rec.next).slice(6)}`:'まだ'}<br>${k?R[k.r]:'（思い出して書く は まだ）'}</small></div>`}).join('');
-  const t=String(today());$('parentDay').textContent=`塔の中の きょう：${t.slice(4,6)}/${t.slice(6)}`+(save.dayOffset?`（試用で ${save.dayOffset}日 進めています）`:'');
+  const t=String(today()),td=String(testDay()),P=plan();$('parentDay').textContent=`塔の中の きょう：${t.slice(4,6)}/${t.slice(6)}`+(save.dayOffset?`（試用で ${save.dayOffset}日 進めています）`:'')+`　きょうの のこり：復習 ${P.due.length}・新しい字 ${P.fresh.length}・たしかめ ${P.check.length}`;
+  $('testDate').value=`${td.slice(0,4)}-${td.slice(4,6)}-${td.slice(6)}`;
 }
 $('openParent').onclick=()=>{renderParent();$('parentOv').classList.add('on')};
 $('parentClose').onclick=()=>{$('parentOv').classList.remove('on');renderHome()};
+$('testDate').onchange=()=>{const v=$('testDate').value.replace(/-/g,'');if(/^\d{8}$/.test(v)&&C.daysBetween(today(),+v)>=0){save.testDay=+v;store()}renderParent()};
 $('skipDay').onclick=()=>{save.dayOffset=(save.dayOffset|0)+1;store();renderParent()};
 $('resetAll').onclick=()=>{if(confirm('試作の 記録を 消して、さいしょから はじめますか？')){save=blank();store();renderParent()}};
 
