@@ -93,7 +93,7 @@ button.ghost{background:transparent;border:1px solid #514b8f;color:var(--sub);pa
   <div id="todayHead" style="color:var(--sub);font-size:14px"></div>
   <div class="today" id="today"></div>
   <button class="primary" id="go">つぎの かいへ ▲</button>
-  <div class="row"><button class="ghost" id="openBook">📖 漢字ずかん</button><button class="ghost" id="openParent">📋 保護者用</button></div>
+  <div class="row"><button class="ghost" id="openBook">📖 漢字ずかん</button><button class="ghost" id="openParent">📋 保護者用</button><button class="ghost" id="openTrial">🧪 おためし</button></div>
   <p class="credit">書き順・お手本の字形：<a href="https://kanjivg.tagaini.net/" target="_blank" rel="noopener">KanjiVG</a>（© Ulrich Apel and contributors、CC BY-SA 3.0）</p>
 </section>
 
@@ -122,6 +122,20 @@ button.ghost{background:transparent;border:1px solid #514b8f;color:var(--sub);pa
   <h2>📖 漢字ずかん</h2><p>たおした 漢字は なかまに なる。日を あけて また たたかうと ★が ふえるよ。</p>
   <div class="grid" id="bookGrid"></div><p>あつめた 部品</p><div class="chips" id="bookParts"></div>
   <div class="row" style="margin-top:12px"><button class="primary" id="bookClose">とじる</button></div>
+</div></div>
+
+<div class="overlay" id="trialOv"><div class="card">
+  <h2>🧪 おためし（試作の確認用）</h2>
+  <p>日を待たずに、ぜんぶの練習と 2週間の流れを 見られます。</p>
+  <h3 style="margin:14px 0 4px;font-size:16px">① すきな字・すきな段を ためす（記録は かわりません）</h3>
+  <div class="row"><select id="trialKanji" class="kyo" style="font-size:22px;padding:6px 10px;border-radius:10px;border:0"></select>
+    <select id="trialLv" style="font:inherit;padding:8px 10px;border-radius:10px;border:0"><option value="0">はじめて（お手本つき）</option><option value="1">2回目（思い出しながら）</option><option value="2">3回目から（テストと同じ）</option></select>
+    <button class="primary" id="trialGo">ためす</button></div>
+  <h3 style="margin:16px 0 4px;font-size:16px">② 2週間を 早おくり（記録が 進みます）</h3>
+  <p id="trialDay"></p>
+  <div class="row"><button id="trialNext">⏩ あしたへ 進む</button><button id="trialAuto">⏭ きょうの分を「書けた」にして あしたへ</button></div>
+  <p style="font-size:13px">「あしたへ進む」は、やり残しを 持ちこします。「書けたにして」は、きょうの分を ぜんぶ「同じに書けた」で 記録します。もとに もどすには、保護者用の「記録を 消す」。</p>
+  <div class="row" style="margin-top:12px"><button class="primary" id="trialClose">とじる</button></div>
 </div></div>
 
 <div class="overlay" id="parentOv"><div class="card">
@@ -195,8 +209,8 @@ $('go').onclick=()=>{const list=plan().list.slice(0,C.FLOOR_SIZE);if(list.length
 
 /* ---------- れんしゅう（1字＝まもの1体。ステップを1つ終えるたびに こうげき） ---------- */
 let Q=null,S=null; // Q: きょうの流れ、S: いまのステップの状態
-function startQuest(list){Q={list,qi:0,results:[]};show('quest');startKanji()}
-function startKanji(){const k=Q.list[Q.qi];Q.k=k;Q.e=entryOf(k);Q.M=MODELS[k];Q.lv=lvOf(k);Q.first=!met(k);Q.steps=C.stepsFor(Q.lv,Q.e).slice();Q.si=0;Q.result='good';Q.fix=false;
+function startQuest(list,trialLv){Q={list,qi:0,results:[],trial:trialLv!=null,trialLv};show('quest');startKanji()}
+function startKanji(){const k=Q.list[Q.qi];Q.k=k;Q.e=entryOf(k);Q.M=MODELS[k];Q.lv=Q.trial?Q.trialLv:lvOf(k);Q.first=Q.trial?Q.lv===0:!met(k);Q.steps=C.stepsFor(Q.lv,Q.e).slice();Q.si=0;Q.result='good';Q.fix=false;
   $('sprite').textContent=Q.e.enemy;$('sprite').className='sprite';$('ename').textContent=Q.e.name;startStep()}
 function renderBar(){$('stepLabel').textContent=`${Q.qi+1}/${Q.list.length}体目　${STEP_NAME[Q.steps[Q.si]]||'たおした！'}`;
   $('pips').innerHTML=Q.steps.map((_,i)=>`<i class="${i<Q.si?'off':''}"></i>`).join('')}
@@ -207,7 +221,7 @@ function stepDone(text){
   sfx.step();anim($('sprite'),'hit');Q.si++;renderBar();
   if(Q.si<Q.steps.length){banner(text||'ヒット！',800);S.lock=true;return setTimeout(startStep,850)}
   S.lock=true;anim($('sprite'),'dead');sfx.win();
-  const before=Q.lv,rec=C.advance(save.recs[Q.k],Q.result,today(),Q.e);save.recs[Q.k]=rec;store();
+  const before=Q.lv,rec=C.advance(Q.trial?{lv:Q.lv}:save.recs[Q.k],Q.result,today(),Q.e);if(!Q.trial){save.recs[Q.k]=rec;store()}
   setTimeout(()=>{
     $('winTitle').textContent=`${Q.e.enemy} ${Q.e.name}を たおした！`;
     $('winStars').innerHTML=`<span class="kyo">${Q.k}</span> <span style="color:var(--gold)">${stars(rec.lv)}</span>`;
@@ -217,7 +231,7 @@ function stepDone(text){
   },750);
 }
 $('winOk').onclick=()=>{$('winOv').classList.remove('on');
-  if(Q.done){Q=null;renderHome();return show('home')}
+  if(Q.done||Q.trial){Q=null;renderHome();return show('home')}
   if(Q.qi<Q.list.length-1){Q.qi++;return startKanji()}
   save.floor++;store();Q.done=true;const rest=plan().list.length;
   $('winTitle').textContent='🎉 1かい のぼった！';$('winStars').textContent='🗼';$('winText').textContent=`${save.floor+1}かいへ。`+(rest?`きょうは あと ${rest}体。つづけても、ひと休みしても いいよ。`:'きょうの ぶんは ぜんぶ おわり！ たおした字は 日を あけて ふっかつする。');$('winChips').innerHTML='';$('winOv').classList.add('on')};
@@ -321,7 +335,7 @@ const STEP={
       buttons([{text:'⭕ 同じに 書けた',cls:'primary',id:'good',fn:()=>judge('good')},{text:'🔺 すこし ちがった',id:'close',fn:()=>judge('close')},{text:'❌ 思い出せなかった',id:'forgot',fn:()=>judge('forgot')}]);
       if(!S.ink.length)$('actions').firstChild.disabled=true};
     const judge=r=>{if(S.lock)return;const res=r==='good'&&S.hint?'close':r;Q.result=res;
-      save.ink[Q.k]={s:S.ink.map(s=>ST.resample(s,Math.min(24,Math.max(2,s.length))).map(p=>[Math.round(p[0]),Math.round(p[1])])),r:res,d:today()};store();
+      if(!Q.trial)save.ink[Q.k]={s:S.ink.map(s=>ST.resample(s,Math.min(24,Math.max(2,s.length))).map(p=>[Math.round(p[0]),Math.round(p[1])])),r:res,d:today()};store();
       if(res==='good')return stepDone('会心の いちげき！');
       // ちがったときは、正しい形を なぞってから 終わる
       Q.steps.push('trace');Q.fix=true;S.lock=true;banner('正しい形を なぞって おぼえよう',1000);Q.si++;setTimeout(startStep,1000)};
@@ -364,6 +378,15 @@ function renderParent(){
 $('openParent').onclick=()=>{renderParent();$('parentOv').classList.add('on')};
 $('parentClose').onclick=()=>{$('parentOv').classList.remove('on');renderHome()};
 $('testDate').onchange=()=>{const v=$('testDate').value.replace(/-/g,'');if(/^\d{8}$/.test(v)&&C.daysBetween(today(),+v)>=0){save.testDay=+v;store()}renderParent()};
+/* ---------- おためし：日を待たずに確かめる ---------- */
+function renderTrial(){const t=String(today()),P=plan(),left=C.daysBetween(today(),testDay());
+  $('trialDay').textContent=`塔の中の きょう：${+t.slice(4,6)}月${+t.slice(6)}日（テストまで あと ${left}日）　きょうの のこり：${P.list.length}体（復習 ${P.due.length}・新しい字 ${P.fresh.length}・たしかめ ${P.check.length}）`}
+$('openTrial').onclick=()=>{$('trialKanji').innerHTML=C.KANJI.map(e=>`<option value="${e.k}">${e.k}</option>`).join('');renderTrial();$('trialOv').classList.add('on')};
+$('trialClose').onclick=()=>{$('trialOv').classList.remove('on');renderHome()};
+$('trialGo').onclick=()=>{$('trialOv').classList.remove('on');startQuest([$('trialKanji').value],+$('trialLv').value)};
+$('trialNext').onclick=()=>{save.dayOffset=(save.dayOffset|0)+1;store();renderTrial()};
+$('trialAuto').onclick=()=>{const day=today();for(let guard=0;guard<5;guard++){const list=plan().list;if(!list.length)break;for(const k of list)save.recs[k]=C.advance(save.recs[k],'good',day,entryOf(k));save.floor+=Math.ceil(list.length/C.FLOOR_SIZE)}
+  save.dayOffset=(save.dayOffset|0)+1;store();renderTrial()};
 $('skipDay').onclick=()=>{save.dayOffset=(save.dayOffset|0)+1;store();renderParent()};
 $('resetAll').onclick=()=>{if(confirm('試作の 記録を 消して、さいしょから はじめますか？')){save=blank();store();renderParent()}};
 
