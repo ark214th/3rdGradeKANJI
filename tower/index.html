@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>漢字の塔（試作）</title>
+<style>
+:root{--bg:#14122b;--panel:#221f45;--panel2:#2d2960;--ink:#f4f1ff;--sub:#b3add9;--gold:#ffd166;--good:#7be495;--bad:#ff7b8a;--p0:#ffb347;--p1:#6ec6ff;--p2:#b9f18c}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;overscroll-behavior:none}
+body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+button{font:inherit;color:inherit;border:0;border-radius:14px;padding:12px 18px;background:var(--panel2);font-weight:700;touch-action:manipulation}
+button.primary{background:linear-gradient(#ffd166,#f4a534);color:#3a2500}
+button.ghost{background:transparent;border:1px solid #514b8f;color:var(--sub);padding:8px 12px;font-weight:500}
+.kyo{font-family:"YuKyokasho","Yu Kyokasho","UD Digi Kyokasho N-R","Hiragino Mincho ProN",serif}
+.screen{display:none;height:100dvh;padding:calc(10px + env(safe-area-inset-top)) calc(12px + env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) calc(12px + env(safe-area-inset-left))}
+.screen.active{display:flex;flex-direction:column}
+.proto{font-size:12px;color:#3a2500;background:var(--gold);border-radius:99px;padding:2px 10px;font-weight:700;margin-left:8px;vertical-align:middle}
+
+/* 塔のマップ */
+#map{align-items:center;overflow:auto}
+#map h1{margin:6px 0 2px;font-size:26px}
+#map .lead{margin:0 0 10px;color:var(--sub);font-size:14px;text-align:center}
+.tower{position:relative;display:flex;flex-direction:column-reverse;gap:10px;width:min(440px,100%);padding:14px 14px 14px 64px;background:linear-gradient(#2b2760,#1b1838);border-radius:22px;border:2px solid #3b3680}
+.tower::before{content:"";position:absolute;left:38px;top:34px;bottom:34px;width:6px;border-radius:3px;background:repeating-linear-gradient(#6a63c4 0 10px,transparent 10px 18px)}
+.node{position:relative;display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:16px;background:var(--panel);min-height:64px;opacity:.55}
+.node::before{content:"";position:absolute;left:-36px;top:50%;width:20px;height:20px;margin-top:-10px;border-radius:50%;background:#3b3680;border:3px solid #6a63c4}
+.node.done{opacity:1}.node.done::before{background:var(--good);border-color:#fff}
+.node.now{opacity:1;outline:3px solid var(--gold)}.node.now::before{background:var(--gold);border-color:#fff}
+.node.now::after{content:"🧙";position:absolute;left:-46px;top:50%;margin-top:-34px;font-size:34px;animation:bob 1s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-6px)}}
+.node .em{font-size:36px;width:44px;text-align:center}
+.node .nm{font-weight:700}.node small{display:block;color:var(--sub);font-weight:400}
+.node .st{margin-left:auto;font-size:20px}
+.mapbtns{display:flex;gap:10px;margin:14px 0 6px;flex-wrap:wrap;justify-content:center}
+#climb{font-size:22px;padding:14px 40px}
+.credit{font-size:11px;color:#8d87b8;text-align:center;margin:8px 0}.credit a{color:inherit}
+
+/* 出会いカード・結果・記録（重ねて出す） */
+.overlay{position:fixed;inset:0;background:rgba(10,8,30,.86);display:none;align-items:center;justify-content:center;padding:16px;z-index:20}
+.overlay.on{display:flex}
+.card{background:var(--panel);border:2px solid #4c4699;border-radius:24px;padding:18px 20px;width:min(560px,100%);max-height:100%;overflow:auto;text-align:center}
+.card h2{margin:0 0 6px;font-size:22px}.card p{margin:6px 0;color:var(--sub)}
+.intro-kanji{width:min(46vh,260px);height:min(46vh,260px);background:#fff;border-radius:18px;margin:8px auto;display:block}
+.partrow{display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap;font-size:20px;font-weight:700;margin:8px 0}
+.partrow span.pc{padding:4px 14px;border-radius:99px;color:#1b1838}
+.cardbtns{display:flex;gap:10px;justify-content:center;margin-top:12px;flex-wrap:wrap}
+.stars{font-size:44px;letter-spacing:6px}
+.loglist{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin:10px 0;text-align:left}
+.logitem{background:var(--panel2);border-radius:14px;padding:8px}.logitem svg{width:100%;background:#fff;border-radius:10px;display:block}
+.logitem small{color:var(--sub);display:block;margin-top:4px;line-height:1.5}
+
+/* バトル */
+#battle{gap:8px}
+.bar{display:flex;align-items:center;gap:10px;flex:none}
+.bar .hp{font-size:20px;letter-spacing:1px}.bar .combo{margin-left:auto;font-weight:800;color:var(--gold);font-size:18px;min-width:6em;text-align:right}
+.arena{flex:1;min-height:0;display:grid;gap:10px;grid-template-rows:auto minmax(0,1fr);grid-template-columns:minmax(0,1fr)}
+.side{display:flex;flex-direction:column;gap:8px;min-width:0}
+.enemy{position:relative;display:flex;align-items:center;gap:12px;background:var(--panel);border-radius:18px;padding:8px 14px}
+.sprite{font-size:64px;line-height:1;transition:transform .1s}
+.sprite.hit{animation:hit .28s}.sprite.guard{animation:guard .3s}.sprite.dead{animation:dead .7s forwards}
+@keyframes hit{30%{transform:translateX(10px) rotate(8deg);filter:brightness(2.2)}60%{transform:translateX(-8px)}}
+@keyframes guard{50%{transform:scale(1.18)}}
+@keyframes dead{to{transform:translateY(30px) rotate(40deg) scale(.2);opacity:0}}
+.einfo{flex:1;min-width:0}.ename{font-weight:800}.ephase{font-size:13px;color:var(--sub)}
+.hpbar{height:14px;background:#120f2a;border-radius:99px;overflow:hidden;margin:5px 0}.hpbar i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#ff7b8a,#ffb347);transition:width .2s}
+.shields{display:flex;gap:6px;flex-wrap:wrap}
+.shield{font-size:13px;font-weight:700;padding:2px 10px;border-radius:99px;color:#1b1838;transition:.25s}
+.shield.broken{background:#3b3766!important;color:#8d87b8;text-decoration:line-through}
+.dmg{position:absolute;right:14px;top:2px;font-weight:900;font-size:26px;color:var(--gold);pointer-events:none;animation:pop .6s forwards}
+@keyframes pop{to{transform:translateY(-34px);opacity:0}}
+.question{background:var(--panel);border-radius:18px;padding:10px 14px;font-size:24px;line-height:1.5}
+.question b{color:#1b1838;background:var(--gold);border-radius:8px;padding:0 6px;margin:0 2px}
+.msg{min-height:2.9em;background:#1b1838;border-radius:14px;padding:8px 12px;font-size:17px;line-height:1.4;border-left:6px solid #514b8f}
+.msg.good{border-color:var(--good)}.msg.bad{border-color:var(--bad)}
+.tools{display:flex;gap:8px}
+.board{min-height:0;min-width:0;display:flex;align-items:center;justify-content:center}
+canvas{background:#fffdf6;border-radius:18px;touch-action:none;display:block;box-shadow:0 0 0 4px #4c4699}
+canvas.shake{animation:shake .25s}
+@keyframes shake{25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+.banner{position:fixed;left:50%;top:15%;transform:translate(-50%,-50%) scale(.6);background:var(--gold);color:#3a2500;font-weight:900;font-size:26px;padding:12px 26px;border-radius:99px;opacity:0;pointer-events:none;z-index:15;white-space:nowrap;transition:.2s}
+.banner.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
+@media (orientation:landscape){
+  .arena{grid-template-rows:minmax(0,1fr);grid-template-columns:minmax(260px,38%) minmax(0,1fr)}
+  .sprite{font-size:56px}
+}
+</style>
+</head>
+<body>
+
+<section class="screen active" id="map">
+  <h1>🗼 漢字の塔<span class="proto">試作</span></h1>
+  <p class="lead">正しい書き順で 一画 書くたびに、こうげき！<br>上へ のぼって、塔のぬしを たおそう。</p>
+  <div class="tower" id="tower"></div>
+  <div class="mapbtns"><button class="primary" id="climb">のぼる ▲</button></div>
+  <div class="mapbtns"><button class="ghost" id="openLog">📋 保護者用：つまずいた画</button><button class="ghost" id="resetAll">さいしょから</button></div>
+  <p class="credit">書き順・お手本の字形：<a href="https://kanjivg.tagaini.net/" target="_blank" rel="noopener">KanjiVG</a>（© Ulrich Apel and contributors、CC BY-SA 3.0）</p>
+</section>
+
+<section class="screen" id="battle">
+  <div class="bar"><button class="ghost" id="retreat">‹ 塔へ</button><div class="hp" id="heroHp"></div><div class="combo" id="combo"></div></div>
+  <div class="arena">
+    <div class="side">
+      <div class="enemy" id="enemyBox"><div class="sprite" id="sprite">👻</div>
+        <div class="einfo"><div class="ename" id="ename"></div><div class="ephase" id="ephase"></div><div class="hpbar"><i id="ehp"></i></div><div class="shields" id="shields"></div></div>
+      </div>
+      <div class="question kyo" id="question"></div>
+      <div class="msg" id="msg"></div>
+      <div class="tools"><button class="ghost" id="hintBtn">💡 つぎの画を 見る</button></div>
+    </div>
+    <div class="board" id="board"><canvas id="canvas" aria-label="漢字を書く場所"></canvas></div>
+  </div>
+</section>
+
+<div class="banner" id="banner"></div>
+
+<div class="overlay" id="introOv"><div class="card">
+  <h2 id="introTitle"></h2>
+  <svg class="intro-kanji" id="introSvg" viewBox="0 0 109 109"></svg>
+  <div class="partrow" id="introParts"></div>
+  <p id="introText"></p>
+  <div class="cardbtns"><button class="ghost" id="introReplay">▶ もう一回 見る</button><button class="primary" id="introGo">たたかう！</button></div>
+</div></div>
+
+<div class="overlay" id="resultOv"><div class="card">
+  <h2 id="resultTitle"></h2>
+  <div class="stars" id="resultStars"></div>
+  <p id="resultText"></p>
+  <div class="cardbtns"><button class="primary" id="resultOk">塔へ もどる</button></div>
+</div></div>
+
+<div class="overlay" id="logOv"><div class="card">
+  <h2>保護者用：つまずいた画</h2>
+  <p>お手本なしで書いたときに外れた画を、赤で表示します（数字は外れた回数）。</p>
+  <div class="loglist" id="logList"></div>
+  <div class="cardbtns"><button class="primary" id="logClose">とじる</button></div>
+</div></div>
+
+<script src="../chapter4/kanji-strokes.js"></script>
+<script src="../chapter4/stroke-trace.js"></script>
+<script src="tower-core.js"></script>
+<script>
+"use strict";
+const C=TowerCore,ST=StrokeTrace,STROKES=KANJI_STROKES;
+const $=id=>document.getElementById(id);
+const PART_COLORS=['#ffb347','#6ec6ff','#b9f18c'];
+const MODELS={};for(const e of C.KANJI)MODELS[e.k]=C.prep(STROKES[e.k]);
+const entryOf=k=>C.KANJI.find(e=>e.k===k);
+const HERO_HP=5;
+
+/* ---------- 保存（試作専用のキー。第1〜4章の記録にはさわらない） ---------- */
+const SAVE_KEY='kanjiTowerProto_v1';
+function loadSave(){try{const s=JSON.parse(localStorage.getItem(SAVE_KEY)||'{}');return{step:Math.max(0,Math.min(C.KANJI.length+1,s.step|0)),clears:s.clears|0,best:s.best|0,miss:s.miss&&typeof s.miss==='object'?s.miss:{}}}catch(e){return{step:0,clears:0,best:0,miss:{}}}}
+let save=loadSave();
+function store(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(save))}catch(e){}}
+function logMiss(k,pos,reason){const m=save.miss[k]||(save.miss[k]={});const r=m[pos]||(m[pos]={n:0,order:0});r.n++;if(reason==='order')r.order++;store()}
+
+/* ---------- 音（Web Audio） ---------- */
+let actx=null;
+function beep(f,d,type,vol,when){try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();if(actx.state==='suspended')actx.resume();const t=actx.currentTime+(when||0),o=actx.createOscillator(),g=actx.createGain();o.type=type||'square';o.frequency.setValueAtTime(f,t);g.gain.setValueAtTime(vol||.07,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g).connect(actx.destination);o.start(t);o.stop(t+d)}catch(e){}}
+const sfx={hit:n=>beep(420+Math.min(n,12)*45,.09,'square'),miss:()=>beep(130,.2,'sawtooth',.06),part:()=>{beep(660,.1,'triangle',.1);beep(990,.16,'triangle',.1,.09)},win:()=>[523,659,784,1047].forEach((f,i)=>beep(f,.18,'triangle',.1,i*.12))};
+
+/* ---------- 画面の切り替え ---------- */
+function show(id){for(const s of document.querySelectorAll('.screen'))s.classList.toggle('active',s.id===id);if(id==='battle')requestAnimationFrame(fit)}
+function banner(text,ms){const b=$('banner');b.textContent=text;b.classList.add('on');clearTimeout(banner.t);banner.t=setTimeout(()=>b.classList.remove('on'),ms||1100)}
+function msg(text,type){const m=$('msg');m.textContent=text;m.className='msg'+(type?' '+type:'')}
+
+/* ---------- 塔のマップ ---------- */
+function renderMap(){
+  const n=C.KANJI.length,cleared=save.step>n;
+  const nodes=C.KANJI.map((e,i)=>({em:e.enemy,nm:e.name,sub:`${i+1}かい　「${e.k}」の まもの`})).concat([{em:C.BOSS.enemy,nm:C.BOSS.name,sub:'さいじょうかい　お手本なしの テスト'}]);
+  $('tower').innerHTML=nodes.map((d,i)=>`<div class="node ${i<save.step?'done':i===save.step?'now':''}"><div class="em">${i<=save.step||cleared?d.em:'❔'}</div><div><div class="nm">${i<=save.step||cleared?d.nm:'？？？'}</div><small>${d.sub}</small></div><div class="st">${i<save.step?'✅':''}</div></div>`).join('');
+  $('climb').textContent=cleared?'もう一度 のぼる ▲':save.step===n?'塔のぬしに いどむ ⚔️':'のぼる ▲';
+  const now=$('tower').querySelector('.now');if(now)now.scrollIntoView({block:'center'});
+}
+$('climb').onclick=()=>{
+  const n=C.KANJI.length;
+  if(save.step>n){save.step=0;store();renderMap();return}
+  if(save.step===n)startBattle(shuffle(C.KANJI.map(e=>e.k)),true);
+  else showIntro(C.KANJI[save.step]);
+};
+$('resetAll').onclick=()=>{if(confirm('試作の きろくを 消して、さいしょから はじめますか？')){save={step:0,clears:0,best:0,miss:{}};store();renderMap()}};
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+
+/* ---------- 出会いカード：部品に分けて見せる ---------- */
+function kanjiSvg(e,opts){
+  const o=opts||{};
+  return STROKES[e.k].map((d,i)=>{
+    const col=o.color?o.color(i):PART_COLORS[C.partOf(e,i)];
+    const anim=o.animate?` pathLength="1" stroke-dasharray="1" stroke-dashoffset="1"><animate attributeName="stroke-dashoffset" from="1" to="0" dur="0.4s" begin="${(i*.45).toFixed(2)}s" fill="freeze"/></path>`:'/>';
+    return `<path d="${d}" fill="none" stroke="${col}" stroke-width="${o.width||5}" stroke-linecap="round" stroke-linejoin="round"${anim}`;
+  }).join('');
+}
+function showIntro(e){
+  $('introTitle').textContent=`${e.enemy} ${e.name}が あらわれた！`;
+  const draw=()=>{$('introSvg').innerHTML='<path d="M54.5,4V105M4,54.5H105" stroke="#ddd" stroke-dasharray="3 3" fill="none"/>'+kanjiSvg(e,{animate:true})};
+  draw();$('introReplay').onclick=draw;
+  $('introParts').innerHTML=e.parts.map((p,i)=>`<span class="pc kyo" style="background:${PART_COLORS[i]}">${p.name}</span>`).join('<span>＋</span>');
+  $('introText').textContent=`「${e.k}」は ${e.parts.length}つの 部品で できている。部品を 一つ 書き上げるたびに、まものの たてが われるよ。`;
+  $('introGo').onclick=()=>{$('introOv').classList.remove('on');startBattle([e.k],false)};
+  $('introOv').classList.add('on');
+}
+
+/* ---------- バトル ---------- */
+let B=null;
+function startBattle(list,boss){
+  const phases=boss?[2]:[0,1,2];
+  const total=list.reduce((s,k)=>s+MODELS[k].length*phases.length,0);
+  B={list,boss,phases,qi:0,pi:0,total,done:0,hp:HERO_HP,combo:0,maxCombo:0,missTotal:0,bossMiss:{},lock:false};
+  show('battle');loadKanji();
+}
+function cur(){const k=B.list[B.qi];return{k,e:entryOf(k),M:MODELS[k],phase:B.phases[B.pi]}}
+function loadKanji(){
+  B.pos=0;B.miss=0;B.ink=[];B.pairs=[];B.off=[0,0];B.live=null;B.demo=null;B.helpAsked=false;B.lock=false;B.flash=null;
+  const {e,phase}=cur(),enemy=B.boss?C.BOSS:e;
+  $('sprite').textContent=enemy.enemy;$('sprite').className='sprite';
+  $('ename').textContent=enemy.name;
+  $('ephase').textContent=B.boss?`お手本なしの テスト　${B.qi+1}/${B.list.length}字目`:`第${B.pi+1}形たい：${C.PHASES[phase].label}（${B.pi+1}/3）`;
+  $('question').innerHTML=e.q.replace(/\[(.+?)\]/,'<b>$1</b>');
+  renderShields();renderHud();
+  msg(phase===0?'うすい お手本を、番号の じゅんに なぞろう。':phase===1?'緑の点が 書き始め。形は 思い出して 書こう。':'お手本なし！ 一画目から 思い出して 書こう。');
+  redraw();
+}
+function renderShields(){const {e}=cur();
+  $('shields').innerHTML=e.parts.map((p,i)=>`<span class="shield kyo ${B.pos+1>p.to?'broken':''}" style="background:${PART_COLORS[i]}">🛡 ${B.boss&&B.pos+1<=p.to?'？？':p.name}</span>`).join('')}
+function renderHud(){
+  $('heroHp').textContent='❤️'.repeat(B.hp)+'🖤'.repeat(HERO_HP-B.hp);
+  $('combo').textContent=B.combo>=2?`${B.combo} コンボ！`:'';
+  $('ehp').style.width=Math.max(0,100*(1-B.done/B.total))+'%';
+}
+function damagePop(text){const d=document.createElement('div');d.className='dmg';d.textContent=text;$('enemyBox').appendChild(d);setTimeout(()=>d.remove(),600)}
+function anim(el,cls){el.classList.remove(cls);void el.offsetWidth;el.classList.add(cls)}
+
+function strokeEnd(user){
+  if(!B||B.lock)return;
+  const {k,e,M,phase}=cur();
+  const help=C.helpLevel(phase,B.miss);
+  // お手本や その一画を 見せているときは、見えている場所どおりに判定する
+  const tol=help==='stroke'||help==='model'?C.PHASES[0].tol:C.PHASES[phase].tol;
+  const r=C.judgeFree(user,M,B.pos,{tol,offset:B.off});
+  if(r.ok)return accept(user,false);
+  B.miss++;B.combo=0;B.missTotal++;
+  if(phase>0){logMiss(k,B.pos,r.reason);B.hp--;if(B.boss)B.bossMiss[k]=(B.bossMiss[k]||0)+1}
+  sfx.miss();anim($('sprite'),'guard');anim($('canvas'),'shake');
+  B.flash={pts:user,until:Date.now()+450};
+  const next=C.helpLevel(phase,B.miss);
+  const tail=next==='stroke'?' オレンジの線を なぞろう。':next==='dot'?' 緑の点から 書き始めよう。':'';
+  const why={order:`書きじゅんが ちがうよ！ それは ${r.at+1}画目。いまは ${B.pos+1}画目。`,reverse:'むきが ぎゃくだよ。',start:'書き始めの 場所が ちがうよ。',end:'書き終わりの 場所が ちがうよ。',long:'二画を つなげて 書いていないかな？ 一画ずつ はなして 書こう。',short:'みじかすぎるよ。さいごまで しっかり 書こう。',shape:'形が ちがうよ。'}[r.reason]||'おしい！';
+  msg(`${B.pos+1}画目：${why}${tail}`,'bad');
+  if(B.miss>=C.AUTO_AFTER){msg(`${B.pos+1}画目は こう書くよ。よく見て、つぎへ 進もう。`);B.hp=Math.max(1,B.hp);return accept(C.shift(M[B.pos],B.off),true)}
+  if(next==='stroke')playDemo();
+  renderHud();
+  if(B.hp<=0)return heroDown();
+  redraw();setTimeout(redraw,470);
+}
+function accept(pts,auto){
+  const {e,M,phase}=cur();
+  B.ink.push({pts,part:C.partOf(e,B.pos),auto});
+  if(!auto&&phase>0){B.pairs.push({u:C.centroid(pts),m:C.centroid(M[B.pos])});B.off=C.driftOf(B.pairs)}
+  const helped=auto||B.miss>0||B.helpAsked;
+  if(!auto){B.combo++;B.maxCombo=Math.max(B.maxCombo,B.combo);sfx.hit(B.combo);anim($('sprite'),'hit');damagePop(B.combo>=3?`${B.combo}コンボ！`:'ザシュ！');if(!helped)msg(['いいね！','そのちょうし！','ナイス！','きれいに 入った！'][B.pos%4],'good')}
+  B.done++;B.pos++;B.miss=0;B.helpAsked=false;B.demo=null;
+  const part=e.parts[B.ink[B.ink.length-1].part];
+  if(B.pos===part.to&&B.pos<M.length){sfx.part();banner(`🛡 ${part.name} の たてが われた！`);msg(B.boss?`「${part.name}」が 書けた！ つぎの 部品へ。`:`「${part.name}」が 書けた！ つぎは「${e.parts[C.partOf(e,B.pos)].name}」。`,'good')}
+  renderShields();renderHud();redraw();
+  if(B.pos>=M.length)kanjiDone();
+}
+function kanjiDone(){
+  B.lock=true;const {k,e}=cur();
+  B.final=true;redraw();sfx.part();
+  const lastPhase=B.pi===B.phases.length-1,lastKanji=B.qi===B.list.length-1;
+  banner(lastPhase?`「${e.k}」 書けた！`:`第${B.pi+1}形たい げきは！`,1200);
+  setTimeout(()=>{
+    B.final=false;
+    if(!lastPhase){B.pi++;return loadKanji()}
+    // テストで 2回以上 外れた字は、さいごに もう一度だけ 出てくる
+    if(B.boss&&!B.requeued&&lastKanji){B.requeued=true;const back=B.list.filter(x=>B.bossMiss[x]>=2);if(back.length){B.list=B.list.concat(back);B.total+=back.reduce((s,x)=>s+MODELS[x].length,0);banner('まだ たおれない！ にがてな字が もう一度 くる！',1600)}}
+    if(B.qi<B.list.length-1){B.qi++;B.pi=0;return loadKanji()}
+    victory();
+  },1300);
+}
+function heroDown(){
+  B.lock=true;msg('いたた…。いったん 立てなおして、この形たいを さいしょから！','bad');banner('💫 立てなおし！',1200);
+  setTimeout(()=>{B.done-=B.pos;B.hp=HERO_HP;loadKanji()},1400);
+}
+function victory(){
+  sfx.win();anim($('sprite'),'dead');
+  const n=C.KANJI.length,stars=B.missTotal===0?3:B.missTotal<=3?2:1;
+  save.best=Math.max(save.best,B.maxCombo);
+  if(B.boss){save.step=n+1;save.clears++}else save.step=Math.max(save.step,C.KANJI.findIndex(e=>e.k===B.list[0])+1);
+  store();
+  setTimeout(()=>{
+    $('resultTitle').textContent=B.boss?'🎉 塔のぬしを たおした！':`${cur().e.name}を たおした！`;
+    $('resultStars').textContent='⭐'.repeat(stars)+'☆'.repeat(3-stars);
+    $('resultText').textContent=`さいだい ${B.maxCombo} コンボ ／ 外れた画 ${B.missTotal}`+(B.missTotal===0?'　かんぺき！':'');
+    $('resultOv').classList.add('on');
+  },800);
+}
+$('resultOk').onclick=()=>{$('resultOv').classList.remove('on');B=null;renderMap();show('map')};
+$('retreat').onclick=()=>{B=null;renderMap();show('map')};
+$('hintBtn').onclick=()=>{if(!B||B.lock)return;B.helpAsked=true;B.combo=0;if(B.miss<2)B.miss=2;renderHud();msg(`${B.pos+1}画目は こう書くよ。オレンジの線を なぞろう。`);playDemo()};
+
+/* ---------- キャンバス ---------- */
+const cv=$('canvas'),ctx=cv.getContext('2d');
+let size=300;
+function fit(){
+  const b=$('board');if(!b.clientWidth)return;
+  size=Math.floor(Math.max(160,Math.min(b.clientWidth,b.clientHeight)-8));
+  const dpr=window.devicePixelRatio||1;
+  cv.style.width=cv.style.height=size+'px';cv.width=cv.height=Math.round(size*dpr);
+  redraw();
+}
+addEventListener('resize',()=>{fit();setTimeout(fit,300)});
+function line(pts,color,w,alpha){if(!pts||pts.length<2)return;ctx.save();ctx.globalAlpha=alpha==null?1:alpha;ctx.strokeStyle=color;ctx.lineWidth=w;ctx.lineCap='round';ctx.lineJoin='round';ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i][0],pts[i][1]);ctx.stroke();ctx.restore()}
+function redraw(){
+  const s=cv.width/109;ctx.setTransform(s,0,0,s,0,0);ctx.clearRect(0,0,109,109);
+  // マスの線
+  ctx.save();ctx.strokeStyle='#d9d2bd';ctx.lineWidth=.5;ctx.setLineDash([2,2]);ctx.beginPath();ctx.moveTo(54.5,3);ctx.lineTo(54.5,106);ctx.moveTo(3,54.5);ctx.lineTo(106,54.5);ctx.stroke();ctx.restore();
+  if(!B)return;
+  const {M,phase}=cur(),help=B.pos<M.length?C.helpLevel(phase,B.miss):'none';
+  if(B.final){for(const m of M)line(m,'#2b2760',5.5);return}
+  if(help==='model')for(let i=B.pos;i<M.length;i++)line(M[i],'#b9b3a0',5.5,.55);
+  for(const k of B.ink)line(k.pts,k.auto?'#9a94b8':'#2b2760',5);
+  if(B.pos<M.length){
+    const m=C.shift(M[B.pos],B.off);
+    if(help==='stroke')line(m,'#ff9f1c',5.5,.5);
+    if(B.demo){const t=Math.min(1,(Date.now()-B.demo)/650),r=ST.resample(m,30);line(r.slice(0,Math.max(2,Math.ceil(t*30))),'#ff7b00',5.5,.9);if(t<1)requestAnimationFrame(redraw);else B.demo=null}
+    if(help!=='none'){ctx.save();ctx.fillStyle='#22b455';ctx.beginPath();ctx.arc(m[0][0],m[0][1],3.6,0,Math.PI*2);ctx.fill();
+      if(help==='model'||help==='stroke'){ctx.fillStyle='#fff';ctx.font='bold 4.6px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(String(B.pos+1),m[0][0],m[0][1]+.3)}ctx.restore()}
+  }
+  if(B.flash&&Date.now()<B.flash.until)line(B.flash.pts,'#ff4d6d',5,.7);
+  if(B.live)line(B.live,'#4a3fd1',5);
+}
+function playDemo(){B.demo=Date.now();redraw()}
+let pid=null;
+function pt(ev){const r=cv.getBoundingClientRect();return[(ev.clientX-r.left)/r.width*109,(ev.clientY-r.top)/r.height*109]}
+cv.addEventListener('pointerdown',ev=>{if(!B||B.lock||pid!==null)return;ev.preventDefault();pid=ev.pointerId;try{cv.setPointerCapture(pid)}catch(e){}B.demo=null;B.live=[pt(ev)];redraw()});
+cv.addEventListener('pointermove',ev=>{if(ev.pointerId!==pid||!B||!B.live)return;ev.preventDefault();const list=ev.getCoalescedEvents?ev.getCoalescedEvents():[ev];for(const e of list.length?list:[ev])B.live.push(pt(e));redraw()});
+function up(ev){if(ev.pointerId!==pid)return;pid=null;if(!B||!B.live)return;const user=B.live;B.live=null;if(user.length<2||ST.polyLength(user)<2){redraw();return}strokeEnd(user)}
+cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
+document.addEventListener('touchmove',ev=>{if($('battle').classList.contains('active')&&ev.cancelable)ev.preventDefault()},{passive:false});
+document.addEventListener('gesturestart',ev=>ev.preventDefault());
+
+/* ---------- 保護者用：つまずいた画 ---------- */
+$('openLog').onclick=()=>{
+  const items=C.KANJI.map(e=>{
+    const m=save.miss[e.k]||{},bad=Object.keys(m).map(Number).sort((a,b)=>m[b].n-m[a].n);
+    const note=bad.length?bad.slice(0,4).map(i=>`${i+1}画目 ×${m[i].n}${m[i].order?`（うち書き順 ${m[i].order}）`:''}`).join('<br>'):'外れなし';
+    return `<div class="logitem"><svg viewBox="0 0 109 109">${kanjiSvg(e,{color:i=>m[i]?'#e63946':'#c9c5d8',width:4})}</svg><small>${note}</small></div>`;
+  });
+  $('logList').innerHTML=items.join('');
+  $('logOv').classList.add('on');
+};
+$('logClose').onclick=()=>$('logOv').classList.remove('on');
+
+renderMap();
+</script>
+</body>
+</html>
