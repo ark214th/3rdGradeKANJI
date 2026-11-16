@@ -1,7 +1,7 @@
 /*
- * 漢字の塔（試作3）— 画面に依存しない部分。
- * 「書く前に形を知る」練習：読みから字をえらぶ → 部品を正しい場所に置く → 書き順をタップ → ゆるいなぞり → 思い出して書く。
- * 字は日をあけて戻ってきて、そのたびに段（lv）が上がる。
+ * 漢字の塔（試作4）— 画面に依存しない部分。
+ * 「書く前に形を知る」練習：読みから字をえらぶ → 部品をえらぶ・正しい場所に置く → 書き順をタップ → ゆるいなぞり → 思い出して書く。
+ * 1日の上限はなく、出来に合わせて 字ごとの段（lv）と 次に出る日が かわる。テスト前は テストと同じ問題文で れんしゅうする。
  * 画の形の判定は chapter4/stroke-trace.js（StrokeTrace）を使う。座標は KanjiVG と同じ 109×109。
  * ブラウザでは window.TowerCore、node では require() で使う。
  */
@@ -14,21 +14,29 @@
   const KANJI = DATA.kanji;
 
   const MAX_LV = 3;
-  const GAPS = [1, 2, 4, 7];      // lv が 1,2,3 になったあと、次に出るまでの日数（さいごは 仕上がった後の見直し）
+  const GAPS = [1, 2, 4, 7];      // lv が 1,2,3 になったあと、次に「ふっかつ」するまでの日数（さいごは 仕上がった後の見直し）
   const KNOWN_LV = 2;             // 1・2年生の字は「もう知っているはず」として、確かめる段から始める
-  const BUFFER_DAYS = 3;          // テスト前のこの日数は、新しい字を入れず 見直しだけにする
+  const INTRO_DAYS = 3;           // はじめの この日数で、ぜんぶの字に 一度は出会う（1日の めやす）
+  const EXAM_DAYS = 3;            // テスト前の この日数は、テストれんしゅうを すすめる
   const FLOOR_SIZE = 3;           // 1かい（ひとくぎり）で たたかう数
+  const EXAM_SIZE = 10;           // テストれんしゅう 1回の問題数
   const TRACE_TOL = 28;           // なぞりは ゆるく：向きと おおよその場所だけ見る
   const TRACE_AUTO = 3;           // 同じ画で これだけ外れたら、代わりに書いて進む
 
   // 段ごとの練習の流れ
   const STEPS = [
     ['meet', 'build', 'order', 'trace'],     // lv0：はじめまして（お手本つき）
-    ['pick', 'build', 'trace', 'recall'],    // lv1：思い出しながら
-    ['pick', 'recall'],                      // lv2〜：テストと同じ
+    ['pick', 'part', 'trace', 'recall'],     // lv1：思い出しながら
+    ['part', 'recall'],                      // lv2：部品を たしかめて、思い出して書く
+    ['pick', 'recall'],                      // lv3：テストと同じ
   ];
-  // 部品が1つだけの字は「くみたて」をしない
-  const stepsFor = (lv, entry) => STEPS[Math.min(lv, STEPS.length - 1)].filter(s => s !== 'build' || !entry || entry.parts.length > 1);
+  // 部品が1つだけの字は「くみたて」「部品えらび」をしない（lv2 は かわりに「どの字？」）
+  function stepsFor(lv, entry) {
+    const steps = STEPS[Math.min(lv, STEPS.length - 1)];
+    if (!entry || entry.parts.length > 1) return steps.slice();
+    const out = steps.filter(s => s !== 'build' && s !== 'part');
+    return out.length < 2 && !out.includes('pick') ? ['pick'].concat(out) : out;
+  }
   const startLv = entry => (entry && entry.known ? KNOWN_LV : 0);
   const lvOf = (rec, entry) => (rec ? rec.lv | 0 : startLv(entry));
 
@@ -91,40 +99,77 @@
   function addDays(key, n) { return dayKey(toDate(key), n); }
   const toDate = key => new Date(Math.floor(key / 10000), Math.floor(key / 100) % 100 - 1, key % 100);
   const daysBetween = (a, b) => Math.round((toDate(b) - toDate(a)) / 86400000);
+  const strokesOf = e => e.parts[e.parts.length - 1].to;
+
   /*
-   * きょう出す字（テストの日から逆算する）。
-   * 1) 戻ってきた字（古い順） 2) はじめての 3年生の字 3) 知っているはずの字の確かめ
-   * 2) と 3) は、テストの BUFFER_DAYS 日前までに全部 一度は出るように、1日の数を決める。
-   * recs[k].first が きょうの字は「きょう もう始めた分」として数から引く。
+   * いまの ようす。1日の上限は ない（いくらでも遊べる）。
+   * due: ふっかつした字（弱い字・古い字が先）／fresh: まだ出会っていない3年生の字（画数の少ない順）
+   * check: まだ確かめていない1・2年生の字／extra: 出会ったけれど まだ ふっかつしていない字（弱い字・ごぶさたの字が先）
    */
-  function todayPlan(recs, entries, today, testDay) {
-    const started = e => !!recs[e.k];
-    const due = entries.filter(e => started(e) && recs[e.k].next <= today).sort((a, b) => recs[a.k].next - recs[b.k].next);
-    const learnDays = Math.max(1, daysBetween(today, testDay) - BUFFER_DAYS);
-    const pick = (known, lo, hi) => {
-      // はじめての字は、画数の少ないものから（やさしい字で はずみをつける）
-      const strokes = e => e.parts[e.parts.length - 1].to;
-      const rest = entries.filter(e => !started(e) && !!e.known === known).sort((a, b) => (known ? 0 : strokes(a) - strokes(b)));
-      const doneToday = entries.filter(e => started(e) && recs[e.k].first === today && !!e.known === known).length;
-      const rate = Math.max(lo, Math.min(hi, Math.ceil((rest.length + doneToday) / learnDays)));
-      return rest.slice(0, Math.max(0, rate - doneToday));
+  function queues(recs, entries, today) {
+    const met = e => !!recs[e.k];
+    const by = (...keys) => (a, b) => { for (const f of keys) { const d = f(a) - f(b); if (d) return d; } return 0; };
+    return {
+      due: entries.filter(e => met(e) && recs[e.k].next <= today).sort(by(e => recs[e.k].lv, e => recs[e.k].next, e => recs[e.k].t || 0)),
+      fresh: entries.filter(e => !met(e) && !e.known).sort(by(strokesOf)),
+      check: entries.filter(e => !met(e) && e.known),
+      extra: entries.filter(e => met(e) && recs[e.k].next > today).sort(by(e => (recs[e.k].last === today ? 1 : 0), e => recs[e.k].lv, e => recs[e.k].t || 0)),
     };
-    const fresh = pick(false, 2, 5), check = pick(true, 2, 6);
-    return { due: due.map(e => e.k), fresh: fresh.map(e => e.k), check: check.map(e => e.k), list: due.concat(fresh, check).map(e => e.k) };
   }
   /*
-   * 1字の練習が終わったときの記録。
-   * result: 'good'（おなじに書けた／思い出す場面なし）、'close'（すこし ちがった）、'forgot'（思い出せなかった）
-   * good は段が上がる。close は同じ段を あした もう一度。forgot は 思い出しながらの段（lv1）へ戻る。
+   * つぎの かい（n体）。ふっかつ・はじめての字・たしかめを 順ぐりにまぜる。
+   * ぜんぶ なくなっても、おまけの練習（extra）で いつでも n体 そろう。
    */
-  function advance(rec, result, today, entry) {
+  function nextFloor(recs, entries, today, n) {
+    const q = queues(recs, entries, today), out = [];
+    const src = [['due', q.due], ['new', q.fresh], ['check', q.check]];
+    for (let i = 0; out.length < (n || FLOOR_SIZE) && src.some(s => s[1].length); i++) {
+      const s = src[i % src.length];
+      if (s[1].length) out.push({ k: s[1].shift().k, kind: s[0] });
+    }
+    for (const e of q.extra) { if (out.length >= (n || FLOOR_SIZE)) break; out.push({ k: e.k, kind: 'extra' }); }
+    return out;
+  }
+  /*
+   * きょうの めやす（のこり何体か）。こえても 止めない。
+   * ふっかつした字は ぜんぶ。はじめての字は、開始から INTRO_DAYS 日で 全部に出会える数。
+   */
+  function guide(recs, entries, today, startDay) {
+    const q = queues(recs, entries, today);
+    const left = Math.max(1, INTRO_DAYS - Math.max(0, daysBetween(startDay || today, today)));
+    const metToday = entries.filter(e => recs[e.k] && recs[e.k].first === today).length;
+    const unmet = q.fresh.length + q.check.length;
+    const intro = Math.min(unmet, Math.max(0, Math.ceil((unmet + metToday) / left) - metToday));
+    return { due: q.due.length, intro, unmet, count: q.due.length + intro };
+  }
+  /*
+   * 1字の練習が終わったときの記録（出来に合わせて、段と 次に出る日が かわる）。
+   * result: 'good'（同じに書けた／まちがいなし）、'close'（すこし ちがった・えらぶ問題で まちがえた）、'forgot'（思い出せなかった）
+   * - good: 段が上がる。ただし ★3（lv3）は、前に練習した日と ちがう日に書けたときだけ（ねむった後も おぼえているか）。
+   * - close: 同じ段（lv0 は lv1 へ）。あした もう一度。
+   * - forgot: lv2 以上は lv1 へ、lv1 以下は お手本つきの lv0 へ。きょうのうちに もう一度 出る。
+   * まちがいが 2回以上ある字は、次に出るまでの日数を 半分にする。
+   */
+  function advance(rec, result, today, entry, now) {
     const lv = lvOf(rec, entry);
-    const nlv = result === 'good' ? Math.min(MAX_LV, lv + 1) : result === 'close' ? Math.max(1, lv) : 1;
-    const gap = result !== 'good' ? 1 : lv >= MAX_LV ? GAPS[MAX_LV] : GAPS[nlv - 1];
-    return { lv: nlv, next: addDays(today, gap), seen: ((rec && rec.seen) | 0) + 1, first: (rec && rec.first) || today };
+    let nlv = result === 'good' ? Math.min(MAX_LV, lv + 1) : result === 'close' ? Math.max(1, lv) : lv >= 2 ? 1 : 0;
+    if (result === 'good' && nlv === MAX_LV && rec && rec.last === today && lv < MAX_LV) nlv = MAX_LV - 1;
+    const miss = ((rec && rec.miss) | 0) + (result === 'good' ? 0 : 1);
+    let gap = result === 'forgot' ? 0 : result === 'close' ? 1 : lv >= MAX_LV ? GAPS[MAX_LV] : GAPS[Math.max(1, nlv) - 1];
+    if (result === 'good' && miss >= 2) gap = Math.max(1, Math.ceil(gap / 2));
+    return { lv: nlv, next: addDays(today, gap), seen: ((rec && rec.seen) | 0) + 1, first: (rec && rec.first) || today, last: today, miss, t: now || Date.now() };
   }
 
-  const api = { KANJI, DATA, MAX_LV, GAPS, KNOWN_LV, BUFFER_DAYS, FLOOR_SIZE, TRACE_TOL, TRACE_AUTO, stepsFor, startLv, lvOf, prep, boxOf, partOf, distToStroke, pickStroke, judgeTrace, dayKey, addDays, daysBetween, todayPlan, advance };
+  /*
+   * テストれんしゅうの出題（n問）：まだ ○ に なっていない問題 → 前に × だった問題 → 前に やってから 時間がたった問題。
+   * tq[id] = { r: 'good' | 'bad', t: いつ }
+   */
+  function examList(tq, questions, n) {
+    const rank = q => { const r = tq[q.id]; return !r ? 1 : r.r === 'bad' ? 0 : 2; };
+    return questions.slice().sort((a, b) => rank(a) - rank(b) || ((tq[a.id] || {}).t || 0) - ((tq[b.id] || {}).t || 0) || a.id - b.id).slice(0, n || EXAM_SIZE);
+  }
+
+  const api = { KANJI, DATA, MAX_LV, GAPS, KNOWN_LV, INTRO_DAYS, EXAM_DAYS, FLOOR_SIZE, EXAM_SIZE, TRACE_TOL, TRACE_AUTO, stepsFor, startLv, lvOf, prep, boxOf, partOf, distToStroke, pickStroke, judgeTrace, dayKey, addDays, daysBetween, queues, nextFloor, guide, advance, examList };
   root.TowerCore = api;
   if (typeof module !== 'undefined') module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

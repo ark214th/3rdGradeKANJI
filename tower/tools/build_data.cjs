@@ -33,8 +33,17 @@ const ODD = /[畀开彡咅帚乍且孝枼勿癶亠凵儿丨亅龶丷乀𠂉]/u;
 const WHOLE = new Set('事央出');
 const POS = { left: '左の 部品', right: '右の 部品', top: '上の 部品', bottom: '下の 部品' };
 // 形がにている部品（にせもの えらびで 先に使う）
-const ALIKE = { '亻': '彳氵扌', '彳': '亻氵', '氵': '亻彳', '禾': '木米矢', '矢': '禾失夫', '日': '目白田', '目': '日白自', '白': '日目自', '自': '目白日', '主': '王生土', '王': '主生', '生': '主王', '木': '禾米本',
-  '糸': '禾幺', '田': '日由口', '口': '日田', '女': '子又文', '广': '尸厂', '尸': '广', '土': '士王', '寸': '才', '門': '間', '豆': '立員', '及': '反友', '比': '化北', '言': '音', '由': '田', '皮': '反', '立': '豆音' };
+const ALIKE = { '亻': '彳氵扌忄', '彳': '亻氵', '氵': '冫亻彳', '扌': '才牜木', '糸': '幺禾米', '禾': '木米矢', '矢': '失禾夫', '木': '禾扌牛本', '牜': '扌木', '牛': '扌木午',
+  '日': '目白田月', '月': '日目', '目': '日白自貝', '白': '日目自', '自': '目白日', '貝': '目見頁', '口': '日田', '田': '日由口', '由': '田',
+  '宀': '冖穴艹', '艹': '竹宀', '广': '厂疒尸', '尸': '广戸', '門': '間', '阝': '卩', '⻖': '卩', '言': '音', '馬': '鳥', '方': '万力', '寺': '持等', '主': '王生土', '王': '主生', '生': '主王',
+  '士': '土', '土': '士王', '及': '乃反友', '豆': '立員', '皆': '背', '至': '室', '尺': '尸', '直': '真', '冬': '各', '召': '台', '占': '古', '云': '去', '女': '子又文', '子': '了',
+  '斤': '斥', '欠': '次', '攵': '夂又', '父': '交', '止': '上', '大': '太犬', '耳': '目', '比': '化北', '皮': '反', '立': '豆音', '寸': '才' };
+// 「どの字？」で混ぜる、まぎらわしい字（形・読み・意味がにている字）
+const CONFUSE = { '人': '入八大', '形': '型刑開', '目': '日自白', '鼻': '花算自', '歯': '葉羽止', '漢': '感館湯', '字': '学子寺', '交': '文父校', '中': '虫仲申', '央': '大夫英', '二': '三一工',
+  '階': '皆陽界', '住': '往注柱', '部': '都郡倍', '屋': '室居局', '今': '令合会', '朝': '期明昼', '出': '山止入', '発': '登開始', '旅': '族放方', '行': '待竹後', '帰': '掃婦返', '委': '季秀妻',
+  '員': '貝買院', '会': '合今絵', '仕': '任士使', '事': '書争筆', '学': '字覚楽', '級': '給紙吸', '新': '親進所', '聞': '間問開', '作': '昨使休', '昭': '照招明', '和': '知秋話', '店': '点庭庫',
+  '駅': '験訳役', '電': '雲雪伝', '車': '東軍重', '待': '持特行', '組': '祖細紙', '教': '数考放', '皮': '反波川', '皿': '血四回', '終': '冬紙絵', '短': '豆知頭', '歌': '次飲家', '楽': '薬果学',
+  '言': '信音語', '葉': '薬落歯', '表': '麦青現', '生': '主王牛', '先': '光洗兄', '植': '直根橋', '物': '牧特動' };
 // 覚え方の一言（あるものだけ。ないものは部品名から作る）
 const MEMO = { '住': '人（にんべん）が、主（あるじ）の いえに 住む。', '短': '矢（や）も 豆（まめ）も、どちらも 短い。', '委': 'いね（禾）を、女の人に 委（ゆだ）ねる。上が 禾、下が 女。',
   '級': '糸（いと）が つぎつぎ 及（およ）んで、学級の なかまに なる。', '階': 'おか（こざとへん）を、皆（みんな）で のぼる 階だん。', '鼻': '「自」ぶんの 顔の まん中。「田」と 台が 下に つく。',
@@ -89,6 +98,7 @@ function partsOf(k) {
     else parts.push(g);
   }
   if (n !== STROKES[k].length) throw new Error(`${k}: stroke count ${n} != ${STROKES[k].length}`);
+  for (const g of parts) g.src = k;
   if (n <= 4 || WHOLE.has(k) || parts.length < 2 || parts[0].from !== 1 || parts[parts.length - 1].to !== n) return [{ el: k, pos: '', from: 1, to: n, whole: true }];
   return parts;
 }
@@ -114,36 +124,36 @@ for (const q of questions) for (const c of q.a) if (isKanji(c) && !firstQ[c]) { 
 const raw = {};
 for (const k of order) raw[k] = partsOf(k);
 
-// にせもの部品の候補：すべての字の部品と、画数の少ない字そのもの
+// にせもの部品の候補：第4章に出てくる すべての漢字の部品と、画数の少ない字そのもの
 const pool = [];
-for (const k of order) {
-  if (raw[k].length > 1) for (const p of raw[k]) pool.push({ src: k, from: p.from, to: p.to, el: p.el || `${k}#${p.from}`, n: p.to - p.from + 1, b: box(k, p.from, p.to) });
-  if (STROKES[k].length <= 7) pool.push({ src: k, from: 1, to: STROKES[k].length, el: k, n: STROKES[k].length, b: box(k, 1, STROKES[k].length) });
+for (const k of Object.keys(STROKES).filter(isKanji)) {
+  let ps;
+  try { ps = raw[k] || partsOf(k); } catch (e) { continue; }
+  if (ps.length > 1) for (const p of ps) pool.push({ src: k, from: p.from, to: p.to, el: p.el || `${k}#${p.from}`, pos: p.pos, n: p.to - p.from + 1, b: box(k, p.from, p.to) });
+  if (STROKES[k].length <= 7) pool.push({ src: k, from: 1, to: STROKES[k].length, el: k, pos: '', n: STROKES[k].length, b: box(k, 1, STROKES[k].length) });
 }
-function decoysFor(k) {
-  const own = new Set(raw[k].map(p => p.el).concat(k));
-  const picked = [], used = new Set();
-  // 部品を順ぐりに見て、それぞれに いちばん にている候補を1つずつ（合計3つまで）
-  const cand = raw[k].map(p => {
-    const b = box(k, p.from, p.to), n = p.to - p.from + 1, like = ALIKE[p.el] || '';
-    return pool.filter(c => !own.has(c.el) && c.src !== k).map(c => ({ c, s: (like.includes(c.el) ? -100 : 0) + Math.abs(c.n - n) * 3 + Math.abs(Math.log((c.b.w + 6) / (c.b.h + 6)) - Math.log((b.w + 6) / (b.h + 6))) * 10 })).sort((x, y) => x.s - y.s || (x.c.src + x.c.from < y.c.src + y.c.from ? -1 : 1));
-  });
-  for (let round = 0; picked.length < 3 && round < 6; round++) for (const list of cand) {
-    const hit = list.find(x => !used.has(x.c.el));
-    if (hit && picked.length < 3) { used.add(hit.c.el); picked.push({ src: hit.c.src, from: hit.c.from, to: hit.c.to }); }
-  }
-  return picked;
+const shape = b => Math.log((b.w + 6) / (b.h + 6));
+// 部品ごとに、にている別の部品を3つ：形がにている部品 → 同じ場所の部品 → 画数と たてよこの形が近い部品
+function altsFor(k, p) {
+  const own = new Set(raw[k].map(q => q.el).concat(k)), b = box(k, p.from, p.to), n = p.to - p.from + 1, like = ALIKE[p.el] || '';
+  const list = pool.filter(c => !own.has(c.el) && c.src !== k && c.el !== p.el)
+    .map(c => ({ c, s: (like.includes(c.el) ? -100 : 0) + (p.pos && c.pos === p.pos ? -6 : 0) + Math.abs(c.n - n) * 3 + Math.abs(shape(c.b) - shape(b)) * 10 }))
+    .sort((x, y) => x.s - y.s || (x.c.src + x.c.from < y.c.src + y.c.from ? -1 : 1));
+  const used = new Set(), out = [];
+  for (const x of list) { if (used.has(x.c.el)) continue; used.add(x.c.el); out.push({ src: x.c.src, from: x.c.from, to: x.c.to }); if (out.length === 3) break; }
+  return out;
 }
 
 const out = order.map((k, i) => {
-  const parts = raw[k].map(p => ({ name: nameOf(p, k, raw[k]), from: p.from, to: p.to }));
+  const parts = raw[k].map(p => Object.assign({ name: nameOf(p, k, raw[k]), from: p.from, to: p.to }, raw[k].length > 1 ? { alts: altsFor(k, p) } : {}));
+  if (!CONFUSE[k]) throw new Error(`no confusable kanji for ${k}`);
   const { q, note } = promptFor(firstQ[k], k);
   const read = (q.match(/\[(.+?)\]/) || [])[1] || '';
   const mon = MONSTERS[i % MONSTERS.length];
   const e = { k, q, enemy: mon[0], name: `${read.slice(0, 4)}${mon[1]}`, parts };
   if (note) e.note = note;
   if (KNOWN.has(k)) e.known = true;
-  if (parts.length > 1) e.decoys = decoysFor(k);
+  e.alts = CONFUSE[k];
   e.memo = MEMO[k] || (parts.length > 1 ? `「${parts.map(p => p.name).join('」と「')}」で できている。` : 'ひとまとまりの 字。書きじゅんを よく 見よう。');
   return e;
 });
@@ -155,7 +165,9 @@ process.stdout.write(`/*
  * https://creativecommons.org/licenses/by-sa/3.0/
  */
 (function (root) {
-  var D = { tests: ${JSON.stringify(tests)}, kanji: [
+  var D = { tests: ${JSON.stringify(tests)}, questions: [
+${questions.map(q => '    ' + JSON.stringify({ id: q.id, q: q.p.replace(/<span class='reading'>(.*?)<\/span>/, '[$1]').replace(/<[^>]*>/g, ''), a: q.a })).join(',\n')}
+  ], kanji: [
 ${out.map(e => '    ' + JSON.stringify(e)).join(',\n')}
   ] };
   root.TOWER_DATA = D;
