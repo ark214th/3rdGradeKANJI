@@ -11,7 +11,7 @@ const scene=(fn,...a)=>{try{if(window.TowerScene)return window.TowerScene[fn](..
 /* ---------- 保存（塔だけのキー。第1〜4章の記録にはさわらない） ---------- */
 const SAVE_KEY='kanjiTower_v1';
 const blank=()=>({v:1,hero:{xp:0,gold:0,floor:0,owned:['w0'],weapon:'w0'},range:'',ranges:{},dayOffset:0});
-const blankRange=()=>({recs:{},testDay:0,startDay:0,tq:{},ink:{},crest:0,day:{d:0,floors:0,chest:false,boss:false}});
+const blankRange=()=>({recs:{},startDay:0,tq:{},ink:{},crest:0,day:{d:0,floors:0,chest:false,boss:false}});
 function loadSave(){try{const s=JSON.parse(localStorage.getItem(SAVE_KEY)||'null');if(!s||typeof s!=='object')return blank();const b=blank();
   s.hero=Object.assign(b.hero,s.hero||{});if(!Array.isArray(s.hero.owned)||!s.hero.owned.includes('w0'))s.hero.owned=['w0'];if(!s.ranges||typeof s.ranges!=='object')s.ranges={};
   return Object.assign(b,s)}catch(e){return blank()}}
@@ -32,8 +32,6 @@ const R=()=>save.ranges[save.range];
 const entryOf=k=>BYK[k];
 const lvOf=k=>C.lvOf(R().recs[k],entryOf(k));
 const met=k=>!!R().recs[k];
-// テストの日（保護者用で変えられる。はじめは 2週間後。すぎたら 次の2週間へ）
-function testDay(){const r=R();if(!r.testDay||C.daysBetween(today(),r.testDay)<0){r.testDay=C.addDays(today(),13);store()}return r.testDay}
 const guide=()=>C.guide(R().recs,RANGE.kanji,today(),R().startDay||today());
 const nextFloor=()=>C.nextFloor(R().recs,RANGE.kanji,today());
 const examOk=()=>RANGE.questions.filter(q=>R().tq[q.id]&&R().tq[q.id].r==='good').length;
@@ -76,10 +74,10 @@ function showGain(g,lv){$('winGain').innerHTML=(g.gold?`<span>🪙 +${g.gold} G<
 
 /* ---------- ホーム ---------- */
 function renderHome(){
-  const h=save.hero,w=C.weaponOf(h.weapon),g=guide(),list=nextFloor(),left=C.daysBetween(today(),testDay()),near=left<=C.EXAM_DAYS,d=day(),zone=C.zoneOf(h.floor);
+  const h=save.hero,w=C.weaponOf(h.weapon),g=guide(),list=nextFloor(),d=day(),zone=C.zoneOf(h.floor);
   $('hudLv').textContent=`Lv ${C.levelOf(h.xp)}`;$('hudXp').style.width=Math.round(C.levelProgress(h.xp)*100)+'%';$('hudGold').textContent=h.gold;
   $('hudWeapon').textContent=w.name;$('hudAtk').textContent=`こうげき ${C.attackOf(h.xp,h.weapon)}`;$('rangeTitle').textContent=RANGE.title;
-  $('floorNum').textContent=`${h.floor+1}かい`;$('zoneName').textContent=zone.name;$('daysLeft').innerHTML=`テストまで あと <b>${left}</b>日`;
+  $('floorNum').textContent=`${h.floor+1}かい`;$('zoneName').textContent=zone.name;
   const n=RANGE.kanji.length,seen=RANGE.kanji.filter(e=>met(e.k)).length,solid=RANGE.kanji.filter(e=>met(e.k)&&lvOf(e.k)>=C.MAX_LV).length;
   $('meterSeen').style.width=100*seen/n+'%';$('meterSolid').style.width=100*solid/n+'%';
   $('collectNote').textContent=`なかまの 漢字 ${seen}/${n}（★3つ ${solid}）`+(R().crest?`　${R().crest>1?'🏆':'🎖️'} ボスげきは`:'');
@@ -90,8 +88,10 @@ function renderHome(){
   $('chestBox').textContent=d.chest?'👑':'🎁';$('chestBox').className='box'+(d.chest?'':' open');
   const TAG={due:['ふっかつ',''],new:['あたらしい','new'],check:['たしかめ','new'],extra:['おまけ','']};
   $('nexts').innerHTML=list.map(x=>{const e=entryOf(x.k),m=met(x.k);return `<div class="next"><div class="k kyo">${m?x.k:'？'}</div><small>${e.name}</small><span class="tag ${TAG[x.kind][1]}">${TAG[x.kind][0]}</span></div>`}).join('');
-  $('openExam').className=near?'rec':'';
-  $('examNote').textContent=(near?'テストが 近いよ。ボス（テストと同じ問題）が おすすめ！　':'')+`ボスの問題 ○ ${examOk()}/${RANGE.questions.length}`;
+  // テストは いつ来るか わからないので、日数は出さない。ぜんぶの字に出会ったら、ボス（テストと同じ問題）を すすめる
+  const ready=seen===n&&examOk()<RANGE.questions.length;
+  $('openExam').className=ready?'rec':'';
+  $('examNote').textContent=(ready?'ぜんぶの字に 出会った！ ボス（テストと同じ問題）に いどもう。　':'')+`ボスの問題 ○ ${examOk()}/${RANGE.questions.length}`;
 }
 $('go').onclick=()=>{const list=nextFloor();if(list.length)startQuest(list)};
 
@@ -347,14 +347,12 @@ function renderParent(){
   const NAME={good:'⭕ 同じに書けた',close:'🔺 すこしちがった',forgot:'❌ 思い出せなかった'},r=R();
   $('parentGrid').innerHTML=RANGE.kanji.map(e=>{const k=r.ink[e.k],rec=r.recs[e.k];
     return `<div class="kcard"><svg viewBox="0 0 109 109">${kanjiSvg(e.k,()=>'#ffb3c0',4)}${k?k.s.map(s=>pathOf(polyD(s),'#1b1838',3.5)).join(''):''}</svg><small>${rec?`★${rec.lv}　つぎは ${String(rec.next).slice(4,6)}/${String(rec.next).slice(6)}${rec.miss?`　× ${rec.miss}`:''}`:'まだ'}<br>${k?NAME[k.r]:'（書く練習は まだ）'}</small></div>`}).join('');
-  const t=String(today()),td=String(testDay()),g=guide();
+  const t=String(today()),g=guide();
   $('parentDay').textContent=`塔の中の きょう：${+t.slice(4,6)}月${+t.slice(6)}日`+(save.dayOffset?`（おためしで ${save.dayOffset}日 進めています）`:'')+`　きょうの めやす：あと ${g.count}体（ふっかつ ${g.due}・はじめて ${g.intro}）　まだ出会っていない字 ${g.unmet}　ボスの問題 ○ ${examOk()}/${RANGE.questions.length}`;
-  $('testDate').value=`${td.slice(0,4)}-${td.slice(4,6)}-${td.slice(6)}`;
   $('trialKanji').innerHTML=RANGE.kanji.map(e=>`<option value="${e.k}">${e.k}</option>`).join('');
 }
 $('openParent').onclick=()=>{renderParent();$('parentOv').classList.add('on')};
 $('parentClose').onclick=()=>{$('parentOv').classList.remove('on');renderHome()};
-$('testDate').onchange=()=>{const v=$('testDate').value.replace(/-/g,'');if(/^\d{8}$/.test(v)&&C.daysBetween(today(),+v)>=0){R().testDay=+v;store()}renderParent()};
 $('trialGo').onclick=()=>{$('parentOv').classList.remove('on');startQuest([{k:$('trialKanji').value,kind:'extra'}],+$('trialLv').value)};
 $('trialNext').onclick=()=>{save.dayOffset=(save.dayOffset|0)+1;store();renderParent()};
 $('trialAuto').onclick=()=>{const t=today(),r=R();if(!r.startDay)r.startDay=t;let n=0;
