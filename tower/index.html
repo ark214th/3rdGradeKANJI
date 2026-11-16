@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="robots" content="noindex">
-<title>漢字の塔（試作3）</title>
+<title>漢字の塔（試作4）</title>
 <style>
 :root{--bg:#14122b;--panel:#221f45;--panel2:#2d2960;--ink:#f4f1ff;--sub:#b3add9;--gold:#ffd166;--good:#7be495;--bad:#ff7b8a}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -88,11 +88,11 @@ button.ghost{background:transparent;border:1px solid #514b8f;color:var(--sub);pa
 <body>
 
 <section class="screen active" id="home">
-  <h1>🗼 漢字の塔<span class="proto">試作3</span></h1>
+  <h1>🗼 漢字の塔<span class="proto">試作4</span></h1>
   <div class="floor"><div class="hero">🧙</div><div class="num" id="floorNum"></div><div id="floorText"></div></div>
   <div id="todayHead" style="color:var(--sub);font-size:14px"></div>
   <div class="today" id="today"></div>
-  <button class="primary" id="go">つぎの かいへ ▲</button>
+  <div class="row"><button class="primary" id="go">つぎの かいへ ▲</button><button id="openExam" style="font-size:18px">📝 テストれんしゅう</button></div>
   <div class="row"><button class="ghost" id="openBook">📖 漢字ずかん</button><button class="ghost" id="openParent">📋 保護者用</button><button class="ghost" id="openTrial">🧪 おためし</button></div>
   <p class="credit">書き順・お手本の字形：<a href="https://kanjivg.tagaini.net/" target="_blank" rel="noopener">KanjiVG</a>（© Ulrich Apel and contributors、CC BY-SA 3.0）</p>
 </section>
@@ -129,12 +129,12 @@ button.ghost{background:transparent;border:1px solid #514b8f;color:var(--sub);pa
   <p>日を待たずに、ぜんぶの練習と 2週間の流れを 見られます。</p>
   <h3 style="margin:14px 0 4px;font-size:16px">① すきな字・すきな段を ためす（記録は かわりません）</h3>
   <div class="row"><select id="trialKanji" class="kyo" style="font-size:22px;padding:6px 10px;border-radius:10px;border:0"></select>
-    <select id="trialLv" style="font:inherit;padding:8px 10px;border-radius:10px;border:0"><option value="0">はじめて（お手本つき）</option><option value="1">2回目（思い出しながら）</option><option value="2">3回目から（テストと同じ）</option></select>
+    <select id="trialLv" style="font:inherit;padding:8px 10px;border-radius:10px;border:0"><option value="0">★0：はじめて（お手本つき）</option><option value="1">★1：思い出しながら</option><option value="2">★2：部品えらび → 書く</option><option value="3">★3：テストと同じ</option></select>
     <button class="primary" id="trialGo">ためす</button></div>
   <h3 style="margin:16px 0 4px;font-size:16px">② 2週間を 早おくり（記録が 進みます）</h3>
   <p id="trialDay"></p>
-  <div class="row"><button id="trialNext">⏩ あしたへ 進む</button><button id="trialAuto">⏭ きょうの分を「書けた」にして あしたへ</button></div>
-  <p style="font-size:13px">「あしたへ進む」は、やり残しを 持ちこします。「書けたにして」は、きょうの分を ぜんぶ「同じに書けた」で 記録します。もとに もどすには、保護者用の「記録を 消す」。</p>
+  <div class="row"><button id="trialNext">⏩ あしたへ 進む</button><button id="trialAuto">⏭ きょうの めやす分を「書けた」にして あしたへ</button></div>
+  <p style="font-size:13px">「あしたへ進む」は、やり残しを 持ちこします。「書けたにして」は、きょうの めやす分を ぜんぶ「同じに書けた」で 記録します。もとに もどすには、保護者用の「記録を 消す」。</p>
   <div class="row" style="margin-top:12px"><button class="primary" id="trialClose">とじる</button></div>
 </div></div>
 
@@ -156,15 +156,14 @@ button.ghost{background:transparent;border:1px solid #514b8f;color:var(--sub);pa
 const C=TowerCore,ST=StrokeTrace,STROKES=KANJI_STROKES;
 const $=id=>document.getElementById(id);
 const COLORS=['#f08a00','#1e88e5','#43a047'],CHIP=['#ffb347','#6ec6ff','#b9f18c'];
-const ORDER=C.KANJI.map(e=>e.k);
 const MODELS={},BYK={};for(const e of C.KANJI){MODELS[e.k]=C.prep(STROKES[e.k]);BYK[e.k]=e}
 const entryOf=k=>BYK[k];
-const STEP_NAME={meet:'であう',pick:'どの字？',build:'くみたて',order:'書きじゅん',trace:'なぞる',recall:'思い出して 書く'};
+const STEP_NAME={meet:'であう',pick:'どの字？',build:'くみたて',order:'書きじゅん',trace:'なぞる',recall:'思い出して 書く',part:'部品えらび'};
 
 /* ---------- 保存（試作専用のキー。第1〜4章の記録にはさわらない） ---------- */
-const SAVE_KEY='kanjiTowerProto_v3';
-const blank=()=>({recs:{},floor:0,dayOffset:0,testDay:0,ink:{}});
-function loadSave(){try{const s=Object.assign(blank(),JSON.parse(localStorage.getItem(SAVE_KEY)||'{}'));for(const f of['recs','ink'])if(!s[f]||typeof s[f]!=='object')s[f]={};return s}catch(e){return blank()}}
+const SAVE_KEY='kanjiTowerProto_v4';
+const blank=()=>({recs:{},floor:0,dayOffset:0,testDay:0,startDay:0,ink:{},tq:{}});
+function loadSave(){try{const s=Object.assign(blank(),JSON.parse(localStorage.getItem(SAVE_KEY)||'{}'));for(const f of['recs','ink','tq'])if(!s[f]||typeof s[f]!=='object')s[f]={};return s}catch(e){return blank()}}
 let save=loadSave();
 function store(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(save))}catch(e){}}
 const today=()=>C.dayKey(new Date(),save.dayOffset|0);
@@ -172,7 +171,9 @@ const lvOf=k=>C.lvOf(save.recs[k],entryOf(k));
 const met=k=>!!save.recs[k];
 // テストの日（保護者用で変えられる。はじめは 2週間後）
 function testDay(){if(!save.testDay||C.daysBetween(today(),save.testDay)<0){save.testDay=C.addDays(today(),13);store()}return save.testDay}
-const plan=()=>C.todayPlan(save.recs,C.KANJI,today(),testDay());
+const guide=()=>C.guide(save.recs,C.KANJI,today(),save.startDay||today());
+const nextFloor=()=>C.nextFloor(save.recs,C.KANJI,today());
+const examOk=()=>C.DATA.questions.filter(q=>save.tq[q.id]&&save.tq[q.id].r==='good').length;
 
 /* ---------- 音（Web Audio） ---------- */
 let actx=null;
@@ -197,20 +198,22 @@ function pieceSvg(src,from,to,color){const M=C.prep(STROKES[src]),b=C.boxOf(M,fr
 
 /* ---------- ホーム ---------- */
 function renderHome(){
-  const P=plan(),list=P.list.slice(0,C.FLOOR_SIZE),left=C.daysBetween(today(),testDay());
+  const g=guide(),list=nextFloor(),left=C.daysBetween(today(),testDay()),near=left<=C.EXAM_DAYS;
   const solid=C.KANJI.filter(e=>met(e.k)&&lvOf(e.k)>=C.MAX_LV).length,seen=C.KANJI.filter(e=>met(e.k)).length;
   $('floorNum').textContent=`${save.floor+1} かい`;
   $('floorText').innerHTML=`テストまで あと <b>${left}</b>日　／　なかま ${seen}/${C.KANJI.length}（★3つ ${solid}）<div class="meter"><i style="width:${100*seen/C.KANJI.length}%"></i><i class="gold" style="width:${100*solid/C.KANJI.length}%"></i></div>`;
-  $('todayHead').textContent=P.list.length?`きょうは あと ${P.list.length}体（${Math.ceil(P.list.length/C.FLOOR_SIZE)}かい ぶん）。つぎの かいの まもの：`:'きょうの ぶんは おわり！ また あした のぼろう。';
-  $('today').innerHTML=list.map(k=>{const e=entryOf(k),lv=lvOf(k),m=met(k);return `<div class="trow"><div class="em">${e.enemy}</div><div><b>${e.name}</b><small>${m?`「${k}」 ${stars(lv)}`:e.known?'知っている字か たしかめる':'はじめての 漢字'}</small></div><span class="tag ${m?'':'new'}">${m?'ふっかつ':e.known?'たしかめ':'あたらしい'}</span></div>`}).join('');
-  $('go').hidden=!list.length;
+  $('todayHead').innerHTML=(near?'<b style="color:var(--gold)">テストが 近いよ。「テストれんしゅう」が おすすめ！</b><br>':'')+(g.count?`きょうの めやす：あと ${g.count}体（${Math.ceil(g.count/C.FLOOR_SIZE)}かい）。もっと のぼっても いいよ。`:'🎉 きょうの めやすは たっせい！ まだ のぼりたければ、いくらでも どうぞ。');
+  const TAG={due:['ふっかつ',''],new:['あたらしい','new'],check:['たしかめ','new'],extra:['おまけ','']};
+  $('today').innerHTML=list.map(x=>{const e=entryOf(x.k),lv=lvOf(x.k),m=met(x.k);return `<div class="trow"><div class="em">${e.enemy}</div><div><b>${e.name}</b><small>${m?`「${x.k}」 ${stars(lv)}`:e.known?'知っている字か たしかめる':'はじめての 漢字'}</small></div><span class="tag ${TAG[x.kind][1]}">${TAG[x.kind][0]}</span></div>`}).join('');
+  $('openExam').textContent=`📝 テストれんしゅう（○ ${examOk()}/${C.DATA.questions.length}）`;
+  $('openExam').className=near?'primary':'';
 }
-$('go').onclick=()=>{const list=plan().list.slice(0,C.FLOOR_SIZE);if(list.length)startQuest(list)};
+$('go').onclick=()=>{const list=nextFloor().map(x=>x.k);if(list.length)startQuest(list)};
 
 /* ---------- れんしゅう（1字＝まもの1体。ステップを1つ終えるたびに こうげき） ---------- */
 let Q=null,S=null; // Q: きょうの流れ、S: いまのステップの状態
 function startQuest(list,trialLv){Q={list,qi:0,results:[],trial:trialLv!=null,trialLv};show('quest');startKanji()}
-function startKanji(){const k=Q.list[Q.qi];Q.k=k;Q.e=entryOf(k);Q.M=MODELS[k];Q.lv=Q.trial?Q.trialLv:lvOf(k);Q.first=Q.trial?Q.lv===0:!met(k);Q.steps=C.stepsFor(Q.lv,Q.e).slice();Q.si=0;Q.result='good';Q.fix=false;
+function startKanji(){const k=Q.list[Q.qi];Q.k=k;Q.e=entryOf(k);Q.M=MODELS[k];Q.lv=Q.trial?Q.trialLv:lvOf(k);Q.first=Q.trial?Q.lv===0:!met(k);Q.steps=C.stepsFor(Q.lv,Q.e).slice();Q.si=0;Q.result='good';Q.fix=false;Q.slips=0;
   $('sprite').textContent=Q.e.enemy;$('sprite').className='sprite';$('ename').textContent=Q.e.name;startStep()}
 function renderBar(){$('stepLabel').textContent=`${Q.qi+1}/${Q.list.length}体目　${STEP_NAME[Q.steps[Q.si]]||'たおした！'}`;
   $('pips').innerHTML=Q.steps.map((_,i)=>`<i class="${i<Q.si?'off':''}"></i>`).join('')}
@@ -221,29 +224,49 @@ function stepDone(text){
   sfx.step();anim($('sprite'),'hit');Q.si++;renderBar();
   if(Q.si<Q.steps.length){banner(text||'ヒット！',800);S.lock=true;return setTimeout(startStep,850)}
   S.lock=true;anim($('sprite'),'dead');sfx.win();
-  const before=Q.lv,rec=C.advance(Q.trial?{lv:Q.lv}:save.recs[Q.k],Q.result,today(),Q.e);if(!Q.trial){save.recs[Q.k]=rec;store()}
+  // えらぶ問題で まちがえたときは、書けても「おしい」あつかい（出来に合わせて もう一度 出す）
+  const result=Q.result==='good'&&Q.slips>0&&Q.lv>=1?'close':Q.result;
+  const before=Q.lv,rec=C.advance(Q.trial?{lv:Q.lv}:save.recs[Q.k],result,today(),Q.e);
+  if(!Q.trial){save.recs[Q.k]=rec;if(!save.startDay)save.startDay=today();store()}
   setTimeout(()=>{
     $('winTitle').textContent=`${Q.e.enemy} ${Q.e.name}を たおした！`;
     $('winStars').innerHTML=`<span class="kyo">${Q.k}</span> <span style="color:var(--gold)">${stars(rec.lv)}</span>`;
-    $('winText').textContent=Q.first&&Q.result==='good'?`「${Q.k}」が なかまに なった！`+(Q.e.parts.length>1?' 部品も 手に入れた。':''):rec.lv>before?`「${Q.k}」が レベルアップ！`:Q.result==='close'?'おしい！ あした もう一度 たたかおう。':rec.lv===before?`「${Q.k}」は もう かんぺき！`:'だいじょうぶ。あした もう一度 いっしょに おぼえよう。';
+    $('winText').textContent=result==='forgot'?'だいじょうぶ。すぐ もう一度、お手本つきで おぼえよう。':result==='close'?'おしい！ あした もう一度 たたかおう。':Q.first?`「${Q.k}」が なかまに なった！`+(Q.e.parts.length>1?' 部品も 手に入れた。':''):rec.lv>before?`「${Q.k}」が レベルアップ！`:before>=C.MAX_LV?`「${Q.k}」は もう かんぺき！`:'書けた！ ★3つめは、べつの日に もう一度 書けたら もらえるよ。';
     $('winChips').innerHTML=Q.first&&Q.e.parts.length>1?Q.e.parts.map((p,i)=>`<span class="chip kyo" style="background:${CHIP[i]}">${p.name}</span>`).join(''):'';
     $('winOv').classList.add('on');
   },750);
 }
 $('winOk').onclick=()=>{$('winOv').classList.remove('on');
-  if(Q.done||Q.trial){Q=null;renderHome();return show('home')}
+  if(X||Q.done||Q.trial){Q=null;X=null;setStage(1);renderHome();return show('home')}
   if(Q.qi<Q.list.length-1){Q.qi++;return startKanji()}
-  save.floor++;store();Q.done=true;const rest=plan().list.length;
-  $('winTitle').textContent='🎉 1かい のぼった！';$('winStars').textContent='🗼';$('winText').textContent=`${save.floor+1}かいへ。`+(rest?`きょうは あと ${rest}体。つづけても、ひと休みしても いいよ。`:'きょうの ぶんは ぜんぶ おわり！ たおした字は 日を あけて ふっかつする。');$('winChips').innerHTML='';$('winOv').classList.add('on')};
-$('retreat').onclick=()=>{Q=null;renderHome();show('home')};
+  save.floor++;store();Q.done=true;const rest=guide().count;
+  $('winTitle').textContent='🎉 1かい のぼった！';$('winStars').textContent='🗼';$('winText').textContent=`${save.floor+1}かいへ。`+(rest?`きょうの めやすまで あと ${rest}体。つづけても、ひと休みしても いいよ。`:'きょうの めやすは たっせい！ まだ のぼっても、ここで おわっても いいよ。');$('winChips').innerHTML='';$('winOv').classList.add('on')};
+$('retreat').onclick=()=>{Q=null;X=null;setStage(1);renderHome();show('home')};
 
 const stage=$('stage');
-function fit(){const b=$('board');if(!b.clientWidth)return;const s=Math.floor(Math.max(160,Math.min(b.clientWidth,b.clientHeight)-8));stage.style.width=stage.style.height=s+'px'}
+let CELLS=1; // マスの数（テストれんしゅうでは 答えの文字数ぶん 横にならべる）
+function setStage(n){CELLS=n;stage.setAttribute('viewBox',`0 0 ${109*n} 109`);fit()}
+function fit(){const b=$('board');if(!b.clientWidth)return;const w=Math.floor(Math.max(160,Math.min(b.clientWidth-8,(b.clientHeight-8)*CELLS)));stage.style.width=w+'px';stage.style.height=Math.floor(w/CELLS)+'px'}
 addEventListener('resize',()=>{fit();setTimeout(fit,300)});
-function pt(ev){const r=stage.getBoundingClientRect();return[(ev.clientX-r.left)/r.width*109,(ev.clientY-r.top)/r.height*109]}
+function pt(ev){const r=stage.getBoundingClientRect();return[(ev.clientX-r.left)/r.width*109*CELLS,(ev.clientY-r.top)/r.height*109]}
 const dot=(p,n)=>`<circle cx="${p[0]}" cy="${p[1]}" r="3.8" fill="#22b455"/>`+(n?`<text x="${p[0]}" y="${p[1]+1.7}" font-size="4.8" font-weight="700" fill="#fff" text-anchor="middle">${n}</text>`:'');
 
+// くみたてに まぜる にせもの：部品ごとの「にている部品」から 1つずつ（合計3つまで）
+function decoysOf(e){const out=[],seen=new Set();for(let r=0;r<3&&out.length<3;r++)for(const p of e.parts){const d=(p.alts||[])[r],id=d&&d.src+d.from+'-'+d.to;if(d&&!seen.has(id)&&out.length<3){seen.add(id);out.push(d)}}return out}
+
 const STEP={
+  /* 部品えらび：ぬけている部品を、にている部品の中から えらぶ */
+  part(){
+    setQuestion(false);
+    const n=Q.e.parts.length,j=((save.recs[Q.k]&&save.recs[Q.k].seen)|0)%n,p=Q.e.parts[j],b=C.boxOf(Q.M,p.from,p.to,4);
+    const draw=done=>{stage.innerHTML=GUIDE+Q.e.parts.map((q,i)=>i===j&&!done?`<rect class="slot hot" x="${b[0]}" y="${b[1]}" width="${b[2]-b[0]}" height="${b[3]-b[1]}" rx="4"/>`:STROKES[Q.k].slice(q.from-1,q.to).map(d=>pathOf(d,i===j?COLORS[i]:'#2b2760',5)).join('')).join('')};
+    draw(false);msg('きいろい わくに 入る 部品は どれ？ にている 部品に 注意！');
+    const tiles=shuffle([{ok:true,src:Q.k,from:p.from,to:p.to}].concat(p.alts.map(d=>({ok:false,src:d.src,from:d.from,to:d.to}))));
+    $('tray').innerHTML=tiles.map((t,i)=>`<button class="tile" data-i="${i}">${pieceSvg(t.src,t.from,t.to)}</button>`).join('');
+    for(const el of $('tray').children)el.onclick=()=>{if(S.lock||el.classList.contains('no'))return;
+      if(tiles[+el.dataset.i].ok){sfx.ok();draw(true);msg(`「${p.name}」が 入った！`,'good');return stepDone('部品 ぴったり！')}
+      sfx.no();anim(stage,'shake');el.classList.add('no');Q.slips++;msg('にているけど、ちがう 部品だよ。形を よく 見くらべよう。','bad')};
+  },
   /* であう：部品に分けて、書き順を見せる */
   meet(){
     setQuestion(true);msg(Q.e.memo);
@@ -255,18 +278,18 @@ const STEP={
   },
   /* どの字？：読みから字をえらぶ（空欄をへらす） */
   pick(){
-    setQuestion(false);msg('きいろい ところは、どの漢字？');stage.innerHTML=GUIDE+'<text x="54.5" y="72" font-size="50" text-anchor="middle" fill="#c9c5d8">？</text>';
-    const opts=shuffle([Q.k].concat(shuffle(ORDER.filter(k=>k!==Q.k)).slice(0,3)));
+    setQuestion(false);msg('きいろい ところは、どの漢字？ にている字に 注意！');stage.innerHTML=GUIDE+'<text x="54.5" y="72" font-size="50" text-anchor="middle" fill="#c9c5d8">？</text>';
+    const opts=shuffle([Q.k].concat([...Q.e.alts]));
     $('tray').innerHTML=opts.map(k=>`<button class="opt kyo" data-k="${k}">${k}</button>`).join('');
     for(const b of $('tray').children)b.onclick=()=>{if(S.lock)return;
       if(b.dataset.k===Q.k){sfx.ok();stage.innerHTML=GUIDE+kanjiSvg(Q.k);setQuestion(true);stepDone('せいかい！')}
-      else{sfx.no();b.classList.add('no');b.disabled=true;S.missed=true;msg('ちがうよ。文を 読んで、もう一度 えらぼう。','bad')}};
+      else{sfx.no();b.classList.add('no');b.disabled=true;Q.slips++;msg('にているけど、ちがう字だよ。形を よく 見て、もう一度。','bad')}};
   },
   /* くみたて：部品をえらんで、正しい場所に置く（にせもの・左右ぎゃく を ふせぐ） */
   build(){
     setQuestion(false);
     S.placed=Q.e.parts.map(()=>false);S.sel=null;S.guide=Q.lv===0;
-    S.tiles=shuffle(Q.e.parts.map((p,i)=>({part:i,src:Q.k,from:p.from,to:p.to})).concat((Q.e.decoys||[]).map(d=>({part:-1,src:d.src,from:d.from,to:d.to}))));
+    S.tiles=shuffle(Q.e.parts.map((p,i)=>({part:i,src:Q.k,from:p.from,to:p.to})).concat(decoysOf(Q.e).map(d=>({part:-1,src:d.src,from:d.from,to:d.to}))));
     $('tray').innerHTML=S.tiles.map((t,i)=>`<button class="tile" data-i="${i}">${pieceSvg(t.src,t.from,t.to)}</button>`).join('');
     for(const b of $('tray').children)b.onclick=()=>{if(S.lock||b.classList.contains('no'))return;S.sel=+b.dataset.i;for(const x of $('tray').children)x.classList.toggle('sel',x===b);msg('どこに 置く？ わくを タップ。');draw()};
     const draw=()=>{stage.innerHTML=GUIDE+Q.e.parts.map((p,i)=>{const b=C.boxOf(Q.M,p.from,p.to,4);
@@ -282,7 +305,7 @@ const STEP={
       if(t.part===slot){sfx.ok();S.placed[slot]=true;btn.classList.add('used');btn.classList.remove('sel');S.sel=null;draw();
         if(S.placed.every(Boolean)){msg(`「${Q.k}」が できた！`,'good');return stepDone('くみたて せいこう！')}
         return msg(`「${Q.e.parts[slot].name}」は そこ！ のこりも 置こう。`,'good')}
-      sfx.no();anim(stage,'shake');S.missed=true;btn.classList.remove('sel');S.sel=null;
+      sfx.no();anim(stage,'shake');Q.slips++;btn.classList.remove('sel');S.sel=null;
       if(t.part<0){btn.classList.add('no');msg('にているけど、ちがう 部品だよ。形を よく 見くらべよう。','bad')}
       else msg(`部品は 合ってる！ でも 場所が ちがうよ。「${Q.e.parts[t.part].name}」は どっちがわ？`,'bad');
       draw();
@@ -344,9 +367,37 @@ const STEP={
   },
 };
 
+/* ---------- テストれんしゅう：テストと同じ問題文で、答え（漢字と おくりがな）を書く ---------- */
+let X=null;
+function startExam(){X={list:C.examList(save.tq,C.DATA.questions),i:0,ok:0,redo:new Set()};Q=null;show('quest');$('sprite').textContent='📝';$('sprite').className='sprite';$('ename').textContent='テストれんしゅう';examShow()}
+function examShow(){
+  const q=X.list[X.i],chars=[...q.a];setStage(chars.length);
+  S={type:'exam',free:true,ink:[],live:null,shown:false};
+  $('tray').innerHTML='';$('stepLabel').textContent=`${X.i+1}/${X.list.length}問目`;$('pips').innerHTML=X.list.map((_,i)=>`<i class="${i<X.i?'off':''}"></i>`).join('');
+  const ask=show=>{$('question').innerHTML=q.q.replace(/\[(.+?)\]/,show?`<b>${q.a}</b>`:'<b>$1</b>')};ask(false);
+  const cell=(i,body)=>`<g transform="translate(${109*i})">${body}</g>`;
+  S.draw=()=>{stage.innerHTML=chars.map((c,i)=>cell(i,GUIDE+(i?'<path d="M0,0V109" stroke="#4c4699" stroke-width="1.2"/>':'')+(S.shown&&STROKES[c]?STROKES[c].map(d=>pathOf(d,'#ff4d6d',5,' opacity=".45"')).join(''):''))).join('')
+    +S.ink.map(k=>pathOf(polyD(k),'#2b2760',4.5)).join('')+(S.live?pathOf(polyD(S.live),'#4a3fd1',4.5):'')};
+  S.draw();
+  msg(`きいろい ところを 書こう（${chars.length}文字。1マスに 1文字）。`);
+  const judge=r=>{if(S.lock)return;S.lock=true;save.tq[q.id]={r,t:Date.now()};
+    // テストの出来を、字ごとの記録にも うつす：× の字は もう一度 おぼえ直し、○ で まだ出会っていない字は 出会ったことに
+    for(const c of chars){const e=entryOf(c);if(!e)continue;if(r==='bad')save.recs[c]=C.advance(save.recs[c],'forgot',today(),e);else if(!met(c))save.recs[c]=C.advance(undefined,'good',today(),e)}
+    if(!save.startDay)save.startDay=today();store();
+    if(r==='good'){X.ok++;sfx.step();anim($('sprite'),'hit')}else if(!X.redo.has(q.id)){X.redo.add(q.id);X.list.push(q)}
+    X.i++;setTimeout(()=>X.i<X.list.length?examShow():examEnd(),r==='good'?500:200)};
+  buttons([{text:'↩ 一画 もどす',cls:'ghost',fn:()=>{S.ink.pop();S.draw()}},{text:'ぜんぶ 消す',cls:'ghost',fn:()=>{S.ink=[];S.draw()}},
+    {text:'こたえを 見る',cls:'primary',fn:()=>{S.shown=true;S.live=null;S.draw();ask(true);msg('赤い お手本と くらべよう。形も おくりがなも 同じ？');
+      buttons([{text:'⭕ 書けた',cls:'primary',id:'good',fn:()=>judge('good')},{text:'❌ まちがえた',id:'bad',fn:()=>judge('bad')}]);if(!S.ink.length)$('actions').firstChild.disabled=true}}]);
+}
+function examEnd(){sfx.win();const n=X.list.length-X.redo.size,first=n-X.redo.size;
+  $('winTitle').textContent='📝 テストれんしゅう おわり！';$('winStars').textContent=`${first} / ${n}`;
+  $('winText').textContent=(X.redo.size?`まちがえた ${X.redo.size}問は、塔で もう一度 おぼえ直せるよ。`:'ぜんぶ 一回で 書けた！ すごい！')+`　これまでの ○：${examOk()}/${C.DATA.questions.length}`;$('winChips').innerHTML='';$('winOv').classList.add('on')}
+$('openExam').onclick=startExam;
+
 /* ---------- タッチ ---------- */
 let pid=null;
-stage.addEventListener('pointerdown',ev=>{if(!Q||!S||S.lock||pid!==null)return;ev.preventDefault();const p=pt(ev);
+stage.addEventListener('pointerdown',ev=>{if((!Q&&!X)||!S||S.lock||pid!==null)return;ev.preventDefault();const p=pt(ev);
   if(S.tap)return S.tap(p);
   if(!S.draw||S.shown)return;pid=ev.pointerId;try{stage.setPointerCapture(pid)}catch(e){}S.live=[p];S.draw()});
 stage.addEventListener('pointermove',ev=>{if(ev.pointerId!==pid||!S||!S.live)return;ev.preventDefault();S.live.push(pt(ev));S.draw()});
@@ -372,21 +423,22 @@ function renderParent(){
   const R={good:'⭕ 同じに書けた',close:'🔺 すこしちがった',forgot:'❌ 思い出せなかった'};
   $('parentGrid').innerHTML=C.KANJI.map(e=>{const k=save.ink[e.k],rec=save.recs[e.k];
     return `<div class="kcard"><svg viewBox="0 0 109 109">${kanjiSvg(e.k,()=>'#ffb3c0',4)}${k?k.s.map(s=>pathOf(polyD(s),'#1b1838',3.5)).join(''):''}</svg><small>${rec?`段 ${rec.lv}/${C.MAX_LV}　つぎは ${String(rec.next).slice(4,6)}/${String(rec.next).slice(6)}`:'まだ'}<br>${k?R[k.r]:'（思い出して書く は まだ）'}</small></div>`}).join('');
-  const t=String(today()),td=String(testDay()),P=plan();$('parentDay').textContent=`塔の中の きょう：${t.slice(4,6)}/${t.slice(6)}`+(save.dayOffset?`（試用で ${save.dayOffset}日 進めています）`:'')+`　きょうの のこり：復習 ${P.due.length}・新しい字 ${P.fresh.length}・たしかめ ${P.check.length}`;
+  const t=String(today()),td=String(testDay()),P=guide();$('parentDay').textContent=`塔の中の きょう：${t.slice(4,6)}/${t.slice(6)}`+(save.dayOffset?`（試用で ${save.dayOffset}日 進めています）`:'')+`　きょうの めやす：あと ${P.count}体（ふっかつ ${P.due}・はじめて ${P.intro}）　テストれんしゅう ○ ${examOk()}/${C.DATA.questions.length}`;
   $('testDate').value=`${td.slice(0,4)}-${td.slice(4,6)}-${td.slice(6)}`;
 }
 $('openParent').onclick=()=>{renderParent();$('parentOv').classList.add('on')};
 $('parentClose').onclick=()=>{$('parentOv').classList.remove('on');renderHome()};
 $('testDate').onchange=()=>{const v=$('testDate').value.replace(/-/g,'');if(/^\d{8}$/.test(v)&&C.daysBetween(today(),+v)>=0){save.testDay=+v;store()}renderParent()};
 /* ---------- おためし：日を待たずに確かめる ---------- */
-function renderTrial(){const t=String(today()),P=plan(),left=C.daysBetween(today(),testDay());
-  $('trialDay').textContent=`塔の中の きょう：${+t.slice(4,6)}月${+t.slice(6)}日（テストまで あと ${left}日）　きょうの のこり：${P.list.length}体（復習 ${P.due.length}・新しい字 ${P.fresh.length}・たしかめ ${P.check.length}）`}
+function renderTrial(){const t=String(today()),P=guide(),left=C.daysBetween(today(),testDay());
+  $('trialDay').textContent=`塔の中の きょう：${+t.slice(4,6)}月${+t.slice(6)}日（テストまで あと ${left}日）　きょうの めやす：あと ${P.count}体（ふっかつ ${P.due}・はじめて ${P.intro}）　まだ出会っていない字：${P.unmet}`}
 $('openTrial').onclick=()=>{$('trialKanji').innerHTML=C.KANJI.map(e=>`<option value="${e.k}">${e.k}</option>`).join('');renderTrial();$('trialOv').classList.add('on')};
 $('trialClose').onclick=()=>{$('trialOv').classList.remove('on');renderHome()};
 $('trialGo').onclick=()=>{$('trialOv').classList.remove('on');startQuest([$('trialKanji').value],+$('trialLv').value)};
 $('trialNext').onclick=()=>{save.dayOffset=(save.dayOffset|0)+1;store();renderTrial()};
-$('trialAuto').onclick=()=>{const day=today();for(let guard=0;guard<5;guard++){const list=plan().list;if(!list.length)break;for(const k of list)save.recs[k]=C.advance(save.recs[k],'good',day,entryOf(k));save.floor+=Math.ceil(list.length/C.FLOOR_SIZE)}
-  save.dayOffset=(save.dayOffset|0)+1;store();renderTrial()};
+$('trialAuto').onclick=()=>{const day=today();if(!save.startDay)save.startDay=day;let n=0;
+  for(let guard=0;guard<60&&guide().count>0;guard++)for(const x of nextFloor()){save.recs[x.k]=C.advance(save.recs[x.k],'good',day,entryOf(x.k));n++}
+  save.floor+=Math.ceil(n/C.FLOOR_SIZE);save.dayOffset=(save.dayOffset|0)+1;store();renderTrial()};
 $('skipDay').onclick=()=>{save.dayOffset=(save.dayOffset|0)+1;store();renderParent()};
 $('resetAll').onclick=()=>{if(confirm('試作の 記録を 消して、さいしょから はじめますか？')){save=blank();store();renderParent()}};
 
