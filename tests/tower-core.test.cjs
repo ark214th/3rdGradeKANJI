@@ -225,6 +225,8 @@ assert.equal(ids.length, new Set(ids).size, 'duplicate DOM IDs');
 for (const m of app.matchAll(/\$\('([^']+)'\)/g)) assert(ids.includes(m[1]), `missing DOM ID ${m[1]}`);
 for (const f of ['stroke-trace.js', 'tower-core.js', 'data/ranges.js', 'app.js', 'scene.mjs']) { assert(html.includes(`src="${f}"`), f); assert(fs.existsSync(path.join(TOWER, f)), f); }
 for (const f of ['vendor/three.module.min.js', 'vendor/three.core.min.js', 'vendor/LICENSE-three.txt', 'tools/kanji-db.json']) assert(fs.existsSync(path.join(TOWER, f)), f);
-// 章選択からはリンクしない（公開の合図が あるまで）
-assert(!fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8').includes('tower/'), 'tower must stay unlinked');
+// 章選択から 入れる。第1〜4章とは べつの ゲームだと 書いてある。塔からは 章選択へ もどれる
+const top = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
+assert(top.includes('href="tower/index.html"') && top.includes('第1〜4章とは べつの ゲーム'));
+assert(html.includes('href="../index.html"'));
 console.log('tower-core: ok');

@@ -16,7 +16,7 @@ button:disabled{opacity:.35}
 button:active:not(:disabled){transform:translateY(2px)}
 button.primary{background:linear-gradient(#ffd166,#f4a534);color:#3a2500;box-shadow:0 4px 0 #b8741a}
 button.primary:active:not(:disabled){box-shadow:0 2px 0 #b8741a}
-button.ghost{background:transparent;border:1px solid #514b8f;color:var(--sub);padding:8px 12px;font-weight:500}
+button.ghost,a.ghost{background:transparent;border:1px solid #514b8f;color:var(--sub);padding:8px 12px;font-weight:500;border-radius:14px;text-decoration:none;font-size:inherit}
 .kyo{font-family:"YuKyokasho","Yu Kyokasho","UD Digi Kyokasho N-R","Hiragino Mincho ProN",serif}
 .screen{display:none;position:fixed;inset:0;padding:calc(10px + env(safe-area-inset-top)) calc(12px + env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) calc(12px + env(safe-area-inset-left))}
 .screen.active{display:flex;flex-direction:column}
@@ -130,7 +130,7 @@ button.ghost{background:transparent;border:1px solid #514b8f;color:var(--sub);pa
     <div class="nexts" id="nexts"></div>
     <div class="mainbtns"><button class="primary" id="go">▲ のぼる</button><button id="openExam">🐉 ボスに いどむ</button></div>
     <div class="note" id="examNote" style="text-align:center"></div>
-    <div class="subbtns"><button class="ghost" id="openShop">🛒 ぶきや</button><button class="ghost" id="openBook">📖 漢字ずかん</button><button class="ghost" id="openParent">📋 保護者用</button></div>
+    <div class="subbtns"><a class="ghost" id="backLink" href="../index.html">‹ 章えらびへ</a><button class="ghost" id="openShop">🛒 ぶきや</button><button class="ghost" id="openBook">📖 漢字ずかん</button><button class="ghost" id="openParent">📋 保護者用</button></div>
     <p class="credit">書き順・お手本の字形：<a href="https://kanjivg.tagaini.net/" target="_blank" rel="noopener">KanjiVG</a>（© Ulrich Apel and contributors、CC BY-SA 3.0）／ 3D：three.js（MIT）</p>
   </div>
 </section>
