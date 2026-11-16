@@ -1,7 +1,8 @@
 /*
  * 漢字の塔 — 画面に依存しない部分（判定、出題の順番、ごほうびの計算）。
  * 練習の考え方は「書く前に形を知る」：読みから字をえらぶ → 部品をえらぶ・正しい場所に置く → 書き順をタップ → ゆるいなぞり → 思い出して書く。
- * 1日の上限はなく、出来に合わせて 字ごとの段（★）と 次に出る日が かわる。テスト前は テストと同じ問題文で れんしゅうする。
+ * 1日の上限はなく、出来に合わせて 字ごとの段（★）と 次に出る日が かわる。テストの日は 決めない（いつ来るか わからないので、早めに ひと通り出会う）。
+ * ボスでは テストと同じ問題文で れんしゅうする。
  * テスト範囲のデータ（tower/data/*.js）は 引数で受け取る。座標は KanjiVG と同じ 109×109。
  * ブラウザでは window.TowerCore、node では require() で使う。
  */
@@ -13,7 +14,6 @@
   const GAPS = [1, 2, 4, 7];      // ★が 1,2,3 になったあと、次に「ふっかつ」するまでの日数（さいごは 仕上がった後の見直し）
   const KNOWN_LV = 2;             // 下の学年の字は「もう知っているはず」として、確かめる段から始める
   const INTRO_DAYS = 5;           // はじめの この日数で、ぜんぶの字に 一度は出会う（1日の めやす）
-  const EXAM_DAYS = 3;            // テスト前の この日数は、ボス（テストれんしゅう）を すすめる
   const FLOOR_SIZE = 3;           // 1かい（ひとくぎり）で たたかう数
   const EXAM_SIZE = 10;           // ボス 1回の問題数
   const TRACE_TOL = 28;           // なぞりは ゆるく：向きと おおよその場所だけ見る
@@ -228,7 +228,7 @@
   const zoneIndex = floor => Math.floor(floor / ZONE_FLOORS) % ZONES.length;
   const zoneOf = floor => ZONES[zoneIndex(floor)];
 
-  const api = { MAX_LV, GAPS, KNOWN_LV, INTRO_DAYS, EXAM_DAYS, FLOOR_SIZE, EXAM_SIZE, TRACE_TOL, TRACE_AUTO, stepsFor, startLv, lvOf, prep, boxOf, partOf, distToStroke, pickStroke, judgeTrace,
+  const api = { MAX_LV, GAPS, KNOWN_LV, INTRO_DAYS, FLOOR_SIZE, EXAM_SIZE, TRACE_TOL, TRACE_AUTO, stepsFor, startLv, lvOf, prep, boxOf, partOf, distToStroke, pickStroke, judgeTrace,
     dayKey, addDays, daysBetween, queues, nextFloor, guide, advance, examList,
     xpFor, levelOf, levelProgress, WEAPONS, weaponOf, attackOf, rewardFor, BONUS, BOSS_PASS, ZONES, ZONE_FLOORS, zoneIndex, zoneOf };
   root.TowerCore = api;

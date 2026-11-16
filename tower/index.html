@@ -35,7 +35,7 @@ button.ghost{background:transparent;border:1px solid #514b8f;color:var(--sub);pa
 .homecard{align-self:center;width:min(560px,100%);background:var(--glass);border:2px solid #4c4699;border-radius:24px;padding:12px 16px;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 .floorline{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
 .floorline .num{font-size:34px;font-weight:900;color:var(--gold);line-height:1}
-.floorline .zone{font-weight:800}.floorline .left{margin-left:auto;color:var(--sub);font-size:14px}.floorline .left b{color:var(--ink);font-size:18px}
+.floorline .zone{font-weight:800}
 .chest{display:flex;align-items:center;gap:8px;margin:10px 0 4px;font-size:14px}
 .segs{flex:1;display:flex;gap:4px}.segs i{flex:1;height:12px;border-radius:6px;background:#120f2a}.segs i.on{background:linear-gradient(90deg,#ffd166,#f4a534)}
 .chest .box{font-size:26px}.chest .box.open{animation:bob 1s ease-in-out infinite}
@@ -123,7 +123,7 @@ button.ghost{background:transparent;border:1px solid #514b8f;color:var(--sub);pa
   </div>
   <div class="spacer"></div>
   <div class="homecard">
-    <div class="floorline"><span class="num" id="floorNum"></span><span class="zone" id="zoneName"></span><span class="left" id="daysLeft"></span></div>
+    <div class="floorline"><span class="num" id="floorNum"></span><span class="zone" id="zoneName"></span></div>
     <div class="meter"><i id="meterSeen"></i><i class="gold" id="meterSolid"></i></div>
     <div class="note" id="collectNote"></div>
     <div class="chest"><span id="chestLabel"></span><div class="segs" id="chestSegs"></div><span class="box" id="chestBox">🎁</span></div>
@@ -180,7 +180,6 @@ button.ghost{background:transparent;border:1px solid #514b8f;color:var(--sub);pa
 
 <div class="overlay" id="parentOv"><div class="card">
   <h2>📋 保護者用</h2>
-  <p><label>テストの日 <input type="date" id="testDate" style="font:inherit;padding:4px 8px;border-radius:8px;border:0"></label></p>
   <p id="parentDay"></p>
   <p>「思い出して書く」で さいごに書いた字（黒）と 自己判定。うすい赤は お手本。</p>
   <div class="grid" id="parentGrid"></div>
