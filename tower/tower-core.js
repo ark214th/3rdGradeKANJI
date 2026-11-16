@@ -173,22 +173,35 @@
   // レベルの中での進み具合（0〜1）
   function levelProgress(xp) { const L = levelOf(xp); return (xp - xpFor(L)) / (xpFor(L + 1) - xpFor(L)); }
 
-  // 武器。強さ（atk）は ダメージの数字と えんしゅつが かわるだけで、問題の やさしさは かわらない
+  /*
+   * 武器。強さ（atk）は ダメージの数字と えんしゅつが かわるだけで、問題の やさしさは かわらない。
+   * lv: ぶきやに 並ぶレベル、fx: 必殺技の えんしゅつ、skill: 必殺技の名前、aura: 持っているだけで 出る光
+   */
   const WEAPONS = [
-    { id: 'w0', name: '木のつるぎ', price: 0, atk: 2, kind: 'sword', color: 0xb9814a, glow: 0xffe0a0 },
-    { id: 'w1', name: 'てつのつるぎ', price: 400, atk: 5, kind: 'sword', color: 0xc9d3dd, glow: 0xffffff },
-    { id: 'w2', name: 'ほのおのつるぎ', price: 1000, atk: 9, kind: 'sword', color: 0xff6a2a, glow: 0xffb347 },
-    { id: 'w3', name: 'こおりのやり', price: 2000, atk: 14, kind: 'spear', color: 0x8fe3ff, glow: 0xc8f4ff },
-    { id: 'w4', name: 'かみなりハンマー', price: 3500, atk: 20, kind: 'hammer', color: 0xffe14a, glow: 0xfff7a8 },
-    { id: 'w5', name: 'かぜのかたな', price: 5500, atk: 27, kind: 'katana', color: 0x7dffb0, glow: 0xd4ffe6 },
-    { id: 'w6', name: 'ひかりのつるぎ', price: 8000, atk: 35, kind: 'sword', color: 0xfff6c8, glow: 0xffffff },
-    { id: 'w7', name: 'やみのかま', price: 11000, atk: 44, kind: 'scythe', color: 0xb06bff, glow: 0xe2c8ff },
-    { id: 'w8', name: 'りゅうのつるぎ', price: 14500, atk: 54, kind: 'sword', color: 0xff3d6e, glow: 0xffa8c0 },
-    { id: 'w9', name: 'ほしのつるぎ', price: 18500, atk: 65, kind: 'katana', color: 0x6ea8ff, glow: 0xdde9ff },
-    { id: 'w10', name: 'でんせつの漢字剣', price: 23000, atk: 80, kind: 'sword', color: 0xffd166, glow: 0xfff1c0 },
+    { id: 'w0', name: '木のつるぎ', price: 0, lv: 1, atk: 2, kind: 'sword', color: 0xc08a50, glow: 0xffe0a0, fx: 'slash', skill: 'えいっ！ぎり' },
+    { id: 'w1', name: 'てつのつるぎ', price: 400, lv: 3, atk: 5, kind: 'broad', color: 0xd5dee8, glow: 0xffffff, fx: 'slash2', skill: 'れんぞくぎり' },
+    { id: 'w2', name: 'ほのおのつるぎ', price: 1000, lv: 5, atk: 9, kind: 'flame', color: 0xff5a1f, glow: 0xffb347, fx: 'fire', skill: 'ほのおの柱', aura: 'ember' },
+    { id: 'w3', name: 'こおりのやり', price: 2000, lv: 8, atk: 14, kind: 'spear', color: 0x7fdcff, glow: 0xd8f6ff, fx: 'ice', skill: 'こおりの雨', aura: 'snow' },
+    { id: 'w4', name: 'かみなりハンマー', price: 3500, lv: 11, atk: 20, kind: 'hammer', color: 0xffd93a, glow: 0xfff7a8, fx: 'thunder', skill: 'いかずち落とし', aura: 'spark' },
+    { id: 'w5', name: 'かぜのかたな', price: 5500, lv: 14, atk: 27, kind: 'katana', color: 0x5dffa0, glow: 0xd4ffe6, fx: 'wind', skill: 'たつまきぎり', aura: 'leaf' },
+    { id: 'w6', name: 'ひかりのつるぎ', price: 8000, lv: 17, atk: 35, kind: 'holy', color: 0xfff3b0, glow: 0xffffff, fx: 'light', skill: 'せいなる光', aura: 'spark' },
+    { id: 'w7', name: 'やみのかま', price: 11000, lv: 20, atk: 44, kind: 'scythe', color: 0xa45cff, glow: 0xe2c8ff, fx: 'dark', skill: 'やみのうず', aura: 'shadow' },
+    { id: 'w8', name: 'りゅうのつるぎ', price: 14500, lv: 23, atk: 54, kind: 'dragon', color: 0xff2d55, glow: 0xffa8c0, fx: 'dragon', skill: 'りゅうの いぶき', aura: 'ember' },
+    { id: 'w9', name: 'ほしのつるぎ', price: 18500, lv: 26, atk: 65, kind: 'star', color: 0x5a9bff, glow: 0xdde9ff, fx: 'star', skill: 'りゅうせいぐん', aura: 'star' },
+    { id: 'w10', name: 'でんせつの漢字剣', price: 23000, lv: 30, atk: 80, kind: 'legend', color: 0xffcc33, glow: 0xfff1c0, fx: 'kanji', skill: '漢字 だいばくはつ', aura: 'star' },
   ];
   const weaponOf = id => WEAPONS.find(w => w.id === id) || WEAPONS[0];
   const attackOf = (xp, weaponId) => levelOf(xp) * 2 + weaponOf(weaponId).atk;
+  // ぶきやに 並んでいるか（レベルが 足りないものは「？？？」で 見せる）
+  const weaponOpen = (w, xp) => levelOf(xp) >= w.lv;
+  // 勇者の見た目（レベルで かぶとと マントが かわる）
+  const HERO_LOOKS = [
+    { lv: 1, helm: 0xd9dde6, cape: 0xd94a4a, body: 0x3b6fd6 },
+    { lv: 5, helm: 0xbfe3ff, cape: 0x2f9e5b, body: 0x2f5fc7 },
+    { lv: 10, helm: 0xffd166, cape: 0x8e44ad, body: 0x2b4fb3 },
+    { lv: 20, helm: 0xffffff, cape: 0xffb000, body: 0x1d3c99, crown: true },
+  ];
+  const heroLook = xp => { const L = levelOf(xp); let r = HERO_LOOKS[0]; for (const h of HERO_LOOKS) if (L >= h.lv) r = h; return r; };
 
   /*
    * まもの1体を たおしたときの ごほうび。
@@ -208,29 +221,59 @@
   }
   const BONUS = {
     floor: { gold: 10, xp: 0 },        // 1かい のぼった
-    daily: { gold: 50, xp: 30 },       // きょうの めやす達成の たからばこ（1日1回）
-    examHit: { gold: 6, xp: 8 },       // ボスの問題を 一回で ○
+    examHit: { gold: 6, xp: 8 },       // ドラゴンの問題を 一回で ○
     examRetry: { gold: 2, xp: 3 },     // 出し直しで ○
-    bossWin: { gold: 40, xp: 30 },     // ボスに勝った（8わり以上を 一回で ○。1日1回）
   };
   const BOSS_PASS = 0.8;
 
-  // 塔のエリア（10かいごとに 景色が かわる。さいごまで行ったら 色ちがいで くり返す）
-  const ZONES = [
-    { name: '石の間', sky: 0x1b1838, fog: 0x2b2760, floor: 0x5d5a7a, light: 0xffc98a },
-    { name: '森の回廊', sky: 0x10281f, fog: 0x1f4a35, floor: 0x4f7a56, light: 0xd8ff9a },
-    { name: '氷の広間', sky: 0x10243a, fog: 0x2a5578, floor: 0x8fb8d6, light: 0xcfefff },
-    { name: '溶岩の階', sky: 0x2a0f0c, fog: 0x5a1f14, floor: 0x7a4a3c, light: 0xff8a4a },
-    { name: '雲の上', sky: 0x3a4f8a, fog: 0x8fa8e0, floor: 0xd8e2ff, light: 0xffffff },
-    { name: '星の間', sky: 0x08061c, fog: 0x1a1450, floor: 0x3b2f7a, light: 0xc8b8ff },
+  /*
+   * 宝箱。中身は 運ではなく がんばりで決まる（くじ引きに しない）。
+   * grade: 0=木 1=銀 2=金。kind: 'daily'（きょうの めやす）／'mid'（中ボス）／'dragon'（てっぺんの ドラゴン）
+   */
+  const CHESTS = {
+    daily: [{ gold: 30, xp: 20 }, { gold: 50, xp: 30 }, { gold: 80, xp: 45 }],
+    mid: [{ gold: 40, xp: 30 }, { gold: 60, xp: 45 }, { gold: 90, xp: 60 }],
+    dragon: [{ gold: 50, xp: 40 }, { gold: 80, xp: 60 }, { gold: 120, xp: 90 }],
+  };
+  const CHEST_NAMES = ['木の たからばこ', '銀の たからばこ', '金の たからばこ'];
+  // きょうの宝箱：まちがえずに たおした割合。中ボス：まちがいの数。ドラゴン：一回で ○ の割合
+  const dailyGrade = (clean, total) => (total && clean / total >= 0.8 ? 2 : total && clean / total >= 0.5 ? 1 : 0);
+  const midGrade = miss => (miss === 0 ? 2 : miss <= 2 ? 1 : 0);
+  const dragonGrade = (ok, n) => (n && ok === n ? 2 : n && ok / n >= BOSS_PASS ? 1 : 0);
+
+  /*
+   * 塔のエリア。テスト範囲 1つが エリア 1つ（範囲の一覧の 順番で 景色が かわる。ぜんぶ使ったら くり返す）。
+   * エリアの高さは 字の数から決める（54字で 30かい）。10かいごとに 中ボス、てっぺんに ドラゴン（テストと同じ問題）。
+   */
+  const AREAS = [
+    { name: 'はじまりの森', sky: [0x6ec3ff, 0xd8f3ff], ground: 0x7ccf5a, stone: 0xd9cfb4, accent: 0x4caf50, light: 0xfff2c8, fog: 0xbfe8ff, mon: ['slime', 'shroom', 'bat', 'ghost'], mid: 'shroom', hue: 110 },
+    { name: 'こおりの山', sky: [0x8fd3ff, 0xf0fbff], ground: 0xe8f6ff, stone: 0xa8d4ee, accent: 0x5ab8f0, light: 0xffffff, fog: 0xe0f4ff, mon: ['slime', 'golem', 'ghost', 'eye'], mid: 'golem', hue: 200 },
+    { name: 'ほのおの火山', sky: [0xff9a5a, 0xffe0b0], ground: 0x8a5a44, stone: 0x6b4434, accent: 0xff6a2a, light: 0xffd2a0, fog: 0xffc898, mon: ['slime', 'bat', 'golem', 'eye'], mid: 'slime', hue: 15 },
+    { name: 'くもの城', sky: [0xa8c8ff, 0xfff0fa], ground: 0xffffff, stone: 0xf2e6ff, accent: 0xffa8d8, light: 0xffffff, fog: 0xf4eaff, mon: ['ghost', 'bat', 'eye', 'slime'], mid: 'ghost', hue: 300 },
+    { name: 'うみの神殿', sky: [0x4fd2e8, 0xd8fbff], ground: 0xf2e2b0, stone: 0x9fe0e0, accent: 0x18a8c8, light: 0xe8ffff, fog: 0xbff4ff, mon: ['slime', 'eye', 'shroom', 'golem'], mid: 'eye', hue: 180 },
+    { name: 'ほしの宮殿', sky: [0x2a2a7a, 0x9a7ae0], ground: 0x6a5ac8, stone: 0xc8b8ff, accent: 0xffd166, light: 0xe8e0ff, fog: 0x8878d0, mon: ['ghost', 'eye', 'golem', 'bat'], mid: 'golem', hue: 260 },
   ];
-  const ZONE_FLOORS = 10;
-  const zoneIndex = floor => Math.floor(floor / ZONE_FLOORS) % ZONES.length;
-  const zoneOf = floor => ZONES[zoneIndex(floor)];
+  const areaOf = index => AREAS[((index % AREAS.length) + AREAS.length) % AREAS.length];
+  const areaFloors = kanjiCount => Math.max(20, Math.min(40, Math.round((kanjiCount * 0.55) / 5) * 5));
+  const MID_EVERY = 10;
+  // つぎに のぼる かい（cleared: のぼり終えた かい数、L: てっぺん）の 種類
+  function floorKind(cleared, L) {
+    const n = cleared + 1;
+    if (cleared >= L) return 'top';         // てっぺんまで のぼった あとは しゅぎょう
+    if (n === L) return 'dragon';
+    if (n % MID_EVERY === 0) return 'mid';
+    return 'battle';
+  }
+  // 中ボス戦の 問題：出会った字から、弱い字・ごぶさたの字を 先に n字（同じ字は 1回）
+  function reviewPick(recs, entries, n) {
+    const met = entries.filter(e => recs[e.k]);
+    return met.sort((a, b) => (recs[a.k].lv - recs[b.k].lv) || ((recs[b.k].miss | 0) - (recs[a.k].miss | 0)) || ((recs[a.k].t || 0) - (recs[b.k].t || 0))).slice(0, n || 6).map(e => e.k);
+  }
 
   const api = { MAX_LV, GAPS, KNOWN_LV, INTRO_DAYS, FLOOR_SIZE, EXAM_SIZE, TRACE_TOL, TRACE_AUTO, stepsFor, startLv, lvOf, prep, boxOf, partOf, distToStroke, pickStroke, judgeTrace,
     dayKey, addDays, daysBetween, queues, nextFloor, guide, advance, examList,
-    xpFor, levelOf, levelProgress, WEAPONS, weaponOf, attackOf, rewardFor, BONUS, BOSS_PASS, ZONES, ZONE_FLOORS, zoneIndex, zoneOf };
+    xpFor, levelOf, levelProgress, WEAPONS, weaponOf, attackOf, weaponOpen, HERO_LOOKS, heroLook, rewardFor, BONUS, BOSS_PASS,
+    CHESTS, CHEST_NAMES, dailyGrade, midGrade, dragonGrade, AREAS, areaOf, areaFloors, MID_EVERY, floorKind, reviewPick };
   root.TowerCore = api;
   if (typeof module !== 'undefined') module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

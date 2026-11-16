@@ -182,7 +182,7 @@ assert.equal(C.rewardFor({ kind: 'extra', result: 'good', slips: 0, repeat: true
       for (const x of C.nextFloor(recs, KANJI, day)) { const e = KANJI.find(y => y.k === x.k), prev = recs[x.k], before = C.lvOf(prev, e); recs[x.k] = C.advance(prev, 'good', day, e, ++t); gold += C.rewardFor({ kind: x.kind, result: 'good', slips: 0, star3: recs[x.k].lv === 3 && before < 3, repeat: !!prev && prev.last === day }).gold; }
       floors++;
     }
-    gold += floors * C.BONUS.floor.gold + C.BONUS.daily.gold;
+    gold += floors * C.BONUS.floor.gold + C.CHESTS.daily[1].gold + (floors >= 10 ? C.CHESTS.mid[1].gold : 0);
     if (!firstBuy && gold >= C.WEAPONS[1].price) firstBuy = d + 1;
   }
   const all = C.WEAPONS.reduce((s, w) => s + w.price, 0), perDay = gold / 14;
@@ -190,12 +190,35 @@ assert.equal(C.rewardFor({ kind: 'extra', result: 'good', slips: 0, repeat: true
   assert(all / perDay > 120, `all weapons in ${Math.round(all / perDay)} days`);
   assert(all / perDay < 500, `all weapons in ${Math.round(all / perDay)} days`);
 }
-// エリア：10かいごとに かわり、さいごまで行ったら くり返す
-assert.equal(C.zoneIndex(0), 0);
-assert.equal(C.zoneIndex(9), 0);
-assert.equal(C.zoneIndex(10), 1);
-assert.equal(C.zoneIndex(C.ZONES.length * C.ZONE_FLOORS), 0);
-for (const z of C.ZONES) assert(z.name && z.sky >= 0 && z.fog >= 0 && z.floor >= 0 && z.light >= 0);
+// 武器：レベルで ぶきやに 並ぶ。どれも 必殺技の えんしゅつと 名前を もつ
+assert(C.WEAPONS.every(w => w.fx && w.skill && w.lv >= 1));
+for (let i = 1; i < C.WEAPONS.length; i++) assert(C.WEAPONS[i].lv > C.WEAPONS[i - 1].lv);
+assert(C.weaponOpen(C.WEAPONS[0], 0) && !C.weaponOpen(C.WEAPONS[1], 0) && C.weaponOpen(C.WEAPONS[1], C.xpFor(C.WEAPONS[1].lv)));
+assert.equal(new Set(C.WEAPONS.map(w => w.fx)).size, C.WEAPONS.length, 'every weapon has its own special');
+assert.equal(C.heroLook(0).lv, 1);
+assert.equal(C.heroLook(C.xpFor(10)).lv, 10);
+// 宝箱：がんばりで きまる（運では きまらない）。いいほど 多い
+for (const k of ['daily', 'mid', 'dragon']) { assert.equal(C.CHESTS[k].length, 3); assert(C.CHESTS[k][0].gold < C.CHESTS[k][1].gold && C.CHESTS[k][1].gold < C.CHESTS[k][2].gold); }
+assert.deepEqual([C.dailyGrade(0, 0), C.dailyGrade(4, 10), C.dailyGrade(5, 10), C.dailyGrade(8, 10)], [0, 0, 1, 2]);
+assert.deepEqual([C.midGrade(0), C.midGrade(2), C.midGrade(3)], [2, 1, 0]);
+assert.deepEqual([C.dragonGrade(10, 10), C.dragonGrade(8, 10), C.dragonGrade(7, 10)], [2, 1, 0]);
+// エリア：テスト範囲 1つが 1エリア。54字で 30かい。10かいごとに 中ボス、てっぺんに ドラゴン
+assert.equal(C.areaFloors(54), 30);
+assert.equal(C.areaFloors(5), 20);
+assert.equal(C.areaFloors(200), 40);
+assert.deepEqual([0, 8, 9, 10, 19, 28, 29, 30].map(f => C.floorKind(f, 30)), ['battle', 'battle', 'mid', 'battle', 'mid', 'battle', 'dragon', 'top']);
+assert.equal(C.areaOf(0).name, C.AREAS[0].name);
+assert.equal(C.areaOf(C.AREAS.length), C.AREAS[0]);
+for (const a of C.AREAS) { assert(a.name && a.sky.length === 2 && a.mon.length >= 3 && a.mid && typeof a.hue === 'number'); assert(a.mon.every(m => ['slime', 'ghost', 'bat', 'golem', 'eye', 'shroom'].includes(m))); }
+// 中ボスの 問題：出会った字だけ、弱い字から
+{
+  const recs = {}; KANJI.slice(0, 8).forEach((e, i) => { recs[e.k] = { lv: i % 4, next: 0, t: i, miss: 0 }; });
+  const pick = C.reviewPick(recs, KANJI, 6);
+  assert.equal(pick.length, 6);
+  assert(pick.every(k => recs[k]));
+  assert.equal(recs[pick[0]].lv, 0);
+  assert.equal(C.reviewPick({}, KANJI, 6).length, 0);
+}
 
 // 範囲を作る道具：別の文章からでも データが作れる（一覧は ranges フォルダだけから作り直すので、変わらない）
 {
@@ -220,10 +243,12 @@ for (const z of C.ZONES) assert(z.name && z.sky >= 0 && z.fog >= 0 && z.floor >=
 const html = fs.readFileSync(path.join(TOWER, 'index.html'), 'utf8');
 const app = fs.readFileSync(path.join(TOWER, 'app.js'), 'utf8');
 new (require('node:vm').Script)(app);
+new (require('node:vm').Script)(fs.readFileSync(path.join(TOWER, 'sound.js'), 'utf8'));
 const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map(m => m[1]);
 assert.equal(ids.length, new Set(ids).size, 'duplicate DOM IDs');
-for (const m of app.matchAll(/\$\('([^']+)'\)/g)) assert(ids.includes(m[1]), `missing DOM ID ${m[1]}`);
-for (const f of ['stroke-trace.js', 'tower-core.js', 'data/ranges.js', 'app.js', 'scene.mjs']) { assert(html.includes(`src="${f}"`), f); assert(fs.existsSync(path.join(TOWER, f)), f); }
+const made = [...app.matchAll(/\bid="([^"$]+)"/g)].map(m => m[1]); // 画面の動きの中で 作る ボタン
+for (const m of app.matchAll(/\$\('([^']+)'\)/g)) assert(ids.includes(m[1]) || made.includes(m[1]), `missing DOM ID ${m[1]}`);
+for (const f of ['stroke-trace.js', 'tower-core.js', 'sound.js', 'data/ranges.js', 'app.js', 'scene.mjs']) { assert(html.includes(`src="${f}"`), f); assert(fs.existsSync(path.join(TOWER, f)), f); }
 for (const f of ['vendor/three.module.min.js', 'vendor/three.core.min.js', 'vendor/LICENSE-three.txt', 'tools/kanji-db.json']) assert(fs.existsSync(path.join(TOWER, f)), f);
 // 章選択から 入れる。第1〜4章とは べつの ゲームだと 書いてある。塔からは 章選択へ もどれる
 const top = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
