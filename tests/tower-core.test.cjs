@@ -116,53 +116,82 @@ r = C.advance({ lv: 2, last: D1, miss: 2 }, 'good', D2, multi); assert.deepEqual
 r = C.advance(undefined, 'good', D1, known); assert.equal(r.lv, 3);
 r = C.advance(undefined, 'forgot', D1, known); assert.deepEqual([r.lv, r.next], [1, D1]);
 
-// いくらでも遊べる：どんな状態でも、つぎの かいは 3体そろう。同じ字は 1かいに 1回だけ
-// めやすどおりに進めると、3日目までに ぜんぶの字に出会う
+// きょうの 予定は その日の はじめに 1回 作る。予定の 字を ぜんぶ やると めやす 0。
+// いくらでも遊べる：どんな状態でも、つぎの かいは 3体そろう。同じ字は 1かいに 1回だけ。5日目までに ぜんぶの字に出会う
 {
   const recs = {}; let t = 0;
   for (let d = 0; d < 8; d++) {
-    const day = C.addDays(D1, d);
-    const g0 = C.guide(recs, KANJI, day, D1);
+    const day = C.addDays(D1, d), plan = C.makePlan(recs, KANJI, day, D1);
+    const g0 = C.guide(recs, KANJI, day, D1, plan);
     if (d === 0) { assert.equal(g0.intro, Math.ceil(KANJI.length / C.INTRO_DAYS)); assert.equal(g0.floors, Math.ceil(g0.count / C.FLOOR_SIZE)); assert(g0.floors <= 4, 'first day guide stays small'); }
-    for (let guard = 0; C.guide(recs, KANJI, day, D1).count > 0; guard++) {
+    assert(g0.count <= C.DAY_MAX && (g0.count >= C.DAY_MIN || g0.count === Object.keys(recs).length + g0.intro), `day ${d + 1}: ${g0.count} within the limits`);
+    assert.equal(new Set(plan.map(x => x.k)).size, plan.length);
+    for (let guard = 0; C.guide(recs, KANJI, day, D1, plan).count > 0; guard++) {
       assert(guard < 60, 'guide never reaches zero');
-      const floor = C.nextFloor(recs, KANJI, day, 3, D1);
+      const floor = C.nextFloor(recs, KANJI, day, 3, D1, plan);
       assert.equal(floor.length, C.FLOOR_SIZE);
       assert.equal(new Set(floor.map(x => x.k)).size, C.FLOOR_SIZE);
       for (const x of floor) recs[x.k] = C.advance(recs[x.k], 'good', day, KANJI.find(e => e.k === x.k), ++t);
     }
     if (d === C.INTRO_DAYS - 1) assert.equal(Object.keys(recs).length, KANJI.length, 'all kanji met within the intro days');
-    // めやすを こえても 続けられる（おまけ）。弱い字・ごぶさたの字が先で、同じ3字ばかりに ならない
-    const a = C.nextFloor(recs, KANJI, day, 3, D1);
+    // めやすを こえても 続けられる（おまけ）。同じ3字ばかりに ならない
+    const a = C.nextFloor(recs, KANJI, day, 3, D1, plan);
     assert.equal(a.length, C.FLOOR_SIZE);
-    if (Object.keys(recs).length === KANJI.length) {
-      assert(a.every(x => x.kind === 'extra'));
+    if (Object.keys(recs).length === KANJI.length && a.every(x => x.kind === 'extra')) {
       for (const x of a) recs[x.k] = C.advance(recs[x.k], 'good', day, KANJI.find(e => e.k === x.k), ++t);
-      const b = C.nextFloor(recs, KANJI, day, 3, D1);
+      const b = C.nextFloor(recs, KANJI, day, 3, D1, plan);
       assert(!b.some(x => a.some(y => y.k === x.k)), 'extra floors rotate');
     }
   }
-  assert(KANJI.every(e => recs[e.k].lv === C.MAX_LV), 'steady success reaches ★3');
 }
 // 思い出せなかった字は、その日のうちに もう一度 出る。ただし きょうの めやすには 数えず、めやすの 字の あとに 出る
 {
   const recs = {}; const e = KANJI.find(x => !x.known);
-  KANJI.forEach((x, i) => { recs[x.k] = { lv: 3, next: C.addDays(D2, 5), first: D1, last: D1, t: i }; });
+  KANJI.forEach((x, i) => { recs[x.k] = { lv: 3, next: C.addDays(D2, 30), first: D1, last: D1, t: i }; });
   recs[e.k] = C.advance({ lv: 2, last: D1, first: D1 }, 'forgot', D2, e, 1);
-  assert.equal(C.guide(recs, KANJI, D2, D1).count, 0);
-  assert.deepEqual(C.nextFloor(recs, KANJI, D2, 3, D1)[0], { k: e.k, kind: 'due' });
+  const plan = C.makePlan(recs, KANJI, D2, D1);
+  assert(!plan.some(x => x.k === e.k));
+  assert.deepEqual(C.nextFloor(recs, KANJI, D2, 3, D1, plan.filter(() => false))[0], { k: e.k, kind: 'due' });
 }
-// 宝箱の メーター（あと ◯かい）と、じっさいに 宝箱が出るまでの 回数は いつも 同じ
+// 上限：ふっかつの字が 多い日は、上限まで。のこりは あした（弱い字が 先）。めやすを こえて 遊ぶと 出てくる
+{
+  const recs = {};
+  KANJI.forEach((x, i) => { recs[x.k] = { lv: i % 3, next: D2, first: D1, last: D1, t: i }; });
+  const plan = C.makePlan(recs, KANJI, D2, D1);
+  assert.equal(plan.length, C.DAY_MAX);
+  assert(plan.every(x => recs[x.k].lv === 0), 'weakest first');
+  const rest = KANJI.filter(x => !plan.some(y => y.k === x.k));
+  assert(rest.every(x => recs[x.k].next <= D2), 'the rest stays due for tomorrow');
+  for (const x of plan) recs[x.k] = C.advance(recs[x.k], 'good', D2, KANJI.find(y => y.k === x.k), 1);
+  assert.equal(C.guide(recs, KANJI, D2, D1, plan).count, 0);
+  assert.equal(C.nextFloor(recs, KANJI, D2, 3, D1, plan)[0].kind, 'due', 'after the chest, postponed kanji come first');
+}
+// 下限：ふっかつの字が 少ない日は、近い日に ふっかつする字を 前だおし
+{
+  const recs = {};
+  KANJI.forEach((x, i) => { recs[x.k] = { lv: 2, next: C.addDays(D2, 1 + (i % 5)), first: D1, last: D1, t: i }; });
+  const plan = C.makePlan(recs, KANJI, D2, D1);
+  assert.equal(plan.length, C.DAY_MIN);
+  assert(plan.every(x => recs[x.k].next === C.addDays(D2, 1)), 'soonest first');
+}
+// 予定を 作る前に 遊んだ分も 上限に 数える
+{
+  const recs = {};
+  KANJI.forEach((x, i) => { recs[x.k] = { lv: 1, next: D2, first: D1, last: i < 10 ? D2 : D1, t: i }; });
+  assert.equal(C.makePlan(recs, KANJI, D2, D1).length, C.DAY_MAX - 10);
+}
+// 宝箱の メーター（あと ◯かい）と、じっさいに 宝箱が出るまでの 回数は いつも 同じ。1日の かい数は 上限・下限の あいだ
 // 毎日 メーターの 回数だけ たたかう。まちがいが 多くても、めやすより 多く 遊んだ 次の日でも ずれない
 for (const [rate, extra] of [[0, 0], [0.2, 0], [0.4, 0], [0.1, 6]]) {
   const recs = {}; let t = 0, seed = 7;
   const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
-  for (let d = 0; d < 10; d++) {
-    const day = C.addDays(D1, d), want = Math.max(1, C.guide(recs, KANJI, day, D1).floors), plays = want + (d === 0 ? extra : 0);
+  for (let d = 0; d < 14; d++) {
+    const day = C.addDays(D1, d), plan = C.makePlan(recs, KANJI, day, D1), want = Math.max(1, C.guide(recs, KANJI, day, D1, plan).floors), plays = want + (d === 0 ? extra : 0);
+    assert(want <= C.DAY_MAX / C.FLOOR_SIZE, `day ${d + 1}: ${want} floors`);
     let chestAt = 0;
     for (let f = 1; f <= plays; f++) {
-      for (const x of C.nextFloor(recs, KANJI, day, 3, D1)) { const e = KANJI.find(y => y.k === x.k); recs[x.k] = C.advance(recs[x.k], C.lvOf(recs[x.k], e) >= 1 && rnd() < rate ? 'forgot' : 'good', day, e, ++t); }
-      if (!chestAt && C.guide(recs, KANJI, day, D1).count === 0) chestAt = f;
+      for (const x of C.nextFloor(recs, KANJI, day, 3, D1, plan)) { const e = KANJI.find(y => y.k === x.k); recs[x.k] = C.advance(recs[x.k], C.lvOf(recs[x.k], e) >= 1 && rnd() < rate ? 'forgot' : 'good', day, e, ++t); }
+      if (!chestAt && C.guide(recs, KANJI, day, D1, plan).count === 0) chestAt = f;
     }
     assert.equal(chestAt || 1, want, `rate ${rate} extra ${extra} day ${d + 1}: meter ${want}, chest at ${chestAt}`);
   }
@@ -214,8 +243,9 @@ assert.equal(C.rewardFor({ kind: 'extra', result: 'good', slips: 0, repeat: true
   const D0 = 20261116;
   for (let d = 0; d < 14; d++) {
     const day = C.addDays(D0, d); let floors = 0;
-    for (let guard = 0; guard < 60 && C.guide(recs, KANJI, day, D0).count > 0; guard++) {
-      for (const x of C.nextFloor(recs, KANJI, day, 3, D1)) { const e = KANJI.find(y => y.k === x.k), prev = recs[x.k], before = C.lvOf(prev, e); recs[x.k] = C.advance(prev, 'good', day, e, ++t); gold += C.rewardFor({ kind: x.kind, result: 'good', slips: 0, star3: recs[x.k].lv === 3 && before < 3, repeat: !!prev && prev.last === day }).gold; }
+    const plan = C.makePlan(recs, KANJI, day, D0);
+    for (let guard = 0; guard < 60 && C.guide(recs, KANJI, day, D0, plan).count > 0; guard++) {
+      for (const x of C.nextFloor(recs, KANJI, day, 3, D0, plan)) { const e = KANJI.find(y => y.k === x.k), prev = recs[x.k], before = C.lvOf(prev, e); recs[x.k] = C.advance(prev, 'good', day, e, ++t); gold += C.rewardFor({ kind: x.kind, result: 'good', slips: 0, star3: recs[x.k].lv === 3 && before < 3, repeat: !!prev && prev.last === day }).gold; }
       floors++;
     }
     gold += floors * C.BONUS.floor.gold + C.CHESTS.daily[1].gold + (floors >= 10 ? C.CHESTS.mid[1].gold : 0);

@@ -40,8 +40,10 @@ const R=()=>save.ranges[save.range];
 const entryOf=k=>BYK[k];
 const lvOf=k=>C.lvOf(R().recs[k],entryOf(k));
 const met=k=>!!R().recs[k];
-const guide=()=>C.guide(R().recs,RANGE.kanji,today(),R().startDay||today());
-const nextFloor=()=>C.nextFloor(R().recs,RANGE.kanji,today(),C.FLOOR_SIZE,R().startDay||today());
+// きょうの 予定：その日の はじめに 1回だけ 作って 保存する（上限・下限で ならした 字の ならび）
+function plan(){const d=day();if(!Array.isArray(d.plan)){d.plan=C.makePlan(R().recs,RANGE.kanji,today(),R().startDay||today());store()}return d.plan}
+const guide=()=>C.guide(R().recs,RANGE.kanji,today(),R().startDay||today(),plan());
+const nextFloor=()=>C.nextFloor(R().recs,RANGE.kanji,today(),C.FLOOR_SIZE,R().startDay||today(),plan());
 // 宝箱まで あと何回 たたかうか：めやすの かい数に、とちゅうの 中ボスの かいも 足す（画面の数と じっさいが 1対1に なるように）
 const chestLeft=()=>C.fightsToChest(R().floor|0,L,Math.max(1,guide().floors));
 const examOk=()=>RANGE.questions.filter(q=>R().tq[q.id]&&R().tq[q.id].r==='good').length;
