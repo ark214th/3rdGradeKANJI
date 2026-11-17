@@ -106,23 +106,30 @@
     const met = e => !!recs[e.k];
     const by = (...keys) => (a, b) => { for (const f of keys) { const d = f(a) - f(b); if (d) return d; } return 0; };
     return {
-      due: entries.filter(e => met(e) && recs[e.k].next <= today).sort(by(e => recs[e.k].lv, e => recs[e.k].next, e => recs[e.k].t || 0)),
+      // again：きょう もう 練習して「思い出せなかった」字。きょうの めやすには 数えない（宝箱の メーターを 足止め しない）
+      due: entries.filter(e => met(e) && recs[e.k].next <= today && recs[e.k].last !== today).sort(by(e => recs[e.k].lv, e => recs[e.k].next, e => recs[e.k].t || 0)),
+      again: entries.filter(e => met(e) && recs[e.k].next <= today && recs[e.k].last === today).sort(by(e => recs[e.k].t || 0)),
       fresh: entries.filter(e => !met(e) && !e.known).sort(by(strokesOf)),
       check: entries.filter(e => !met(e) && e.known),
       extra: entries.filter(e => met(e) && recs[e.k].next > today).sort(by(e => (recs[e.k].last === today ? 1 : 0), e => recs[e.k].lv, e => recs[e.k].t || 0)),
     };
   }
   /*
-   * つぎの かい（n体）。ふっかつ・はじめての字・たしかめを 順ぐりにまぜる。
-   * ぜんぶ なくなっても、おまけの練習（extra）で いつでも n体 そろう。
+   * つぎの かい（n体）。
+   * 1) きょうの めやすに 入る字（ふっかつした字と、きょう出会う はじめての字）を 先に、まぜながら出す。
+   *    こうすると「たからばこまで あと ◯かい」と、じっさいに たたかう かい数が ぴったり合う。
+   * 2) めやすを こえたら、きょう 思い出せなかった字 → 先の はじめての字（やる気が あるときは どんどん進める）→ おまけの練習（extra）。
+   * いつでも n体 そろう。startDay は めやすの 計算に使う（はじめた日）。
    */
-  function nextFloor(recs, entries, today, n) {
-    const q = queues(recs, entries, today), out = [], size = Math.min(n || FLOOR_SIZE, entries.length);
-    const src = [['due', q.due], ['new', q.fresh], ['check', q.check]];
-    for (let i = 0; out.length < size && src.some(s => s[1].length); i++) {
-      const s = src[i % src.length];
-      if (s[1].length) out.push({ k: s[1].shift().k, kind: s[0] });
-    }
+  function nextFloor(recs, entries, today, n, startDay) {
+    const q = queues(recs, entries, today), g = guide(recs, entries, today, startDay), out = [], size = Math.min(n || FLOOR_SIZE, entries.length);
+    // はじめての字は、この学年の字と 下の学年の字を こうごに
+    const fresh = q.fresh.slice(), check = q.check.slice(), news = [];
+    while (fresh.length || check.length) { if (fresh.length) news.push({ k: fresh.shift().k, kind: 'new' }); if (check.length) news.push({ k: check.shift().k, kind: 'check' }); }
+    const quota = news.slice(0, g.intro), later = news.slice(g.intro), due = q.due.map(e => ({ k: e.k, kind: 'due' }));
+    for (let i = 0; out.length < size && (due.length || quota.length); i++) { const src = i % 2 ? quota : due; const x = (src.length ? src : src === due ? quota : due).shift(); if (x) out.push(x); }
+    for (const e of q.again) { if (out.length >= size) break; out.push({ k: e.k, kind: 'due' }); }
+    for (const x of later) { if (out.length >= size) break; out.push(x); }
     for (const e of q.extra) { if (out.length >= size) break; out.push({ k: e.k, kind: 'extra' }); }
     return out;
   }
@@ -264,6 +271,20 @@
     if (n % MID_EVERY === 0) return 'mid';
     return 'battle';
   }
+  /*
+   * 宝箱まで あと何回 たたかうか。floors：めやすの のこり（ふつうの たたかいの 回数）。
+   * とちゅうに 中ボスの かいが あれば、その 1回も 足す。ドラゴンの 前と てっぺんでは かいが 進まないので、のこりは そのまま。
+   */
+  function fightsToChest(cleared, L, floors) {
+    let f = cleared, need = floors, k = 0;
+    while (need > 0 && k < 500) {
+      const kind = floorKind(f, L);
+      if (kind === 'mid') { k++; f++; continue; }
+      if (kind === 'dragon' || kind === 'top') return k + need;
+      k++; need--; f++;
+    }
+    return k;
+  }
   // 中ボス戦の 問題：出会った字から、弱い字・ごぶさたの字を 先に n字（同じ字は 1回）
   function reviewPick(recs, entries, n) {
     const met = entries.filter(e => recs[e.k]);
@@ -273,7 +294,7 @@
   const api = { MAX_LV, GAPS, KNOWN_LV, INTRO_DAYS, FLOOR_SIZE, EXAM_SIZE, TRACE_TOL, TRACE_AUTO, stepsFor, startLv, lvOf, prep, boxOf, partOf, distToStroke, pickStroke, judgeTrace,
     dayKey, addDays, daysBetween, queues, nextFloor, guide, advance, examList,
     xpFor, levelOf, levelProgress, WEAPONS, weaponOf, attackOf, weaponOpen, HERO_LOOKS, heroLook, rewardFor, BONUS, BOSS_PASS,
-    CHESTS, CHEST_NAMES, dailyGrade, midGrade, dragonGrade, AREAS, areaOf, areaFloors, MID_EVERY, floorKind, reviewPick };
+    CHESTS, CHEST_NAMES, dailyGrade, midGrade, dragonGrade, AREAS, areaOf, areaFloors, MID_EVERY, floorKind, fightsToChest, reviewPick };
   root.TowerCore = api;
   if (typeof module !== 'undefined') module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);
