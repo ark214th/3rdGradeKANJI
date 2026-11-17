@@ -41,7 +41,9 @@ const entryOf=k=>BYK[k];
 const lvOf=k=>C.lvOf(R().recs[k],entryOf(k));
 const met=k=>!!R().recs[k];
 const guide=()=>C.guide(R().recs,RANGE.kanji,today(),R().startDay||today());
-const nextFloor=()=>C.nextFloor(R().recs,RANGE.kanji,today());
+const nextFloor=()=>C.nextFloor(R().recs,RANGE.kanji,today(),C.FLOOR_SIZE,R().startDay||today());
+// 宝箱まで あと何回 たたかうか：めやすの かい数に、とちゅうの 中ボスの かいも 足す（画面の数と じっさいが 1対1に なるように）
+const chestLeft=()=>C.fightsToChest(R().floor|0,L,Math.max(1,guide().floors));
 const examOk=()=>RANGE.questions.filter(q=>R().tq[q.id]&&R().tq[q.id].r==='good').length;
 function day(){const r=R();if(!r.day||r.day.d!==today())r.day={d:today(),floors:0,chest:false,clean:0,total:0};return r.day}
 const kindNext=()=>C.floorKind(R().floor|0,L);
@@ -96,14 +98,17 @@ function renderHome(){
   const toMid=C.MID_EVERY-(fl%C.MID_EVERY),toTop=L-fl;
   $('nextBoss').textContent=r.cleared?'てっぺんで しゅぎょう できる':kind==='dragon'?'🐉 つぎは てっぺんの ドラゴン！':kind==='mid'?`👑 つぎは ${BOSS_NAME[AREA.mid]}！`:toMid<toTop?`👑 中ボスまで あと ${toMid}かい`:`🐉 ドラゴンまで あと ${toTop}かい`;
   const go=$('go');go.className=kind==='mid'||kind==='dragon'?'boss':'primary';
+  // てっぺんの ドラゴンの 前では、ドラゴンに いどむか、しゅぎょう（ふつうの たたかい）を えらべる
+  $('train').hidden=kind!=='dragon';
   go.textContent=kind==='dragon'?'🐉 ドラゴンに いどむ':kind==='mid'?`👑 ${BOSS_NAME[AREA.mid]}に いどむ`:kind==='top'?'⚔️ しゅぎょうする':'▲ のぼる';
   // きょうの たからばこ：体の数ではなく「あと 何かい」で見せる。長い日も 6目もりまで
-  const total=Math.max(1,d.floors+g.floors),segs=Math.min(6,total),on=d.chest?segs:Math.min(segs-(g.floors?1:0),Math.floor(d.floors/total*segs));
-  $('chestRow').innerHTML=(d.chest?'👑 きょうの たからばこ ゲット！':`🎁 あと ${Math.max(1,g.floors)}かい`)+' '+Array.from({length:segs},(_,i)=>`<i class="${i<on?'on':''}"></i>`).join('')+`<span class="box ${d.chest?'':'wig'}">${d.chest?'✨':'🎁'}</span>`;
+  const left=chestLeft(),total=Math.max(1,d.floors+left),segs=Math.min(6,total),on=d.chest?segs:Math.min(segs-1,Math.round(d.floors/total*segs));
+  $('chestRow').innerHTML=(d.chest?'👑 きょうの たからばこ ゲット！':`🎁 あと ${left}かい`)+' '+Array.from({length:segs},(_,i)=>`<i class="${i<on?'on':''}"></i>`).join('')+`<span class="box ${d.chest?'':'wig'}">${d.chest?'✨':'🎁'}</span>`;
   const n=RANGE.kanji.length,seen=RANGE.kanji.filter(e=>met(e.k)).length,ready=seen===n&&examOk()<RANGE.questions.length;
   $('openExam').className=ready?'rec':'';
 }
 $('go').onclick=()=>{SND.unlock();SND.sfx('tap');const k=kindNext();if(k==='dragon')return startExam();if(k==='mid')return startMid();const list=nextFloor();if(list.length)startQuest(list)};
+$('train').onclick=()=>{SND.unlock();SND.sfx('tap');const list=nextFloor();if(list.length)startQuest(list)};
 $('soundBtn').onclick=()=>{SND.unlock();SND.toggle();if(!SND.muted)SND.play('home');renderHome()};
 
 /* ---------- たたかい：ふだんの かい（3体）・中ボス・おためし ---------- */
@@ -200,12 +205,14 @@ function midHit(){
 // たたかいの おわり
 function endFight(){
   if(Q.mode==='trial'){card({title:'おためし おわり',big:'🧪',text:'記録は かわっていません。',next:goHome});return}
-  const r=R(),from=r.floor|0,d=day(),wasTop=kindNext()==='top';
+  // ドラゴンの 前と てっぺんでは かいは ふえない（ドラゴンは テストと同じ問題で たおす）
+  const r=R(),from=r.floor|0,d=day(),wasTop=Q.mode!=='mid'&&(kindNext()==='top'||kindNext()==='dragon');
   if(!wasTop)r.floor=Math.min(L,from+1);d.floors++;
   const fb=Object.assign({},C.BONUS.floor);gain(fb,true);Q.gold+=fb.gold;store();
   const to=r.floor|0;
-  if(Q.mode==='mid'){const grade=C.midGrade(Q.slipsTotal);return runChest('mid',grade,()=>result(from,to))}
-  if(!d.chest&&guide().count===0){d.chest=true;store();return runChest('daily',C.dailyGrade(d.clean,d.total),()=>result(from,to))}
+  const daily=after=>{if(!d.chest&&guide().count===0){d.chest=true;store();return runChest('daily',C.dailyGrade(d.clean,d.total),after)}after()};
+  if(Q.mode==='mid'){const grade=C.midGrade(Q.slipsTotal);return runChest('mid',grade,()=>daily(()=>result(from,to)))}
+  daily(()=>result(from,to));
   result(from,to);
 }
 function result(from,to){
