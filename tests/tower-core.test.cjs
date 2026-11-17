@@ -98,6 +98,18 @@ r = C.advance(r, 'good', D3, multi, 5); assert.deepEqual([r.lv, r.next], [3, C.a
 r = C.advance({ lv: 2, last: D1 }, 'close', D2, multi); assert.deepEqual([r.lv, r.next, r.miss], [2, D3, 1]);
 r = C.advance({ lv: 3, last: D1 }, 'forgot', D2, multi); assert.deepEqual([r.lv, r.next], [1, D2], 'forgotten kanji come back the same day');
 r = C.advance({ lv: 1, last: D1 }, 'forgot', D2, multi); assert.equal(r.lv, 0, 'forgotten again: back to the model');
+// その日に 思い出せなかった字は、同じ日に 書けても 段は 上がらず、あした もう一度
+{
+  const lapsed = C.advance({ lv: 2, last: D1, first: D1 }, 'forgot', D2, multi, 1);
+  assert.deepEqual([lapsed.lv, lapsed.next, lapsed.lapse], [1, D2, D2]);
+  const again = C.advance(lapsed, 'good', D2, multi, 2);
+  assert.deepEqual([again.lv, again.next], [1, C.addDays(D2, 1)], 'same-day success after a lapse waits for tomorrow');
+  const tomorrow = C.advance(again, 'good', C.addDays(D2, 1), multi, 3);
+  assert.equal(tomorrow.lv, 2, 'next day it can climb again');
+  assert.equal(tomorrow.lapse, undefined);
+  const close = C.advance({ lv: 2, last: D1 }, 'close', D2, multi);
+  assert.equal(C.advance(close, 'good', D2, multi).lv, 2);
+}
 // まちがいの多い字は、次に出るまでが短い
 r = C.advance({ lv: 2, last: D1, miss: 2 }, 'good', D2, multi); assert.deepEqual([r.lv, r.next], [3, C.addDays(D2, 2)]);
 // 知っているはずの字：書ければ一気に★3、書けなければ思い出しながらの段へ

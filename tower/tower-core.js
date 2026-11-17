@@ -154,15 +154,21 @@
    * - close: 同じ段（★0 は ★1 へ）。あした もう一度。
    * - forgot: ★2 以上は ★1 へ、★1 以下は お手本つきの ★0 へ。きょうのうちに もう一度 出る。
    * まちがいが 2回以上ある字は、次に出るまでの日数を 半分にする。
+   * その日に「すこし ちがう」「思い出せなかった」に なった字は、同じ日に 書けても 段を 上げず、あした もう一度（ねむった あとに たしかめる）。
    */
   function advance(rec, result, today, entry, now) {
     const lv = lvOf(rec, entry);
     let nlv = result === 'good' ? Math.min(MAX_LV, lv + 1) : result === 'close' ? Math.max(1, lv) : lv >= 2 ? 1 : 0;
     if (result === 'good' && nlv === MAX_LV && rec && rec.last === today && lv < MAX_LV) nlv = MAX_LV - 1;
+    const lapsedToday = !!(rec && rec.lapse === today);
+    if (result === 'good' && lapsedToday) nlv = lv;
     const miss = ((rec && rec.miss) | 0) + (result === 'good' ? 0 : 1);
     let gap = result === 'forgot' ? 0 : result === 'close' ? 1 : lv >= MAX_LV ? GAPS[MAX_LV] : GAPS[Math.max(1, nlv) - 1];
     if (result === 'good' && miss >= 2) gap = Math.max(1, Math.ceil(gap / 2));
-    return { lv: nlv, next: addDays(today, gap), seen: ((rec && rec.seen) | 0) + 1, first: (rec && rec.first) || today, last: today, miss, t: now || Date.now() };
+    if (result === 'good' && lapsedToday) gap = 1;
+    const out = { lv: nlv, next: addDays(today, gap), seen: ((rec && rec.seen) | 0) + 1, first: (rec && rec.first) || today, last: today, miss, t: now || Date.now() };
+    if (result !== 'good' || lapsedToday) out.lapse = today;
+    return out;
   }
   /*
    * ボス（テストれんしゅう）の出題（n問）：まだ ○ に なっていない問題 → 前に × だった問題 → 前に やってから 時間がたった問題。
