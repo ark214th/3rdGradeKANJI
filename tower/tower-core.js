@@ -14,6 +14,8 @@
   const GAPS = [1, 2, 4, 7];      // ★が 1,2,3 になったあと、次に「ふっかつ」するまでの日数（さいごは 仕上がった後の見直し）
   const KNOWN_LV = 2;             // 下の学年の字は「もう知っているはず」として、確かめる段から始める
   const INTRO_DAYS = 5;           // はじめの この日数で、ぜんぶの字に 一度は出会う（1日の めやす）
+  const DAY_MAX = 18;             // 1日の めやすの 上限（6かい）。多い日は ふっかつの字を あしたへ
+  const DAY_MIN = 9;              // 1日の めやすの 下限（3かい）。少ない日は ふっかつを 前だおし
   const FLOOR_SIZE = 3;           // 1かい（ひとくぎり）で たたかう数
   const EXAM_SIZE = 10;           // ボス 1回の問題数
   const TRACE_TOL = 28;           // なぞりは ゆるく：向きと おおよその場所だけ見る
@@ -115,37 +117,67 @@
     };
   }
   /*
-   * つぎの かい（n体）。
-   * 1) きょうの めやすに 入る字（ふっかつした字と、きょう出会う はじめての字）を 先に、まぜながら出す。
-   *    こうすると「たからばこまで あと ◯かい」と、じっさいに たたかう かい数が ぴったり合う。
-   * 2) めやすを こえたら、きょう 思い出せなかった字 → 先の はじめての字（やる気が あるときは どんどん進める）→ おまけの練習（extra）。
-   * いつでも n体 そろう。startDay は めやすの 計算に使う（はじめた日）。
+   * きょうの 予定（その日の はじめに 1回だけ 作って、保存しておく）。
+   * ふっかつした字（弱い字・古い字が先）と、きょう出会う はじめての字を まぜる。
+   * - 1日の上限 DAY_MAX 体：多い日は、ふっかつの字を あしたへ くり下げる（はじめての字は 上限の 3分の2まで）。
+   * - 1日の下限 DAY_MIN 体：少ない日は、あした以降に ふっかつする字を 少し 前だおしして、重い日を へらす。
+   * きょう もう 練習した字（予定を 作る前に 遊んだ分）も 上限・下限に 数える。
    */
-  function nextFloor(recs, entries, today, n, startDay) {
-    const q = queues(recs, entries, today), g = guide(recs, entries, today, startDay), out = [], size = Math.min(n || FLOOR_SIZE, entries.length);
-    // はじめての字は、この学年の字と 下の学年の字を こうごに
+  function makePlan(recs, entries, today, startDay) {
+    const q = queues(recs, entries, today), g = introNeed(recs, entries, today, startDay, q);
+    const done = entries.filter(e => recs[e.k] && recs[e.k].last === today).length;
+    const cap = Math.max(0, DAY_MAX - done), min = Math.max(0, DAY_MIN - done);
     const fresh = q.fresh.slice(), check = q.check.slice(), news = [];
     while (fresh.length || check.length) { if (fresh.length) news.push({ k: fresh.shift().k, kind: 'new' }); if (check.length) news.push({ k: check.shift().k, kind: 'check' }); }
-    const quota = news.slice(0, g.intro), later = news.slice(g.intro), due = q.due.map(e => ({ k: e.k, kind: 'due' }));
-    for (let i = 0; out.length < size && (due.length || quota.length); i++) { const src = i % 2 ? quota : due; const x = (src.length ? src : src === due ? quota : due).shift(); if (x) out.push(x); }
-    for (const e of q.again) { if (out.length >= size) break; out.push({ k: e.k, kind: 'due' }); }
-    for (const x of later) { if (out.length >= size) break; out.push(x); }
-    for (const e of q.extra) { if (out.length >= size) break; out.push({ k: e.k, kind: 'extra' }); }
+    const introN = Math.min(g, news.length, Math.max(Math.ceil(cap * 2 / 3), cap - q.due.length));
+    const dueN = Math.min(q.due.length, cap - introN);
+    const due = q.due.slice(0, dueN).map(e => ({ k: e.k, kind: 'due' }));
+    if (due.length + introN < min) { // 前だおし：あした以降に ふっかつする字を、近い順・弱い順に
+      const soon = entries.filter(e => recs[e.k] && recs[e.k].next > today && recs[e.k].last !== today)
+        .sort((a, b) => (recs[a.k].next - recs[b.k].next) || (recs[a.k].lv - recs[b.k].lv) || ((recs[a.k].t || 0) - (recs[b.k].t || 0)));
+      for (const e of soon) { if (due.length + introN >= min) break; due.push({ k: e.k, kind: 'due' }); }
+    }
+    const quota = news.slice(0, introN), out = [];
+    for (let i = 0; due.length || quota.length; i++) { const src = i % 2 ? quota : due; out.push((src.length ? src : src === due ? quota : due).shift()); }
     return out;
   }
-  /*
-   * きょうの めやす（のこり）。こえても 止めない。
-   * ふっかつした字は ぜんぶ。はじめての字は、開始から INTRO_DAYS 日で 全部に出会える数。
-   * floors は それを「何かい ぶんか」に直した数（画面では 体の数でなく こちらを見せる）。
-   */
-  function guide(recs, entries, today, startDay) {
-    const q = queues(recs, entries, today);
+  // きょう出会う はじめての字の数（はじめた日から INTRO_DAYS 日で ぜんぶに 出会えるように）
+  function introNeed(recs, entries, today, startDay, q) {
+    q = q || queues(recs, entries, today);
     const left = Math.max(1, INTRO_DAYS - Math.max(0, daysBetween(startDay || today, today)));
     const metToday = entries.filter(e => recs[e.k] && recs[e.k].first === today).length;
     const unmet = q.fresh.length + q.check.length;
-    const intro = Math.min(unmet, Math.max(0, Math.ceil((unmet + metToday) / left) - metToday));
-    const count = q.due.length + intro;
-    return { due: q.due.length, intro, unmet, count, floors: Math.ceil(count / FLOOR_SIZE) };
+    return Math.min(unmet, Math.max(0, Math.ceil((unmet + metToday) / left) - metToday));
+  }
+  const planDone = (recs, x, today) => !!(recs[x.k] && recs[x.k].last === today);
+  /*
+   * つぎの かい（n体）。
+   * 1) きょうの 予定の 字（まだ やっていない もの）を 予定の 順に。こうすると「たからばこまで あと ◯かい」と、じっさいに たたかう かい数が ぴったり合う。
+   * 2) 予定を こえたら、上限で くり下げた ふっかつの字 → きょう 思い出せなかった字 → 先の はじめての字 → おまけ（extra）。
+   * いつでも n体 そろう。plan を わたさないときは、その場で 予定を 作る。
+   */
+  function nextFloor(recs, entries, today, n, startDay, plan) {
+    plan = plan || makePlan(recs, entries, today, startDay);
+    const q = queues(recs, entries, today), size = Math.min(n || FLOOR_SIZE, entries.length), out = [], used = new Set();
+    const push = x => { if (out.length < size && !used.has(x.k)) { used.add(x.k); out.push(x); } };
+    for (const x of plan) if (!planDone(recs, x, today) && BYK(entries, x.k)) push(x);
+    for (const e of q.due) push({ k: e.k, kind: 'due' });
+    for (const e of q.again) push({ k: e.k, kind: 'due' });
+    const fresh = q.fresh.slice(), check = q.check.slice();
+    while (fresh.length || check.length) { if (fresh.length) push({ k: fresh.shift().k, kind: 'new' }); if (check.length) push({ k: check.shift().k, kind: 'check' }); }
+    for (const e of q.extra) push({ k: e.k, kind: 'extra' });
+    return out;
+  }
+  const BYK = (entries, k) => entries.some(e => e.k === k);
+  /*
+   * きょうの めやす（のこり）。こえても 止めない。予定の うち、まだ やっていない 字の数。
+   * floors は それを「何かい ぶんか」に直した数（画面では 体の数でなく こちらを見せる）。
+   */
+  function guide(recs, entries, today, startDay, plan) {
+    plan = plan || makePlan(recs, entries, today, startDay);
+    const q = queues(recs, entries, today);
+    const count = plan.filter(x => !planDone(recs, x, today) && BYK(entries, x.k)).length;
+    return { due: plan.filter(x => x.kind === 'due' && !planDone(recs, x, today)).length, intro: plan.filter(x => x.kind !== 'due' && !planDone(recs, x, today)).length, unmet: q.fresh.length + q.check.length, count, floors: Math.ceil(count / FLOOR_SIZE) };
   }
   /*
    * 1字の練習が終わったときの記録（出来に合わせて、段と 次に出る日が かわる）。
@@ -298,7 +330,7 @@
   }
 
   const api = { MAX_LV, GAPS, KNOWN_LV, INTRO_DAYS, FLOOR_SIZE, EXAM_SIZE, TRACE_TOL, TRACE_AUTO, stepsFor, startLv, lvOf, prep, boxOf, partOf, distToStroke, pickStroke, judgeTrace,
-    dayKey, addDays, daysBetween, queues, nextFloor, guide, advance, examList,
+    DAY_MAX, DAY_MIN, dayKey, addDays, daysBetween, queues, makePlan, introNeed, nextFloor, guide, advance, examList,
     xpFor, levelOf, levelProgress, WEAPONS, weaponOf, attackOf, weaponOpen, HERO_LOOKS, heroLook, rewardFor, BONUS, BOSS_PASS,
     CHESTS, CHEST_NAMES, dailyGrade, midGrade, dragonGrade, AREAS, areaOf, areaFloors, MID_EVERY, floorKind, fightsToChest, reviewPick };
   root.TowerCore = api;
