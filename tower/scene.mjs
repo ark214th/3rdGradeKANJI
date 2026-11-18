@@ -292,7 +292,7 @@ function buildShop() {
   dummy.add(ol(mesh(new T.CylinderGeometry(0.32, 0.38, 0.9, 10), toon(0xe8c879), 0, 1.15, 0)));
   dummy.add(ol(mesh(new T.SphereGeometry(0.26, 12, 10), toon(0xe8c879), 0, 1.85, 0)));
   const tgt = mesh(new T.CircleGeometry(0.22, 16), toon(0xff4d4d), 0, 1.2, 0.39); dummy.add(tgt); tgt.add(mesh(new T.CircleGeometry(0.1, 16), toon(0xffffff), 0, 0, 0.01));
-  dummy.add(shadowBlob(0.5)); dummy.rotation.y = -0.5; dummy.userData = { base: 0, color: new T.Color(0xe8c879) };
+  dummy.add(shadowBlob(0.5)); dummy.rotation.y = -0.5; dummy.userData = { base: 0, color: new T.Color(0xe8c879), homeX: 1.6 };
   shopG.add(dummy);
   scene.add(shopG);
 }
@@ -359,6 +359,7 @@ function applyArea(a) {
   props(propsG, a, 9, 6.5, 0);
   hemi.color.set(a.light); hemi.groundColor.set(a.ground);
 }
+const heroHomeX = () => (mode === 'shop' ? -1.0 : HERO_X);
 function placeHero() {
   if (!hero) return;
   hero.rotation.set(0, 0, 0); hero.scale.setScalar(1);
@@ -429,7 +430,7 @@ function spawn(o) {
   const kind = o.boss === 'dragon' ? 'dragon' : o.mon, size = o.boss === 'mid' ? 1.6 : o.boss === 'dragon' ? 1.25 : 1;
   const inner = buildEnemy(kind, o.hue || 0, size);
   enemy = new T.Group(); enemy.add(inner); enemy.add(shadowBlob(0.7)); enemy.userData = inner.userData; enemy.userData.inner = inner; enemy.userData.size = size;
-  enemy.scale.setScalar(size); enemy.position.set(ENEMY_X + (size > 1 ? 0.35 : 0), o.boss ? 0 : 6, 0); scene.add(enemy);
+  enemy.scale.setScalar(size); enemy.position.set(ENEMY_X + (size > 1 ? 0.35 : 0), o.boss ? 0 : 6, 0); enemy.userData.homeX = enemy.position.x; scene.add(enemy);
   if (o.boss) { enemy.visible = false; return; } // ボスは とうじょう えんしゅつで 出す
   const g = enemy;
   tween(0.45, t => { g.position.y = 6 * (1 - ease(t)); }, () => { burst(V3(g.position.x, 0.2, 0.2), 26, 0xffffff, { speed: 2.4, up: 1, life: 0.5, size: 0.3 }); shake = Math.max(shake, 0.14); tween(0.18, t => { g.scale.y = size * (1 - 0.25 * Math.sin(t * Math.PI)); }); });
@@ -459,7 +460,7 @@ function attack(o) {
   o = o || {};
   const g = target();
   if (!scene || !g) { if (o.done) o.done(); return; }
-  const x0 = hero.position.x, x1 = g.position.x - 1.35 * (g.scale.x > 1.2 ? 1.25 : 1), d = weaponData();
+  const x0 = heroHomeX(), x1 = homeX(g) - 1.35 * (g.scale.x > 1.2 ? 1.25 : 1), d = weaponData();
   tween(0.16, t => { hero.position.x = x0 + (x1 - x0) * ease(t); heroArm.rotation.x = -2.4 * ease(t); }, () => {
     tween(0.1, t => { heroArm.rotation.x = -2.4 + 3.6 * t; }, () => {
       const at = targetAt();
@@ -474,7 +475,10 @@ function attack(o) {
     });
   });
 }
-function knock(g, d) { const kx = g.position.x; tween(0.22, t => { g.position.x = kx + d * Math.sin(t * Math.PI); g.rotation.z = -0.25 * Math.sin(t * Math.PI); }, () => { g.position.x = kx; g.rotation.z = 0; }); }
+// ふきとばし：かならず 定位置（homeX）から ゆらして、定位置に もどす。
+// 今の 位置を 基準に すると、ゆれの とちゅうで 次の 一撃が 来たとき ずれが たまって どこかへ 飛んでいく（ためしぎりの 連打で 起きていた）
+const homeX = g => (g.userData.homeX != null ? g.userData.homeX : g.position.x);
+function knock(g, d) { const kx = homeX(g); tween(0.22, t => { g.position.x = kx + d * Math.sin(t * Math.PI); g.rotation.z = -0.25 * Math.sin(t * Math.PI); }, () => { g.position.x = kx; g.rotation.z = 0; }); }
 // 光の すじ
 function arc(at, color, s, rot) {
   const m = mesh(new T.RingGeometry(0.75, 1.0, 24, 1, 0, Math.PI * 0.9), glowMat(color), at.x - 0.2, at.y, at.z + 0.4);
@@ -485,7 +489,7 @@ function arc(at, color, s, rot) {
 function enemyAttack(done) {
   const g = enemy;
   if (!scene || !g) { if (done) done(); return; }
-  const style = g.userData.style, x0 = g.position.x, hit = () => { block(); if (done) done(); };
+  const style = g.userData.style, x0 = homeX(g), hit = () => { block(); if (done) done(); };
   if (style === 'shoot' || style === 'breath') {
     tween(0.25, t => { g.userData.inner.rotation.x = -0.2 * Math.sin(t * Math.PI); });
     const from = targetAt(), to = heroAt(), col = style === 'breath' ? 0xff7a2a : g.userData.color;
@@ -504,7 +508,7 @@ function enemyAttack(done) {
 }
 function block() {
   shake = Math.max(shake, 0.18);
-  tween(0.35, t => { shieldArm.rotation.x = -1.5 * Math.sin(t * Math.PI); hero.position.x = HERO_X - 0.25 * Math.sin(t * Math.PI); });
+  tween(0.35, t => { shieldArm.rotation.x = -1.5 * Math.sin(t * Math.PI); hero.position.x = heroHomeX() - 0.25 * Math.sin(t * Math.PI); }, () => { hero.position.x = heroHomeX(); shieldArm.rotation.x = 0; });
   burst(V3(hero.position.x + 0.5, 1.0, 0.4), 22, 0xfff6c8, { speed: 3, life: 0.35, size: 0.22, g: 0 });
 }
 // まちがえた：小さく はねるだけ（はんげきは enemyAttack）
@@ -735,5 +739,6 @@ function frame() {
 window.TowerScene = {
   attach, setArea, setLook, setWeapon, sweep, spawn, bossIntro, bossRage, attack, enemyAttack, miss, die, cheer, levelUp, special, climb, chest, openChest, closeChest,
   setKanjiFx(strokes) { KANJI_FX.strokes = strokes; }, resize, get ok() { return !!renderer; },
+  __debug() { return { dummyX: dummy && +dummy.position.x.toFixed(3), dummyRotZ: dummy && +dummy.rotation.z.toFixed(3), heroX: hero && +hero.position.x.toFixed(3), heroY: hero && +hero.position.y.toFixed(3), enemyX: enemy ? +enemy.position.x.toFixed(3) : null, enemyHome: enemy ? enemy.userData.homeX : null }; }, // テスト用
 };
 window.dispatchEvent(new Event('towerscene'));
