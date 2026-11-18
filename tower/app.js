@@ -427,7 +427,7 @@ document.addEventListener('gesturestart',ev=>ev.preventDefault());
 document.addEventListener('pointerdown',()=>SND.unlock(),{capture:true});
 
 /* ---------- ぶきや：3Dで 武器を 見て、ためしぎりが できる ---------- */
-let shopSel='w0';
+let shopSel='w0',shopBusy=false;
 function renderShop(){
   const h=save.hero,w=C.weaponOf(shopSel),own=h.owned.includes(w.id),on=h.weapon===w.id,open=C.weaponOpen(w,h.xp),can=h.gold>=w.price;
   $('shopGold').textContent=h.gold;
@@ -436,7 +436,8 @@ function renderShop(){
   $('shopList').innerHTML=C.WEAPONS.map(x=>{const o=C.weaponOpen(x,h.xp),own=h.owned.includes(x.id);
     return `<button class="witem ${x.id===shopSel?'sel':''} ${o?'':'locked'}" data-w="${x.id}"><span class="wsw" style="background:${hex(x.color)};box-shadow:0 0 12px ${hex(x.glow)}"></span><span>${o?x.name:'？？？'}<small>${o?`こうげき +${x.atk}`:`Lv ${x.lv} で とうじょう`}</small></span><span class="tag">${h.weapon===x.id?'そうび中':own?'もってる':o?`🪙 ${x.price}`:'🔒'}</span></button>`}).join('');
   for(const b of $('shopList').querySelectorAll('.witem'))b.onclick=()=>{SND.sfx('tap');shopSel=b.dataset.w;const x=C.weaponOf(shopSel);if(C.weaponOpen(x,save.hero.xp))scene('setWeapon',x);renderShop()};
-  const t=$('shopTry');if(t)t.onclick=()=>{SND.unlock();$('cutinText').textContent=w.skill+'！';$('cutin').classList.add('on');later(900,()=>$('cutin').classList.remove('on'));SND.sfx('charge');scene('setKanjiFx',STROKES[RANGE.kanji[0].k]);scene('special',w,()=>SND.sfx('boom'))};
+  // 必殺技の とちゅうは うけつけない（連打で わざが 重ならないように）
+  const t=$('shopTry');if(t)t.onclick=()=>{if(shopBusy)return;shopBusy=true;t.disabled=true;later(1900,()=>{shopBusy=false;const b=$('shopTry');if(b)b.disabled=false});SND.unlock();$('cutinText').textContent=w.skill+'！';$('cutin').classList.add('on');later(900,()=>$('cutin').classList.remove('on'));SND.sfx('charge');scene('setKanjiFx',STROKES[RANGE.kanji[0].k]);scene('special',w,()=>SND.sfx('boom'))};
   const b=$('shopBuy');if(b)b.onclick=()=>{const h=save.hero;
     if(!h.owned.includes(w.id)){if(h.gold<w.price)return;h.gold-=w.price;h.owned.push(w.id);banner(`「${w.name}」を 手に入れた！`,1500);SND.sfx('lvup')}else SND.sfx('coin');
     h.weapon=w.id;store();scene('setWeapon',w);scene('levelUp',w.glow);renderShop()};
