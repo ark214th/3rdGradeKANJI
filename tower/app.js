@@ -109,7 +109,7 @@ function renderHome(){
   const n=RANGE.kanji.length,seen=RANGE.kanji.filter(e=>met(e.k)).length,ready=seen===n&&examOk()<RANGE.questions.length;
   $('openExam').className=ready?'rec':'';
 }
-$('go').onclick=()=>{SND.unlock();SND.sfx('tap');const k=kindNext();if(k==='dragon')return startExam();if(k==='mid')return startMid();const list=nextFloor();if(list.length)startQuest(list)};
+$('go').onclick=()=>{SND.unlock();SND.sfx('tap');const k=kindNext();if(k==='dragon')return pickExam();if(k==='mid')return startMid();const list=nextFloor();if(list.length)startQuest(list)};
 $('train').onclick=()=>{SND.unlock();SND.sfx('tap');const list=nextFloor();if(list.length)startQuest(list)};
 $('soundBtn').onclick=()=>{SND.unlock();SND.toggle();if(!SND.muted)SND.play('home');renderHome()};
 
@@ -362,9 +362,20 @@ const STEP={
 };
 
 /* ---------- ドラゴン（テストと同じ問題）：答え（漢字と おくりがな）を書く ---------- */
-function startExam(){
-  SND.unlock();const list=C.examList(R().tq,RANGE.questions);
-  X={list,i:0,ok:0,redo:new Set(),gold:0,xp:0,hearts:HEARTS,combo:0,need:Math.ceil(list.length*C.BOSS_PASS),atTop:kindNext()==='dragon'||kindNext()==='top'};Q=null;
+// テストの回が いくつか ある はんいでは、どの回を 練習するか えらぶ（明日は 12回目だけ、など）
+function pickExam(){
+  const secs=RANGE.sections||[];if(secs.length<2)return startExam(null);
+  const ok=qs=>qs.filter(q=>R().tq[q.id]&&R().tq[q.id].r==='good').length;
+  const row=(label,sec)=>{const qs=sec==null?RANGE.questions:RANGE.questions.filter(q=>q.sec===sec);return `<div class="litem"><div style="font-size:26px">🐉</div><div><b>${label}</b><small>${qs.length}問　○ ${ok(qs)}/${qs.length}</small></div><button class="primary" data-sec="${sec==null?'':sec}">いどむ</button></div>`};
+  $('examList').innerHTML=secs.map((t,i)=>row(t,i)).join('')+row('ぜんぶ',null);
+  for(const b of $('examList').querySelectorAll('button'))b.onclick=()=>{$('examOv').classList.remove('on');startExam(b.dataset.sec===''?null:+b.dataset.sec)};
+  $('examOv').classList.add('on');
+}
+$('examClose').onclick=()=>$('examOv').classList.remove('on');
+function startExam(sec){
+  SND.unlock();const pool=sec==null?RANGE.questions:RANGE.questions.filter(q=>q.sec===sec),list=C.examList(R().tq,pool);
+  // エリア クリアは「ぜんぶ」の ドラゴンを てっぺんで たおしたときだけ
+  X={list,pool,sec,i:0,ok:0,redo:new Set(),gold:0,xp:0,hearts:HEARTS,combo:0,need:Math.ceil(list.length*C.BOSS_PASS),atTop:sec==null&&(kindNext()==='dragon'||kindNext()==='top')};Q=null;
   show('quest');SND.play(null);$('ename').textContent='塔のぬし ドラゴン';$('ebox').classList.add('boss');setHp(1);renderHearts();$('stepLabel').textContent='';
   scene('spawn',{boss:'dragon',hue:AREA.hue+180});
   bossEntrance('🐉 ドラゴン あらわる！',()=>{SND.play('boss');examShow()});
@@ -395,10 +406,10 @@ function examShow(){
   fit();
 }
 function examEnd(){
-  const n=X.list.length-X.redo.size,r=R(),win=X.ok>=X.need,all=examOk()===RANGE.questions.length;
+  const n=X.list.length-X.redo.size,r=R(),win=X.ok>=X.need,all=examOk()===RANGE.questions.length,secName=X.sec==null?'':(RANGE.sections[X.sec]+'の '),poolOk=X.pool.filter(q=>r.tq[q.id]&&r.tq[q.id].r==='good').length;
   S={type:'end',lock:true};
   if(!win){scene('miss');SND.sfx('enemy');
-    return later(600,()=>card({title:'🐉 ドラゴンは にげていった…',big:`${X.ok} / ${n}`,text:`${X.need}問を 一回で 書けたら 勝てる！ まちがえた字は 塔で おぼえ直そう。`,gain:{gold:X.gold,xp:X.xp},next:goHome}))}
+    return later(600,()=>card({title:'🐉 ドラゴンは にげていった…',big:`${X.ok} / ${n}`,text:`${X.need}問を 一回で 書けたら 勝てる！ ${secName}○ ${poolOk}/${X.pool.length}。まちがえた問題は 次に 先に 出るよ。`,gain:{gold:X.gold,xp:X.xp},next:goHome}))}
   r.crest=Math.max(r.crest|0,all?2:1);
   const from=r.floor|0,clear=X.atTop&&!r.cleared;
   if(clear){r.floor=L;r.cleared=true}store();
@@ -406,10 +417,10 @@ function examEnd(){
   doSpecial(()=>{setHp(0);SND.sfx('kill');scene('die',{done:()=>later(400,()=>runChest('dragon',C.dragonGrade(X.ok,n),()=>{
     SND.sfx('win');
     card({title:clear?`🏆 ${AREA.name} クリア！`:'🐉 ドラゴンを おいはらった！',big:clear?'👑':`${X.ok} / ${n}`,
-      text:clear?'漢字を とりかえした！ 次の テストの はんいで、新しい エリアが ひらくよ。':'てっぺんまで のぼって たおせば、エリア クリア！',gain:{gold:X.gold,xp:X.xp},next:()=>goHome(from,r.floor|0)});
+      text:clear?'漢字を とりかえした！ 次の テストの はんいで、新しい エリアが ひらくよ。':`${secName}○ ${poolOk}/${X.pool.length}。`+(poolOk<X.pool.length?'もう一度 いどむと、まだの 問題が 先に 出るよ。':'ぜんぶ ○！')+(X.sec==null&&!r.cleared?' てっぺんで たおせば エリア クリア！':''),gain:{gold:X.gold,xp:X.xp},next:()=>goHome(from,r.floor|0)});
   }))});if(!has3D())later(400,()=>runChest('dragon',C.dragonGrade(X.ok,n),()=>card({title:clear?`🏆 ${AREA.name} クリア！`:'🐉 ドラゴンを おいはらった！',big:'👑',gain:{gold:X.gold,xp:X.xp},next:()=>goHome(from,r.floor|0)})))});
 }
-$('openExam').onclick=()=>{SND.sfx('tap');startExam()};
+$('openExam').onclick=()=>{SND.sfx('tap');pickExam()};
 
 /* ---------- タッチ ---------- */
 let pid=null;

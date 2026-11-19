@@ -10,7 +10,7 @@
  *   title: 3学期 1・2回目    ← 画面に出る名前
  *   grade: 3                ← 学年。これより下の学年で習う字は「知っているはず」として確かめから始める
  *   ビルの{二|に}{階|かい}に{住む|すむ}。   ← 1行が1つの文。{こたえ|よみ} が 1問
- *   # で始まる行は メモ（## 11回目 のような見出しも メモ）
+ *   ## 11回目 のような見出しは「テストの回」の区切り（ドラゴンで 回ごとに 練習できる）。# 1つで始まる行は メモ
  */
 'use strict';
 const fs = require('node:fs');
@@ -60,18 +60,20 @@ const fail = m => { console.error('エラー: ' + m); process.exit(1); };
 const src = process.argv[2];
 if (!src) fail('使い方: node tower/tools/build_range.cjs tower/ranges/<名前>.txt');
 function parse(file) {
-  const head = {}, sentences = [];
+  const head = {}, sentences = [], sections = [];
   fs.readFileSync(file, 'utf8').split(/\r?\n/).forEach((line, n) => {
     const t = line.trim();
+    const sec = t.match(/^##\s+(.+)$/);
+    if (sec) { sections.push(sec[1].trim()); return; }
     if (!t || t.startsWith('#')) return;
     const h = t.match(/^(id|title|grade)\s*[:：]\s*(.+)$/);
     if (h) { head[h[1]] = h[2].trim(); return; }
     if (!/\{[^{}|]+\|[^{}|]+\}/.test(t)) fail(`${path.basename(file)} ${n + 1}行目：{こたえ|よみ} が ありません → ${t}`);
-    sentences.push({ line: n + 1, text: t });
+    sentences.push({ line: n + 1, text: t, sec: Math.max(0, sections.length - 1) });
   });
   if (!/^[A-Za-z0-9_-]+$/.test(head.id || '')) fail(`${path.basename(file)}：「id: 半角の名前」が必要です`);
   if (!head.title) fail(`${path.basename(file)}：「title: 画面に出る名前」が必要です`);
-  return { id: head.id, title: head.title, grade: +head.grade || 3, sentences };
+  return { id: head.id, title: head.title, grade: +head.grade || 3, sentences, sections };
 }
 const R = parse(src);
 
@@ -84,7 +86,7 @@ for (const s of R.sentences) {
     const q = s.text.replace(/\{([^{}|]+)\|([^{}|]+)\}/g, (_, a, r) => (j++ === i ? `[${r}]` : r));
     for (const c of m[1]) if (!DB[c]) fail(`${s.line}行目：「${c}」の字形データが ありません（小学校で習う漢字と かな だけ使えます）`);
     if (![...m[1]].some(isKanji)) fail(`${s.line}行目：{${m[1]}|${m[2]}} の こたえに 漢字が ありません`);
-    questions.push({ id: questions.length + 1, q, a: m[1], r: m[2] });
+    questions.push({ id: questions.length + 1, q, a: m[1], r: m[2], sec: s.sec });
   });
 }
 
@@ -188,9 +190,9 @@ const out = `/*
  * https://creativecommons.org/licenses/by-sa/3.0/  Changes: coordinates rounded to 0.1, only the characters used here.
  */
 (function (root) {
-  var R = { id: ${JSON.stringify(R.id)}, title: ${JSON.stringify(R.title)}, grade: ${R.grade},
+  var R = { id: ${JSON.stringify(R.id)}, title: ${JSON.stringify(R.title)}, grade: ${R.grade},${R.sections.length > 1 ? ` sections: ${JSON.stringify(R.sections)},` : ''}
   questions: [
-${lines(questions, q => JSON.stringify({ id: q.id, q: q.q, a: q.a }))}
+${lines(questions, q => JSON.stringify(R.sections.length > 1 ? { id: q.id, q: q.q, a: q.a, sec: q.sec } : { id: q.id, q: q.q, a: q.a }))}
   ],
   kanji: [
 ${lines(kanji, e => JSON.stringify(e))}

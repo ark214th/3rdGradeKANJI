@@ -66,6 +66,11 @@ const R0 = RANGES.find(r => r.id === '2g-11-12');
 assert.equal(R0.questions.length, 59);
 assert.equal(R0.kanji.length, 54);
 assert.equal(R0.kanji.filter(e => e.known).length, 27);
+// テストの回ごとの区切り（ドラゴンで 回ごとに 練習できる）。第4章と同じく 11回目 30問・12回目 29問
+assert.deepEqual(R0.sections, ['11回目', '12回目']);
+assert.equal(R0.questions.filter(q => q.sec === 0).length, 30);
+assert.equal(R0.questions.filter(q => q.sec === 1).length, 29);
+assert.deepEqual(R0.questions.slice(29, 31).map(q => [q.id, q.sec]), [[30, 0], [31, 1]]);
 const KANJI = R0.kanji;
 
 // 練習の流れ：はじめての字は「思い出して書く」をしない。部品1つの字は 部品の問題なし
@@ -300,6 +305,7 @@ for (const a of C.AREAS) { assert(a.name && a.sky.length === 2 && a.mon.length >
     assert.deepEqual(Z.kanji.map(e => e.k), ['湖', '泳', '遊', '時', '間']);
     assert.equal(Z.kanji.find(e => e.k === '泳').q, 'みずうみで[およ]ぐ。');
     assert(Z.kanji.find(e => e.k === '時').known && !Z.kanji.find(e => e.k === '湖').known);
+    assert.deepEqual(Z.sections, undefined, 'no section picker without headings');
     for (const e of Z.kanji) assert.equal([...e.alts].length, 3);
     assert.equal(fs.readFileSync(path.join(TOWER, 'data/ranges.js'), 'utf8'), before);
   } finally { fs.rmSync(path.join(TOWER, 'data/zz-test.js'), { force: true }); fs.rmSync(tmp, { force: true }); }
