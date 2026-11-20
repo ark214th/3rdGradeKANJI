@@ -506,7 +506,8 @@ $('resetAll').onclick=()=>{if(confirm('ぜんぶの 記録（レベル・ゴー�
 
 /* ---------- はじめる ---------- */
 if(!LIST.length){document.body.innerHTML='<p style="padding:24px">テストの はんいが ありません。tower/tools/README.md を見て、はんいを 作ってください。</p>';return}
-const startId=LIST.some(r=>r.id===save.range)?save.range:LIST[LIST.length-1].id;
+// いちばん新しい はんいを まだ はじめていなければ、そこから（新しい エリアの お話が 出る）。はじめた あとは、えらんだ はんいを つづける
+const newest=LIST[LIST.length-1].id,startId=!save.ranges[newest]?newest:LIST.some(r=>r.id===save.range)?save.range:newest;
 loadRange(startId,()=>{renderHome();attachScene();maybeIntro();SND.play('home')});
 // テスト用：いまの状態を のぞく
 window.__tower={get Q(){return Q},get S(){return S},get X(){return X},get save(){return save},get range(){return RANGE},get strokes(){return STROKES},get cells(){return CELLS},get L(){return L},C,ST};

@@ -326,7 +326,7 @@ function buildTower(a, L, cleared) {
   for (let i = 0; i < 6; i++) storm.add(mesh(new T.SphereGeometry(0.9, 10, 8), toon(0x4a4060), Math.cos(i) * 1.4, Math.sin(i * 2) * 0.3, Math.sin(i) * 1.4));
   homeG.add(storm); homeG.userData.storm = storm;
   props(homeG, a, 16, 19, 0, true);
-  for (let i = 0; i < 40; i++) { const ang = Math.random() * Math.PI * 2, r = 4 + Math.random() * 9; homeG.add(mesh(new T.SphereGeometry(0.12, 6, 5), toon([0xff6b8a, 0xffe066, 0xffffff, 0x9b7bff][i % 4]), Math.cos(ang) * r, 0.08, Math.sin(ang) * r)); }
+  if (a.name === 'はじまりの森') for (let i = 0; i < 40; i++) { const ang = Math.random() * Math.PI * 2, r = 4 + Math.random() * 9; homeG.add(mesh(new T.SphereGeometry(0.12, 6, 5), toon([0xff6b8a, 0xffe066, 0xffffff, 0x9b7bff][i % 4]), Math.cos(ang) * r, 0.08, Math.sin(ang) * r)); }
   scene.add(homeG);
   setCleared(cleared);
 }
